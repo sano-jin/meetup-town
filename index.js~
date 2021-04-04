@@ -1,4 +1,0 @@
-'use strict';
-
-// Loading dependencies & initializing express
-const os = require('os');
