@@ -1,23 +1,25 @@
 {
-  "name": "meetup-town",
+  "name": "videochat-webfrontend",
   "version": "1.0.0",
-  "description": "",
+  "description": "* Deployed at https://desolate-depths-86299.herokuapp.com/ * Only two persons can join in one room ## Running the app on development server * `npm install` * `node index.js` * open `localhost:8000`",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sano-jin/meetup-town.git"
+    "url": "git+https://github.com/webtutsplus/videoChat-WebFrontend.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/sano-jin/meetup-town/issues"
+    "url": "https://github.com/webtutsplus/videoChat-WebFrontend/issues"
   },
-  "homepage": "https://github.com/sano-jin/meetup-town#readme",
+  "homepage": "https://github.com/webtutsplus/videoChat-WebFrontend#readme",
   "dependencies": {
+    "ejs": "^3.1.5",
     "express": "^4.17.1",
-    "socket.io": "^4.0.1"
+    "socket.io": "^1.2.0"
   }
 }
