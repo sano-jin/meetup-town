@@ -23,6 +23,7 @@
         "yield-star-spacing": "error"
     },
     "parserOptions": {
+        "sourceType": "module",
         "ecmaVersion": 2019
     },
     "env": {
