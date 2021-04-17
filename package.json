@@ -1,25 +1,38 @@
 {
-  "name": "videochat-webfrontend",
-  "version": "1.0.0",
-  "description": "* Deployed at https://desolate-depths-86299.herokuapp.com/ * Only two persons can join in one room ## Running the app on development server * `npm install` * `node index.js` * open `localhost:8000`",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/webtutsplus/videoChat-WebFrontend.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/webtutsplus/videoChat-WebFrontend/issues"
-  },
-  "homepage": "https://github.com/webtutsplus/videoChat-WebFrontend#readme",
-  "dependencies": {
-    "ejs": "^3.1.5",
-    "express": "^4.17.1",
-    "socket.io": "^1.2.0"
-  }
+    "name": "meetup-town",
+    "version": "1.0.0",
+    "description": "* Deployed at https://desolate-depths-86299.herokuapp.com/ * Only two persons can join in one room ## Running the app on development server * `npm install` * `node index.js` * open `localhost:8000`",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/webtutsplus/videoChat-WebFrontend.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/webtutsplus/videoChat-WebFrontend/issues"
+    },
+    "homepage": "https://github.com/webtutsplus/videoChat-WebFrontend#readme",
+    "dependencies": {
+        "ejs": "^3.1.5",
+        "express": "^4.17.1",
+        "json": "^10.0.0",
+        "socket.io": "^1.2.0"
+    },
+    "devDependencies": {
+        "@types/node": "^14.14.41",
+        "@typescript-eslint/eslint-plugin": "^4.22.0",
+        "@typescript-eslint/parser": "^4.22.0",
+        "eslint": "^7.24.0",
+        "typescript": "^4.2.4",
+        "ws": "^0.4.31"
+    },
+    "eslintIgnore": [
+        "/.eslintrc.js"
+    ]
+    
 }
