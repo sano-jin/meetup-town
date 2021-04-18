@@ -40,13 +40,14 @@ module.exports = [
             path: __dirname + '/public/js',
             filename: 'bundle.js',
         },
-        target: 'node',   // THIS IS THE IMPORTANT PART
+        target: 'web',   // THIS IS THE IMPORTANT PART
+        externals: ['bufferutil', 'utf-8-validate'], 
         mode: 'development',
         module: {
             rules: [
                 {
                     test: /\.ts$/,
-  //                  exclude: /node_modules/,
+                    exclude: /node_modules/,
                     loader: "ts-loader",
                     options: {
                         configFile: "tsconfig.json"
