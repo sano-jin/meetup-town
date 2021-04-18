@@ -2,12 +2,12 @@
     "name": "meetup-town",
     "version": "1.0.0",
     "description": "* Deployed at https://desolate-depths-86299.herokuapp.com/ * Only two persons can join in one room ## Running the app on development server * `npm install` * `node index.js` * open `localhost:8000`",
-    "main": "index.js",
+    "main": "dist/server/server.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "webpack --mode development",
         "build": "webpack --mode production",
-        "start": "node index.js"
+        "start": "node dist/server/server.js"
     },
     "repository": {
         "type": "git",
@@ -24,6 +24,7 @@
         "@types/socket.io": "^2.1.13",
         "@types/socket.io-client": "^1.4.36",
         "babel-preset-es2015": "^6.24.1",
+        "bufferutil": "^4.0.3",
         "core-util-is": "^1.0.2",
         "ejs": "^3.1.5",
         "express": "^4.17.1",
