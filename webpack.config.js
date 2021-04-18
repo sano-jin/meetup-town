@@ -8,7 +8,7 @@ module.exports = [
         target: 'node',
         output: {
             path: __dirname + '/dist/server',
-            filename: 'bundle.js',
+            filename: 'server.js',
         },
         target: 'node',   // THIS IS THE IMPORTANT PART
         externals: [nodeExternals()],
@@ -37,17 +37,16 @@ module.exports = [
         entry: './public/js/main.ts',
         // target: 'web', // by default
         output: {
-            path: __dirname + '/dist/client',
+            path: __dirname + '/public/js',
             filename: 'bundle.js',
         },
         target: 'node',   // THIS IS THE IMPORTANT PART
-        externals: [nodeExternals()],
         mode: 'development',
         module: {
             rules: [
                 {
                     test: /\.ts$/,
-                    exclude: /node_modules/,
+  //                  exclude: /node_modules/,
                     loader: "ts-loader",
                     options: {
                         configFile: "tsconfig.json"
