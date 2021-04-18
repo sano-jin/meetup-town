@@ -9,13 +9,13 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./public/js/main.ts":
-/*!***************************!*\
-  !*** ./public/js/main.ts ***!
-  \***************************/
+/***/ "./src/index.ts":
+/*!**********************!*\
+  !*** ./src/index.ts ***!
+  \**********************/
 /***/ (() => {
 
-eval("throw new Error(\"Module parse failed: Unexpected token (35:26)\\nYou may need an appropriate loader to handle this file type, currently no loaders are configured to process this file. See https://webpack.js.org/concepts#loaders\\n| \\n| // Defining socket connections for signalling\\n> socket.on('created', (room: string): void => {\\n|     console.log(`Created room ${room}`);\\n|     isInitiator = true;\");\n\n//# sourceURL=webpack://meetup-town/./public/js/main.ts?");
+eval("throw new Error(\"Module parse failed: Unexpected token (8:9)\\nYou may need an appropriate loader to handle this file type, currently no loaders are configured to process this file. See https://webpack.js.org/concepts#loaders\\n| \\n| // initializing express\\n> const app: express.Express = express();\\n| \\n| app.use(express.static('public'))\");\n\n//# sourceURL=webpack://meetup-town/./src/index.ts?");
 
 /***/ })
 
@@ -26,7 +26,7 @@ eval("throw new Error(\"Module parse failed: Unexpected token (35:26)\\nYou may 
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module doesn't tell about it's top-level declarations so it can't be inlined
 /******/ 	var __webpack_exports__ = {};
-/******/ 	__webpack_modules__["./public/js/main.ts"]();
+/******/ 	__webpack_modules__["./src/index.ts"]();
 /******/ 	
 /******/ })()
 ;

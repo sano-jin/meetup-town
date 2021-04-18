@@ -5,6 +5,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from) {
     return to;
 };
 exports.__esModule = true;
+exports.io = void 0;
 var os_1 = require("os");
 var express = require("express");
 var http_1 = require("http");
@@ -18,8 +19,8 @@ app.get("/", function (req, res) {
 });
 var server = http_1.createServer(app);
 server.listen(process.env.PORT || 8000);
-var io = socket(server);
-io.sockets.on('connection', function (socket) {
+exports.io = socket(server);
+exports.io.sockets.on('connection', function (socket) {
     // Convenience  to log server messages on the client.
     // Arguments is an array like object which contains all the arguments of log(). 
     var log = function () {
@@ -38,7 +39,7 @@ io.sockets.on('connection', function (socket) {
     });
     socket.on('create or join', function (room) {
         log("Received request to create or join room " + room);
-        var clientsInRoom = io.sockets.adapter.rooms[room];
+        var clientsInRoom = exports.io.sockets.adapter.rooms[room];
         var numClients = clientsInRoom ? Object.keys(clientsInRoom).length : 0;
         log("Room " + room + " now has " + numClients + " client(s)");
         if (numClients === 0) {
@@ -48,10 +49,10 @@ io.sockets.on('connection', function (socket) {
         }
         else if (numClients === 1) {
             log("Client ID " + socket.id + " joined room " + room);
-            io.sockets["in"](room).emit('join', room);
+            exports.io.sockets["in"](room).emit('join', room);
             socket.join(room);
             socket.emit('joined', room, socket.id);
-            io.sockets["in"](room).emit('ready');
+            exports.io.sockets["in"](room).emit('ready');
         }
         else { // max two clients
             socket.emit('full', room);
