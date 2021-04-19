@@ -1,4 +1,3 @@
-/*global io, turnConfig*/
 import io from "socket.io-client";
 import { turnConfig } from './config';
 
@@ -86,12 +85,10 @@ socket.on('message', (message: Message, room: string) => {
                 maybeStart();
             }
             pc.setRemoteDescription(message);
-            //        pc.setRemoteDescription(new RTCSessionDescription(message));
             doAnswer();
             break;
         case 'answer':
             if (isStarted) {
-                //        pc.setRemoteDescription(new RTCSessionDescription(message));
                 pc.setRemoteDescription(message);
             }
             break;
@@ -152,7 +149,8 @@ function maybeStart(): void {
     if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
         console.log('>>>>>> creating peer connection');
         createPeerConnection();
-        pc.addTrack(localStream.getTracks()[0]);
+        localStream.getTracks()
+            .forEach(track => pc.addTrack(track, localStream));
         isStarted = true;
         console.log('isInitiator', isInitiator);
         if (isInitiator) {
@@ -229,7 +227,7 @@ function onCreateSessionDescriptionError(error: DOMException): void {
 
 
 function handleRemoteStreamAdded(event: RTCTrackEvent): void {
-    if (event.streams.length === 1) {
+    if (event.streams.length >= 1) {
         console.log('Remote stream added.');
         remoteStream = event.streams[0];
         remoteVideo.srcObject = remoteStream;
