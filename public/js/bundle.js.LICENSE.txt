@@ -1,3 +1,0 @@
-/*! JSON v3.2.6 | http://bestiejs.github.io/json3 | Copyright 2012-2013, Kit Cambridge | http://kit.mit-license.org */
-
-/*! http://mths.be/utf8js v2.0.0 by @mathias */
