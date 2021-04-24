@@ -34,9 +34,9 @@ module.exports = [
     },
     {
         name: 'client',
-        entry: './public/js/main.ts',
+        entry: './public/ts/main.ts',
         output: {
-            path: __dirname + '/public/js',
+            path: __dirname + '/public/dist',
             filename: 'bundle.js',
         },
         target: 'web',
