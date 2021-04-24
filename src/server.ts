@@ -1,7 +1,7 @@
 import { networkInterfaces, NetworkInterfaceInfo } from 'os';
 import express from 'express';
 import { createServer, Server as httpServer } from 'http';
-import socket from 'socket.io';
+import { Server, Socket } from 'socket.io';
 // For signalling in WebRTC
 
 // initializing express
@@ -17,9 +17,9 @@ const server: httpServer = createServer(app);
 
 server.listen(process.env.PORT || 8000);
 
-export const io: socket.Server = socket(server);
+const io: Server = new Server(server);
 
-io.sockets.on('connection', (socket: socket.Socket) : void => {
+io.sockets.on('connection', (socket: Socket) : void => {
     
     const log = (param: Array<string>) : void => {
         const array: Array<string> = ['Message from server:', ...param];
@@ -37,9 +37,11 @@ io.sockets.on('connection', (socket: socket.Socket) : void => {
     socket.on('create or join', (room: string) => {
         log([`Received request to create or join room ${room}`]);
 
-        const clientsInRoom = io.sockets.adapter.rooms[room];
+        const clientsInRoom: Set<string> | undefined =
+            io.sockets.adapter.rooms.get(room);
+
         const numClients : number =
-            clientsInRoom ? Object.keys(clientsInRoom).length : 0;
+            clientsInRoom ? clientsInRoom.size : 0;
         log([`Room ${room} now has ${numClients} client(s)`]);
 
         if (numClients === 0) {
