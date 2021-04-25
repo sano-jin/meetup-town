@@ -1,35 +1,30 @@
-import * from "./client";
+import io from "socket.io-client";
 import { turnConfig } from './config';
+import { Message } from './message';
 
-interface Candidate {
-    type: 'candidate',
-    label: RTCIceCandidate["sdpMLineIndex"],
-    id: RTCIceCandidate["sdpMid"],
-    candidate: RTCIceCandidate["candidate"]
-} 
-
-interface Bye {
-    type: "bye",
+interface ClientState {
+    // Defining some global utility variables
+    isChannelReady: boolean,                  // Is channel ready 
+    isInitiator   : boolean,                  // Am I a initiator
+    isStarted     : boolean,                  // Has started ???
+    localStream   : null | MediaStream,       // Local camera
+    pc            : null | RTCPeerConnection, // Peer connection
+    remoteStream  : null | MediaStream        // Remote camera
 }
 
-interface GotUserMedia {
-    type: "got user media",
+const clientState: ClientState = {
+    isChannelReady: false,
+    isInitiator: false,
+    isStarted: false,
+    localStream: null,
+    pc: null,
+    remoteStream: null
 }
-
-type Message = Candidate | Bye | GotUserMedia | RTCSessionDescriptionInit;
-
-// Defining some global utility variables
-let isChannelReady = false;   // Is channel ready 
-let isInitiator = false;      // Am I a initiator
-let isStarted = false;        // Has started ???
-let localStream: MediaStream;  // 
-let pc: RTCPeerConnection;
-let remoteStream: MediaStream;
-let turnReady // does not used at all
 
 // Initialize turn/stun server here
 const pcConfig = turnConfig;
 
+// TODO: include this in the "clientState"
 const localStreamConstraints = {
     audio: true,
     video: true
@@ -39,9 +34,11 @@ const localStreamConstraints = {
 // Prompting for room name:
 const room: string = prompt('Enter room name:')!;
 
+
+
 // Initializing socket.io
 const socket = io();
-
+ 
 if (room !== '') {
     socket.emit('create or join', room);
     console.log('Attempted to create or join room', room);
