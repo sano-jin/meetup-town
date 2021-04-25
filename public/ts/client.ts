@@ -2,38 +2,54 @@ import io from "socket.io-client";
 import { turnConfig } from './config';
 import { Message } from './message';
 
+// Initialize turn/stun server here
+const pcConfig = turnConfig;
+
+// Displaying Local Stream and Remote Stream on webpage
+const localVideo = document.querySelector<HTMLVideoElement>('#localVideo')!;
+const remoteVideos =
+    document
+    .getElementById<HTMLUlElement>('#remotes')!
+
+// const remoteVideo = document.querySelector<HTMLVideoElement>('#remoteVideo')!;
+
+
 interface ClientState {
     // Defining some global utility variables
     isChannelReady: boolean,                  // Is channel ready 
     isInitiator   : boolean,                  // Am I a initiator
     isStarted     : boolean,                  // Has started ???
     localStream   : null | MediaStream,       // Local camera
-    pc            : null | RTCPeerConnection, // Peer connection
-    remoteStream  : null | MediaStream        // Remote camera
+    remotes       : Array<Remote>,
+    //     pc            : null | RTCPeerConnection, // Peer connection
+    //     remoteStream  : null | MediaStream        // Remote camera
+    localStreamConstraints: StreamConstraints,
+}
+
+interface Remote {
+    pc            : RTCPeerConnection, // Peer connection
+    remoteStream  : MediaStream        // Remote camera
+}
+
+interface StreamConstraints {
+    audio: boolean,
+    video: boolean    
 }
 
 const clientState: ClientState = {
     isChannelReady: false,
-    isInitiator: false,
-    isStarted: false,
-    localStream: null,
-    pc: null,
-    remoteStream: null
+    isInitiator   : false,
+    isStarted     : false,
+    localStream   : null,
+    remotes       : [],
+    localStreamConstraints : {
+        audio: true,
+        video: true
+    }
 }
-
-// Initialize turn/stun server here
-const pcConfig = turnConfig;
-
-// TODO: include this in the "clientState"
-const localStreamConstraints = {
-    audio: true,
-    video: true
-};
-
 
 // Prompting for room name:
 const room: string = prompt('Enter room name:')!;
-
 
 
 // Initializing socket.io
@@ -47,22 +63,25 @@ if (room !== '') {
 // Defining socket connections for signalling
 socket.on('created', (room: string): void => {
     console.log(`Created room ${room}`);
-    isInitiator = true;
+    clientState.isInitiator = true;
 });
 
-socket.on('full', (room: string): void => {
+// Appointed as the next host
+socket.on('appoint', (room: string): void => {
     console.log(`Room ${room} is full`);
+    clientState.isInitiator = true;
+    clientState.isChannelReady = true;
 });
 
 socket.on('join', (room: string): void => {
     console.log(`Another peer made a request to join room ${room}`);
     console.log(`This peer is the initiator of room ${room} !`);
-    isChannelReady = true;
+    clientState.isChannelReady = true;
 });
 
 socket.on('joined', (room: string): void => {
     console.log(`joined: ${room}`);
-    isChannelReady = true;
+    clientState.isChannelReady = true;
 });
 
 socket.on('log', (...array: Array<string>): void => {
@@ -78,19 +97,19 @@ socket.on('message', (message: Message, room: string) => {
             maybeStart();
             break;
         case 'offer':
-            if (!isInitiator && !isStarted) {
+            if (!clientState.isInitiator && !clientState.isStarted) {
                 maybeStart();
             }
             pc.setRemoteDescription(message);
             doAnswer();
             break;
         case 'answer':
-            if (isStarted) {
+            if (clientState.isStarted) {
                 pc.setRemoteDescription(message);
             }
             break;
         case 'candidate':
-            if (isStarted) {
+            if (clientState.isStarted) {
                 const candidate = new RTCIceCandidate({
                     sdpMLineIndex: message.label,
                     candidate: message.candidate
@@ -99,7 +118,7 @@ socket.on('message', (message: Message, room: string) => {
             }
             break;
         case 'bye':
-            if(isStarted) {
+            if(clientState.isStarted) {
                 handleRemoteHangup();
             }
     }
@@ -114,9 +133,6 @@ const sendMessage = (message: Message, room: string) => {
 }
 
 
-// Displaying Local Stream and Remote Stream on webpage
-const localVideo = document.querySelector<HTMLVideoElement>('#localVideo')!;
-const remoteVideo = document.querySelector<HTMLVideoElement>('#remoteVideo')!;
 
 console.log("Going to find Local media");
 
@@ -127,12 +143,12 @@ navigator.mediaDevices.getUserMedia(localStreamConstraints)
     });
 
 // If found local stream
-function gotStream(stream: MediaStream): void {
+const gotStream(stream: MediaStream): void => {
     console.log('Adding local stream.');
-    localStream = stream;
+    clientState.localStream = stream;
     localVideo.srcObject = stream;
     sendMessage({type: 'got user media'}, room);
-    if (isInitiator) {
+    if (clientState.isInitiator) {
         maybeStart();
     }
 }
@@ -141,16 +157,23 @@ function gotStream(stream: MediaStream): void {
 console.log('Getting user media with constraints', localStreamConstraints);
 
 // If initiator, create the peer connection
-function maybeStart(): void {
-    console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
-    if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
+const maybeStart(): void => {
+    console.log(
+        '>>>>>>> maybeStart() ',
+        clientState.isStarted,
+        clientState.localStream,
+        clientState.isChannelReady
+    );
+    if (!clientState.isStarted
+        && clientState.localStream !== null
+        && clientState.isChannelReady) {
         console.log('>>>>>> creating peer connection');
         createPeerConnection();
-        localStream.getTracks()
-            .forEach(track => pc.addTrack(track, localStream));
-        isStarted = true;
-        console.log('isInitiator', isInitiator);
-        if (isInitiator) {
+        clientState.localStream.getTracks()
+            .forEach(track => pc.addTrack(track, clientState.localStream));
+        clientState.isStarted = true;
+        console.log('clientState.isInitiator', clientState.isInitiator);
+        if (clientState.isInitiator) {
             doCall();
         }
     }
@@ -163,14 +186,15 @@ window.onbeforeunload = (): void => {
 
 
 // Creating peer connection
-function createPeerConnection(): void {
+const createPeerConnection(): RTCPeerConnection | null => {
     try {
-        pc = new RTCPeerConnection(pcConfig);
+        const pc = new RTCPeerConnection(pcConfig);
         pc.onicecandidate = handleIceCandidate;
         pc.ontrack = handleRemoteStreamAdded;
         // pc.onremovestream = handleRemoteStreamRemoved;
         // Somehow deprecated ...
         console.log('Created RTCPeerConnnection');
+        return pc;
     } catch (e) {
         console.log(`Failed to create PeerConnection, exception: ${e.message}`);
         alert('Cannot create RTCPeerConnection object.');
@@ -179,7 +203,7 @@ function createPeerConnection(): void {
 }
 
 // to handle Ice candidates
-function handleIceCandidate(event: RTCPeerConnectionIceEvent): void {
+const handleIceCandidate(event: RTCPeerConnectionIceEvent): void => {
     console.log('icecandidate event: ', event);
     if (event.candidate) {
         sendMessage({
@@ -193,11 +217,11 @@ function handleIceCandidate(event: RTCPeerConnectionIceEvent): void {
     }
 }
 
-function handleCreateOfferError(event: DOMException): void {
+const handleCreateOfferError(event: DOMException): void => {
     console.log('createOffer() error: ', event);
 }
 
-function doCall(): void {
+const doCall(): void => {
     console.log('Sending offer to peer');
     pc.createOffer().then(
         setLocalAndSendMessage,
@@ -205,57 +229,71 @@ function doCall(): void {
     );
 }
 
-function doAnswer(): void {
+const doAnswer(): void => {
     console.log('Sending answer to peer.');
     pc.createAnswer()
         .then(setLocalAndSendMessage)
         .catch(onCreateSessionDescriptionError);
 }
 
-function setLocalAndSendMessage(sessionDescription: RTCSessionDescriptionInit): void {
+const setLocalAndSendMessage(sessionDescription: RTCSessionDescriptionInit): void => {
     pc.setLocalDescription(sessionDescription);
     console.log('setLocalAndSendMessage sending message', sessionDescription);
     sendMessage(sessionDescription, room);
 }
 
-function onCreateSessionDescriptionError(error: DOMException): void {
+const onCreateSessionDescriptionError(error: DOMException): void => {
     console.trace(`Failed to create session description: ${error.toString()}`);
 }
 
 
-function handleRemoteStreamAdded(event: RTCTrackEvent): void {
+const handleRemoteStreamAdded(event: RTCTrackEvent): void => {
     if (event.streams.length >= 1) {
         console.log('Remote stream added.');
-        remoteStream = event.streams[0];
-        remoteVideo.srcObject = remoteStream;
-    } else {
-        console.log('Remote stream removed. Event: ', event);
+    }        
+
+    clientState.remotes = event.streams;
+
+    // TODO: Replace these with React or something ...
+    while (listElem.firstChild) {
+        listElem.removeChild(listElem.firstChild);
     }
+
+    clientState.remotes.forEach((stream: MediaStream) => {
+        const item = document.createElement("li");
+        const videoElement = document..createElement("video")
+        videoElement.srcObject = stream;
+        item.appendChild(videoElement);
+        remoteVideos.appendChild(item);
+    });
 }
 
 /*
 Based on the deprected implementation of RTCPeerConnection.
-function handleRemoteStreamRemoved(event: MediaStreamEvent) {
+const handleRemoteStreamRemoved(event: MediaStreamEvent) => {
     console.log('Remote stream removed. Event: ', event);
 }
 */
 
-function hangup(): void {
+/*
+const hangup(): void => {
     console.log('Hanging up.');
     stop();
     sendMessage({type: 'bye'}, room);
     remoteVideo.srcObject = null; // hide remote video
 }
 
-function handleRemoteHangup(): void {
+const handleRemoteHangup(): void => {
     console.log('Session terminated.');
     stop();
-    isInitiator = false;
+    clientState.isInitiator = false;
     remoteVideo.srcObject = null; // hide remote video
 }
 
-function stop(): void {
-    isStarted = false;
+const stop(): void => {
+    clientState.isStarted = false;
     pc.close();
 //     pc = null;
 }
+
+*/
