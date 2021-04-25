@@ -13,6 +13,8 @@ const remoteVideos =
 
 // const remoteVideo = document.querySelector<HTMLVideoElement>('#remoteVideo')!;
 
+// Initializing socket.io
+const socket = io();
 
 interface ClientState {
     // Defining some global utility variables
@@ -48,43 +50,34 @@ const clientState: ClientState = {
     }
 }
 
-// Prompting for room name:
-const room: string = prompt('Enter room name:')!;
-
-
-// Initializing socket.io
-const socket = io();
- 
-if (room !== '') {
-    socket.emit('create or join', room);
-    console.log('Attempted to create or join room', room);
+const getRoomName = (): string => {
+    let roomName = prompt('Enter room name:');
+    while (roomName === undefined || roomName === '') {
+        roomName = prompt('Enter room name:');
+    }
+    return roomName;
 }
 
-// Defining socket connections for signalling
+// Prompting for room name:
+const room: string = getRoomName();
+socket.emit('create or join', room);
+console.log('Attempted to create or join room', room);
+
 socket.on('created', (room: string): void => {
     console.log(`Created room ${room}`);
-    clientState.isInitiator = true;
 });
 
-// Appointed as the next host
-socket.on('appoint', (room: string): void => {
-    console.log(`Room ${room} is full`);
-    clientState.isInitiator = true;
-    clientState.isChannelReady = true;
-});
-
-socket.on('join', (room: string): void => {
-    console.log(`Another peer made a request to join room ${room}`);
-    console.log(`This peer is the initiator of room ${room} !`);
-    clientState.isChannelReady = true;
+socket.on('join', (room: string, socketId: string): void => {
+    console.log(`Another user ${socketId} has joined to our room ${room}`);
 });
 
 socket.on('joined', (room: string): void => {
     console.log(`joined: ${room}`);
-    clientState.isChannelReady = true;
+    /* connect to the other users in the room */
+    // Defining socket connections for signalling
 });
 
-socket.on('log', (...array: Array<string>): void => {
+socket.on('log', (array: Array<string>): void => {
     console.log(console, ...array);
 });
 

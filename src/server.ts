@@ -22,58 +22,51 @@ const io: Server = new Server(server);
 
 io.sockets.on('connection', (socket: Socket) : void => {
     
-    const log = (param: Array<string>) : void => {
-        const array: Array<string> = ['Message from server:', ...param];
-        socket.emit('log', array);
+    const log = (...param: Array<string>) : void => {
+        socket.emit('log', ['Message from server:', ...param]);
     };
 
-
-    // Defining Socket Connections
+    // Client to clients messaging
     socket.on('message', (message: string, room: string) : void => {
-        log(['Client said: ', message]);
-        // for a real app, would be room-only (not broadcast)
-        socket.in(room).emit('message', message, room);
+        log('Client said: ', message);
+        socket.to(room).emit('message', message, room);
     });
 
-    socket.on('create or join', (room: string) => {
-        log([`Received request to create or join room ${room}`]);
+    socket.on('create or join', (room: string): void => {
+        console.log(`Received request to create or join room ${room} from user ${socket.id}`);
 
-        const clientsInRoom: Set<string> | undefined =
-            io.sockets.adapter.rooms.get(room);
+        socket.join(room);
+        
+        const clientsInRoom: Set<string> =
+            io.sockets.adapter.rooms.get(room)!;
 
-        const numClients : number =
-            clientsInRoom ? clientsInRoom.size : 0;
-        log([`Room ${room} now has ${numClients} client(s)`]);
+        const numClients : number = clientsInRoom.size;
+        console.log(`Room ${room} now has ${numClients} client(s)`);
 
-        if (numClients === 0) {
-            socket.join(room);
-            log([`Client ID ${socket.id} created room ${room}`]);
+        if (numClients === 1) {
+            console.log(`Client ID ${socket.id} created room ${room}`);
             socket.emit('created', room, socket.id);
-
-        } else if (numClients === 1) {
-            log([`Client ID ${socket.id} joined room ${room}`]);
-            io.sockets.in(room).emit('join', room);
-            socket.join(room);
-            socket.emit('joined', room, socket.id);
-            io.sockets.in(room).emit('ready');
-        } else { // max two clients
-            socket.emit('full', room);
+        } else {
+            console.log(`Client ID ${socket.id} joined room ${room}`);
+            io.sockets.to(room).emit('join', room, socket.id);
+            socket.emit('joined', room);
         }
     });
 
     socket.on('ipaddr', () : void => {
-        const ifaces = networkInterfaces();
-        for (const dev in ifaces) {
-            ifaces[dev]!.forEach((details: NetworkInterfaceInfo) => {
-                if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
-                    socket.emit('ipaddr', details.address);
-                }
-        });
-        }
-});
-
+        const ifaces =
+            Object.values(networkInterfaces());
+        
+        ifaces.forEach((dev) => dev.forEach((details: NetworkInterfaceInfo) => {
+            if (details.family === 'IPv4'
+                && details.address !== '127.0.0.1') {
+                socket.emit('ipaddr', details.address);
+            }
+        }));
+    });
+              
     socket.on('bye', () : void => {
-        console.log(['received bye']);
+        console.log('received bye');
     });
 
 });
