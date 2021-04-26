@@ -82,18 +82,18 @@ socket.on('join', (room: string, userId: string, userInfo: UserInfo): void => {
 });
 
 
-socket.on('joined', (room: string, jsonStrUsers: string): void => {
-    console.log(`me joined to the room ${room}`, jsonStrUsers);
-    const users: Map<string, UserInfo> =
-        JSON.parse(jsonStrUsers, function(key, val) {
+socket.on('joined', (room: string, jsonStrOtherUsers: string): void => {
+    console.log(`me joined to the room ${room}`, jsonStrOtherUsers);
+    const otherUsers: Map<string, UserInfo> =
+        JSON.parse(jsonStrOtherUsers, function(key, val) {
         if (val != null && val.__type__ === 'Map') {
             return new Map(val.__value__);
         }
         return val;
     });
-    console.log(users);
+    console.log(otherUsers);
     
-    for (const [userId, userInfo] of users) {
+    for (const [userId, userInfo] of otherUsers) {
         clientState.remotes.set(
             userId,
             {
