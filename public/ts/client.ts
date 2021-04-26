@@ -69,16 +69,16 @@ socket.on('join', (room: string, userId: string, userInfo: UserInfo): void => {
         userId,
         {
             userInfo      : userInfo,
-            isChannelReady: true,            
+            isChannelReady: true,
             isInitiator   : false,           
             isStarted     : false,           
             pc            : null, 
             remoteStream  : null 
         }
     );
-    maybeStart(userId);
+    console.log("remotes", clientState.remotes);
+//    maybeStart(userId);
     
-    // May need to add the user to the "remote"
 });
 
 
@@ -105,7 +105,9 @@ socket.on('joined', (room: string, jsonStrUsers: string): void => {
                 remoteStream  : null 
             }
         );
+        maybeStart(userId);
     }
+    console.log("remotes", clientState.remotes);
 });
 
 socket.on('log', (array: Array<string>): void => {
@@ -115,7 +117,7 @@ socket.on('log', (array: Array<string>): void => {
 
 // Driver code
 socket.on('message', (userId: string, message: Message, room: string) => {
-    console.log('Client received message:', message, room);
+    console.log('Client received message:', message, room, `from user ${userId}`);
     if (!clientState.remotes.get(userId)) {
         console.log(`remote is null for ${userId}`, message);
     }
@@ -129,8 +131,9 @@ socket.on('message', (userId: string, message: Message, room: string) => {
             if (!remote.isInitiator && !remote.isStarted) {
                 maybeStart(userId);
             }
-            remote.pc!.setRemoteDescription(message);
-            doAnswer(remote.pc);
+            remote.pc!
+                .setRemoteDescription(message)
+                .then(() => doAnswer(remote.pc!));
             break;
         case 'answer':
             if (remote.pc === null) return;
@@ -296,9 +299,14 @@ const handleRemoteStream = (userId: string) => (event: RTCTrackEvent): void => {
     }
 
     for (const [userId, remote] of clientState.remotes) {
+        console.log(`remote.remoteStream of user ${userId}`, remote.remoteStream);
+        if (remote.remoteStream === null) {
+            console.log(`remoteStream of user ${userId} is null`);
+            continue;
+        }
         console.log(`adding ${userId} of ${remote.remoteStream!.id}`);
         const item = document.createElement("li");
-        item.className = "remote_div";
+        item.className = `remote_div username_${userId}`;
         const videoElement = document.createElement("video")
         videoElement.srcObject = remote.remoteStream;
         videoElement.autoplay = true;

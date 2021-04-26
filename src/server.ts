@@ -60,7 +60,7 @@ io.sockets.on('connection', (socket: Socket) : void => {
                         .filter(([userId, _]) => userId !== socket.id)
                        );
             const jsonOtherUsersInRoom =
-                JSON.stringify(otherUsersInRoom, function (key, val) {
+                JSON.stringify(otherUsersInRoom, (key, val) => {
                 if (val instanceof Map) {
                     return {
                         __type__: 'Map',
