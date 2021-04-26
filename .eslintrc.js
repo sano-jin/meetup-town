@@ -11,6 +11,9 @@ module.exports = {
         tsconfigRootDir: __dirname,
         project: ['./tsconfig.eslint.json']
     },
+//    compilerOptions: {
+//        downlevelIteration: true
+//    },
     plugins: [
         '@typescript-eslint',
     ],

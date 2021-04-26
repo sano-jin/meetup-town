@@ -4,7 +4,7 @@ interface Candidate {
     type: 'candidate',
     label: RTCIceCandidate["sdpMLineIndex"],
     id: RTCIceCandidate["sdpMid"],
-    candidate: RTCIceCandidate["candidate"]
+    candidate: RTCIceCandidate["candidate"],
 } 
 
 interface Bye {

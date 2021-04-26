@@ -1,36 +1,34 @@
 import io from "socket.io-client";
 import { turnConfig } from './config';
 import { Message } from './message';
+import { UserInfo } from './userInfo';
 
 // Initialize turn/stun server here
 const pcConfig = turnConfig;
 
 // Displaying Local Stream and Remote Stream on webpage
 const localVideo = document.querySelector<HTMLVideoElement>('#localVideo')!;
-const remoteVideos =
-    document
-    .getElementById<HTMLUlElement>('#remotes')!
+const remoteVideos = document.querySelector<HTMLUListElement>('#remotes')!;
 
 // const remoteVideo = document.querySelector<HTMLVideoElement>('#remoteVideo')!;
 
 // Initializing socket.io
 const socket = io();
 
+// Defining some global utility variables
 interface ClientState {
-    // Defining some global utility variables
-    isChannelReady: boolean,                  // Is channel ready 
-    isInitiator   : boolean,                  // Am I a initiator
-    isStarted     : boolean,                  // Has started ???
     localStream   : null | MediaStream,       // Local camera
-    remotes       : Array<Remote>,
-    //     pc            : null | RTCPeerConnection, // Peer connection
-    //     remoteStream  : null | MediaStream        // Remote camera
+    remotes       : Map<string, Remote>,      // A map from socket.id
     localStreamConstraints: StreamConstraints,
 }
 
 interface Remote {
-    pc            : RTCPeerConnection, // Peer connection
-    remoteStream  : MediaStream        // Remote camera
+    userInfo      : UserInfo,                 // Information of the user
+    isChannelReady: boolean,                  // Is channel ready 
+    isInitiator   : boolean,                  // Am I a initiator
+    isStarted     : boolean,                  // Has started ???
+    pc            : null | RTCPeerConnection, // Peer connection
+    remoteStream  : null | MediaStream        // Remote camera
 }
 
 interface StreamConstraints {
@@ -39,42 +37,75 @@ interface StreamConstraints {
 }
 
 const clientState: ClientState = {
-    isChannelReady: false,
-    isInitiator   : false,
-    isStarted     : false,
     localStream   : null,
-    remotes       : [],
+    remotes       : new Map<string, Remote>(),
     localStreamConstraints : {
         audio: true,
         video: true
     }
 }
 
-const getRoomName = (): string => {
-    let roomName = prompt('Enter room name:');
-    while (roomName === undefined || roomName === '') {
-        roomName = prompt('Enter room name:');
+const getStringFromUser = (message: string): string => {
+    let roomName = prompt(message);
+    while (roomName === null || roomName === '') {
+        roomName = prompt(message);
     }
     return roomName;
 }
 
 // Prompting for room name:
-const room: string = getRoomName();
-socket.emit('create or join', room);
+const room: string = getStringFromUser('Enter room name:');
+const userName: string = getStringFromUser('Enter your name:');
+socket.emit('create or join', room, { name: userName });
 console.log('Attempted to create or join room', room);
 
 socket.on('created', (room: string): void => {
     console.log(`Created room ${room}`);
 });
 
-socket.on('join', (room: string, socketId: string): void => {
-    console.log(`Another user ${socketId} has joined to our room ${room}`);
+socket.on('join', (room: string, userId: string, userInfo: UserInfo): void => {
+    console.log(`Another user ${userId} has joined to our room ${room}`);
+    clientState.remotes.set(
+        userId,
+        {
+            userInfo      : userInfo,
+            isChannelReady: true,            
+            isInitiator   : false,           
+            isStarted     : false,           
+            pc            : null, 
+            remoteStream  : null 
+        }
+    );
+    maybeStart(userId);
+    
+    // May need to add the user to the "remote"
 });
 
-socket.on('joined', (room: string): void => {
-    console.log(`joined: ${room}`);
-    /* connect to the other users in the room */
-    // Defining socket connections for signalling
+
+socket.on('joined', (room: string, jsonStrUsers: string): void => {
+    console.log(`me joined to the room ${room}`, jsonStrUsers);
+    const users: Map<string, UserInfo> =
+        JSON.parse(jsonStrUsers, function(key, val) {
+        if (val != null && val.__type__ === 'Map') {
+            return new Map(val.__value__);
+        }
+        return val;
+    });
+    console.log(users);
+    
+    for (const [userId, userInfo] of users) {
+        clientState.remotes.set(
+            userId,
+            {
+                userInfo      : userInfo,
+                isChannelReady: true,            
+                isInitiator   : true,           
+                isStarted     : false,           
+                pc            : null, 
+                remoteStream  : null 
+            }
+        );
+    }
 });
 
 socket.on('log', (array: Array<string>): void => {
@@ -83,41 +114,46 @@ socket.on('log', (array: Array<string>): void => {
 
 
 // Driver code
-socket.on('message', (message: Message, room: string) => {
+socket.on('message', (userId: string, message: Message, room: string) => {
     console.log('Client received message:', message, room);
+    if (!clientState.remotes.get(userId)) {
+        console.log(`remote is null for ${userId}`, message);
+    }
+    const remote: Remote = clientState.remotes.get(userId)!;
     switch (message.type) {
         case 'got user media':
-            maybeStart();
+            maybeStart(userId);
             break;
         case 'offer':
-            if (!clientState.isInitiator && !clientState.isStarted) {
-                maybeStart();
+            if (remote.pc === null) return;
+            if (!remote.isInitiator && !remote.isStarted) {
+                maybeStart(userId);
             }
-            pc.setRemoteDescription(message);
-            doAnswer();
+            remote.pc!.setRemoteDescription(message);
+            doAnswer(remote.pc);
             break;
         case 'answer':
-            if (clientState.isStarted) {
-                pc.setRemoteDescription(message);
+            if (remote.pc === null) return;
+            if (remote.isStarted) {
+                remote.pc!.setRemoteDescription(message);
             }
             break;
         case 'candidate':
-            if (clientState.isStarted) {
+            if (remote.pc === null) return;
+            if (remote.isStarted) {
                 const candidate = new RTCIceCandidate({
                     sdpMLineIndex: message.label,
                     candidate: message.candidate
                 });
-                pc.addIceCandidate(candidate);
+                remote.pc!.addIceCandidate(candidate);
             }
             break;
         case 'bye':
-            if(clientState.isStarted) {
-                handleRemoteHangup();
+            if(remote.isStarted) {
+                // handleRemoteHangup(userId);
             }
     }
 });
-
-
 
 // to send message in a room
 const sendMessage = (message: Message, room: string) => {
@@ -125,49 +161,51 @@ const sendMessage = (message: Message, room: string) => {
     socket.emit('message', message, room);
 }
 
-
-
 console.log("Going to find Local media");
+console.log('Getting user media with constraints', clientState.localStreamConstraints);
 
-navigator.mediaDevices.getUserMedia(localStreamConstraints)
+// If found local stream
+const gotStream = (stream: MediaStream): void => {
+    console.log('Adding local stream.');
+    clientState.localStream = stream;
+    localVideo.srcObject = stream;
+    sendMessage({type: 'got user media'}, room);
+    for (const [userId, remote] of clientState.remotes.entries()) {
+        if (remote.isInitiator) {
+            maybeStart(userId);
+        }
+    }
+}
+
+navigator.mediaDevices.getUserMedia(clientState.localStreamConstraints)
     .then(gotStream)
     .catch((e) => {
         alert(`getUserMedia() error: ${e.name}`);
     });
 
-// If found local stream
-const gotStream(stream: MediaStream): void => {
-    console.log('Adding local stream.');
-    clientState.localStream = stream;
-    localVideo.srcObject = stream;
-    sendMessage({type: 'got user media'}, room);
-    if (clientState.isInitiator) {
-        maybeStart();
-    }
-}
-
-
-console.log('Getting user media with constraints', localStreamConstraints);
-
 // If initiator, create the peer connection
-const maybeStart(): void => {
+const maybeStart = (userId: string): void => {
+    const remote: Remote = clientState.remotes.get(userId)!;
     console.log(
         '>>>>>>> maybeStart() ',
-        clientState.isStarted,
+        remote.isStarted,
         clientState.localStream,
-        clientState.isChannelReady
+        remote.isChannelReady
     );
-    if (!clientState.isStarted
+    if (!remote.isStarted
         && clientState.localStream !== null
-        && clientState.isChannelReady) {
+        && remote.isChannelReady) {
         console.log('>>>>>> creating peer connection');
-        createPeerConnection();
-        clientState.localStream.getTracks()
-            .forEach(track => pc.addTrack(track, clientState.localStream));
-        clientState.isStarted = true;
-        console.log('clientState.isInitiator', clientState.isInitiator);
-        if (clientState.isInitiator) {
-            doCall();
+        remote.pc = createPeerConnection(userId);
+        if (remote.pc === null) return;
+        if (clientState.localStream === null) return;
+        clientState.localStream
+            .getTracks()
+            .forEach(track => remote.pc!.addTrack(track, clientState.localStream!));
+        remote.isStarted = true;
+        console.log('isInitiator', remote.isInitiator);
+        if (remote.isInitiator) {
+            doCall(remote.pc);
         }
     }
 }
@@ -179,11 +217,11 @@ window.onbeforeunload = (): void => {
 
 
 // Creating peer connection
-const createPeerConnection(): RTCPeerConnection | null => {
+const createPeerConnection = (userId: string): RTCPeerConnection | null => {
     try {
         const pc = new RTCPeerConnection(pcConfig);
         pc.onicecandidate = handleIceCandidate;
-        pc.ontrack = handleRemoteStreamAdded;
+        pc.ontrack = handleRemoteStream(userId);
         // pc.onremovestream = handleRemoteStreamRemoved;
         // Somehow deprecated ...
         console.log('Created RTCPeerConnnection');
@@ -191,12 +229,12 @@ const createPeerConnection(): RTCPeerConnection | null => {
     } catch (e) {
         console.log(`Failed to create PeerConnection, exception: ${e.message}`);
         alert('Cannot create RTCPeerConnection object.');
-        return;
+        return null;
     }
 }
 
 // to handle Ice candidates
-const handleIceCandidate(event: RTCPeerConnectionIceEvent): void => {
+const handleIceCandidate = (event: RTCPeerConnectionIceEvent): void => {
     console.log('icecandidate event: ', event);
     if (event.candidate) {
         sendMessage({
@@ -210,55 +248,64 @@ const handleIceCandidate(event: RTCPeerConnectionIceEvent): void => {
     }
 }
 
-const handleCreateOfferError(event: DOMException): void => {
+const handleCreateOfferError = (event: DOMException): void => {
     console.log('createOffer() error: ', event);
 }
 
-const doCall(): void => {
+const doCall = (pc: RTCPeerConnection): void => {
     console.log('Sending offer to peer');
-    pc.createOffer().then(
-        setLocalAndSendMessage,
-        handleCreateOfferError
-    );
+    pc.createOffer()
+        .then(setLocalAndSendMessage(pc))
+        .catch(handleCreateOfferError);
 }
 
-const doAnswer(): void => {
+const doAnswer = (pc: RTCPeerConnection): void => {
     console.log('Sending answer to peer.');
     pc.createAnswer()
-        .then(setLocalAndSendMessage)
+        .then(setLocalAndSendMessage(pc))
         .catch(onCreateSessionDescriptionError);
 }
 
-const setLocalAndSendMessage(sessionDescription: RTCSessionDescriptionInit): void => {
-    pc.setLocalDescription(sessionDescription);
-    console.log('setLocalAndSendMessage sending message', sessionDescription);
-    sendMessage(sessionDescription, room);
-}
+const setLocalAndSendMessage =
+    (pc: RTCPeerConnection) =>
+    (sessionDescription: RTCSessionDescriptionInit): void => {
+        pc.setLocalDescription(sessionDescription);
+        console.log('setLocalAndSendMessage sending message', sessionDescription);
+        sendMessage(sessionDescription, room);
+    }
 
-const onCreateSessionDescriptionError(error: DOMException): void => {
+const onCreateSessionDescriptionError = (error: DOMException): void => {
     console.trace(`Failed to create session description: ${error.toString()}`);
 }
 
 
-const handleRemoteStreamAdded(event: RTCTrackEvent): void => {
+const handleRemoteStream = (userId: string) => (event: RTCTrackEvent): void => {
     if (event.streams.length >= 1) {
-        console.log('Remote stream added.');
-    }        
-
-    clientState.remotes = event.streams;
-
-    // TODO: Replace these with React or something ...
-    while (listElem.firstChild) {
-        listElem.removeChild(listElem.firstChild);
+        console.log(`Remote stream of userId ${userId} added.`);
+        clientState.remotes.get(userId)!.remoteStream = event.streams[0];
+    } else {
+        console.log(`Remote stream of userId ${userId} removed.`);
+        clientState.remotes.get(userId)!.remoteStream = null;
     }
 
-    clientState.remotes.forEach((stream: MediaStream) => {
+    console.log("clientState.remotes", clientState.remotes);
+    
+    // TODO: Replace these with React or something ...
+    while (remoteVideos.firstChild) {
+        remoteVideos.removeChild(remoteVideos.firstChild);
+    }
+
+    for (const [userId, remote] of clientState.remotes) {
+        console.log(`adding ${userId} of ${remote.remoteStream!.id}`);
         const item = document.createElement("li");
-        const videoElement = document..createElement("video")
-        videoElement.srcObject = stream;
+        item.className = "remote_div";
+        const videoElement = document.createElement("video")
+        videoElement.srcObject = remote.remoteStream;
+        videoElement.autoplay = true;
+        videoElement.playsInline = true;
         item.appendChild(videoElement);
         remoteVideos.appendChild(item);
-    });
+    }
 }
 
 /*
