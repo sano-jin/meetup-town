@@ -109,7 +109,7 @@ socket.on('joined', (room: string, userId: UserId, jsonStrOtherUsers: string): v
                 remoteStream: null
             }
         );
-        maybeStart(userId);
+        // maybeStart(userId);
     }
     console.log("remotes", clientState.remotes);
 });
@@ -121,7 +121,9 @@ socket.on('log', (array: Array<string>): void => {
 
 // Driver code
 socket.on('message', (userId: UserId, message: Message, room: string) => {
-    console.log('Client received message:', message, `from user ${userId} in room ${room}`);
+    if (message.type !== 'candidate') {
+        console.log('Client received message:', message, `from user ${userId} in room ${room}`);
+    }
     if (!clientState.remotes.has(userId)) {
         throw Error(`remote is null for ${userId}`);
     }
@@ -131,22 +133,27 @@ socket.on('message', (userId: UserId, message: Message, room: string) => {
             maybeStart(userId);
             break;
         case 'offer':
-            if (remote.pc === null) return;
+            if (remote.pc === null)
+                throw Error(`received an offer but the peer connection is null`);
             if (!remote.isInitiator && !remote.isStarted) {
                 maybeStart(userId);
             }
             remote.pc
                 .setRemoteDescription(message)
-                .then(() => { if (remote.pc !== null) doAnswer(remote.pc, userId); });
+                .then(() => { if (remote.pc !== null) doAnswer(remote.pc, userId); })
+                .catch(e => console.log(e));
             break;
         case 'answer':
-            if (remote.pc === null) return;
+            if (remote.pc === null)
+                throw Error(`received an answer but the peer connection is null`);
             if (remote.isStarted) {
-                remote.pc.setRemoteDescription(message);
+                remote.pc.setRemoteDescription(message)
+                    .catch(e => console.log(e));
             }
             break;
         case 'candidate':
-            if (remote.pc === null) return;
+            if (remote.pc === null)
+                throw Error(`received a candidate but the peer connection is null`);
             if (remote.isStarted) {
                 const candidate = new RTCIceCandidate({
                     sdpMLineIndex: message.label,
@@ -164,7 +171,7 @@ socket.on('message', (userId: UserId, message: Message, room: string) => {
 
 // to send message in a room
 const sendMessage = (message: Message, toRoom: string, toUserId?: UserId): void => {
-    console.log('Client sending message: ', message, toRoom, toUserId);
+    // console.log('Client sending message: ', message, toRoom, toUserId);
     if (clientState.userId === null) {
         setTimeout(sendMessage, 500, message, toRoom, toUserId);
         return;
@@ -256,7 +263,7 @@ const createPeerConnection =
 // to handle Ice candidates
 const handleIceCandidate =
     (userId: UserId) => (event: RTCPeerConnectionIceEvent): void => {
-        console.log('icecandidate event: ', event);
+        // console.log('icecandidate event: ', event);
         if (event.candidate) {
             sendMessage({
                 type: 'candidate',
@@ -290,7 +297,8 @@ const doAnswer = (pc: RTCPeerConnection, userId: UserId): void => {
 const setLocalAndSendMessage =
     (pc: RTCPeerConnection, userId: UserId) =>
         (sessionDescription: RTCSessionDescriptionInit): void => {
-            pc.setLocalDescription(sessionDescription);
+            pc.setLocalDescription(sessionDescription)
+                .catch(e => console.log(e));
             console.log('setLocalAndSendMessage sending message', sessionDescription);
             sendMessage(sessionDescription, room, userId);
         }
