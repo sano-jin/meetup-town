@@ -1,5 +1,7 @@
-export { UserInfo };
+export { UserInfo, UserId };
 
 interface UserInfo {
-    name: string
+    userName: string
 }
+
+type UserId = string;
