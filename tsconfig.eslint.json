@@ -12,9 +12,9 @@
     },
     "extends": "./tsconfig.json",
     "include": [
-        "src/**/*.ts",
+        "public/ts/*.ts",
         ".eslintrc.js",
-        "index.ts"
+        "src/server.ts"
     ],
     "exclude": [
         "node_modules",

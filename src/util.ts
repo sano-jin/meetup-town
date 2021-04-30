@@ -1,4 +1,4 @@
-export { map2Json, json2Map };
+export { map2Json, json2Map, getStringFromUser };
 
 const map2Json = (mapObject: Map<any, any>): string => {
     return JSON.stringify(mapObject, (_, val) => {
@@ -20,3 +20,12 @@ const json2Map = (jsonObject: string): Map<any, any> => {
         return val;
     });
 }
+
+const getStringFromUser = (message: string): string => {
+    let roomName = prompt(message);
+    while (roomName === null || roomName === '') {
+        roomName = prompt(message);
+    }
+    return roomName;
+}
+

@@ -2,7 +2,7 @@ import io from "socket.io-client";
 import { turnConfig } from './config';
 import { Message } from './message';
 import { UserInfo, UserId } from './userInfo';
-import { json2Map } from '../../src/util'
+import { json2Map, getStringFromUser } from '../../src/util'
 import { ClientState, Remote } from './clientState'
 
 // Initialize turn/stun server here
@@ -16,38 +16,32 @@ const remoteVideos = document.querySelector<HTMLUListElement>('#remotes')!;
 // Initializing socket.io
 const socket = io();
 
+// Prompting for room name:
+const roomName: string = getStringFromUser('Enter room name:');
+const userName: string = getStringFromUser('Enter your name:');
+
 // Defining some global utility variables
 const clientState: ClientState = {
     userId: null,
+    userInfo: { userName: userName },
     localStream: null,
-    remotes: new Map<string, Remote>(),
+    remotes: new Map<UserId, Remote>(),
     localStreamConstraints: {
         audio: true,
         video: true
     }
 }
 
-const getStringFromUser = (message: string): string => {
-    let roomName = prompt(message);
-    while (roomName === null || roomName === '') {
-        roomName = prompt(message);
-    }
-    return roomName;
-}
+socket.emit('create or join', roomName, { userName: userName });
+console.log('Attempted to create or join room', roomName);
 
-// Prompting for room name:
-const room: string = getStringFromUser('Enter room name:');
-const userName: string = getStringFromUser('Enter your name:');
-socket.emit('create or join', room, { userName: userName });
-console.log('Attempted to create or join room', room);
-
-socket.on('created', (room: string, userId: UserId): void => {
-    console.log(`Created room ${room}`);
+socket.on('created', (roomName: string, userId: UserId): void => {
+    console.log(`Created room ${roomName}`);
     clientState.userId = userId;
 });
 
-socket.on('join', (room: string, userId: UserId, userInfo: UserInfo): void => {
-    console.log(`Another user ${userId} has joined to our room ${room}`);
+socket.on('join', (roomName: string, userId: UserId, userInfo: UserInfo): void => {
+    console.log(`Another user ${userId} has joined to our room ${roomName}`);
     clientState.remotes.set(
         userId,
         {
@@ -60,13 +54,11 @@ socket.on('join', (room: string, userId: UserId, userInfo: UserInfo): void => {
         }
     );
     console.log("remotes", clientState.remotes);
-    //    maybeStart(userId);
-
 });
 
 
-socket.on('joined', (room: string, userId: UserId, jsonStrOtherUsers: string): void => {
-    console.log(`me joined to the room ${room}`, jsonStrOtherUsers);
+socket.on('joined', (roomName: string, userId: UserId, jsonStrOtherUsers: string): void => {
+    console.log(`me joined to the room ${roomName}`, jsonStrOtherUsers);
     clientState.userId = userId;
 
     const otherUsers: Map<UserId, UserInfo> = json2Map(jsonStrOtherUsers);
@@ -84,7 +76,6 @@ socket.on('joined', (room: string, userId: UserId, jsonStrOtherUsers: string): v
                 remoteStream: null
             }
         );
-        // maybeStart(userId);
     }
     console.log("remotes", clientState.remotes);
 });
@@ -95,9 +86,9 @@ socket.on('log', (array: Array<string>): void => {
 
 
 // Driver code
-socket.on('message', (userId: UserId, message: Message, room: string) => {
+socket.on('message', (userId: UserId, message: Message, roomName: string) => {
     if (message.type !== 'candidate') {
-        console.log('Client received message:', message, `from user ${userId} in room ${room}`);
+        console.log('Client received message:', message, `from user ${userId} in room ${roomName}`);
     }
     if (!clientState.remotes.has(userId)) {
         throw Error(`remote is null for ${userId}`);
@@ -107,44 +98,46 @@ socket.on('message', (userId: UserId, message: Message, room: string) => {
         case 'got user media':
             maybeStart(userId);
             break;
-        case 'offer':
-            if (remote.pc === null)
-                throw Error(`received an offer but the peer connection is null`);
-            if (!remote.isInitiator && !remote.isStarted) {
-                console.log(`starting communication with ${userId} with an offer`);
-                maybeStart(userId);
-            }
-            remote.pc
-                .setRemoteDescription(message)
-                .then(() => {
-                    if (remote.pc !== null) {
-                        doAnswer(remote.pc, userId);
-                    }
-                })
-                .catch(e => console.log(e));
-            break;
-        case 'answer':
-            if (remote.pc === null)
-                throw Error(`received an answer but the peer connection is null`);
-            if (remote.isStarted) {
-                remote.pc.setRemoteDescription(message)
-                    .catch(e => console.log(e));
-            }
-            break;
-        case 'candidate':
-            if (remote.pc === null)
-                throw Error(`received a candidate but the peer connection is null`);
-            if (remote.isStarted) {
-                const candidate = new RTCIceCandidate({
-                    sdpMLineIndex: message.label,
-                    candidate: message.candidate
-                });
-                remote.pc.addIceCandidate(candidate);
-            }
-            break;
         case 'bye':
             if (remote.isStarted) {
                 // handleRemoteHangup(userId);
+            }
+            break;
+        default:
+            if (remote.pc === null)
+                throw Error(`received an offer/answer/candidate but the peer connection is null`);
+            switch (message.type) {
+                case 'offer':
+                    if (!remote.isInitiator && !remote.isStarted) {
+                        console.log(`starting communication with ${userId} with an offer`);
+                        maybeStart(userId);
+                    }
+                    remote.pc
+                        .setRemoteDescription(message)
+                        .then(() => {
+                            if (remote.pc !== null) {
+                                doAnswer(remote.pc, userId);
+                            } else throw Error(`remote.pc is null for user ${userId}`)
+                        })
+                        .catch(e => console.log(e));
+                    break;
+                case 'answer':
+                    if (remote.isStarted) {
+                        remote.pc.setRemoteDescription(message)
+                            .catch(e => console.log(e));
+                    }
+                    break;
+                case 'candidate':
+                    if (remote.isStarted) {
+                        const candidate = new RTCIceCandidate({
+                            sdpMLineIndex: message.label,
+                            candidate: message.candidate
+                        });
+                        remote.pc.addIceCandidate(candidate);
+                    }
+                    break;
+                default:
+                    throw Error(`received message has unknown type ${message.type}`)
             }
     }
 });
@@ -173,7 +166,7 @@ const gotStream = (stream: MediaStream): void => {
             return;
         }
         for (const [userId, remote] of clientState.remotes.entries()) {
-            sendMessage({ type: 'got user media' }, room, userId);
+            sendMessage({ type: 'got user media' }, roomName, userId);
             if (remote.isInitiator) {
                 maybeStart(userId);
             }
@@ -209,16 +202,12 @@ const maybeStart = (userId: UserId): void => {
             .getTracks()
             .forEach(track => remote.pc!.addTrack(track, clientState.localStream!));
         remote.isStarted = true;
-        console.log('isInitiator', remote.isInitiator);
-        if (remote.isInitiator) {
-            // doCall(remote.pc, userId);
-        }
     }
 }
 
 // Sending bye if user closes the window
 window.onbeforeunload = (): void => {
-    sendMessage({ type: 'bye' }, room);
+    sendMessage({ type: 'bye' }, roomName);
 };
 
 
@@ -247,7 +236,7 @@ const handleNegotiationNeededEvent = (pc: RTCPeerConnection, userId: UserId) => 
         .then((sessionDescription) => {
             if (clientState.remotes.get(userId)!.isInitiator) {
                 pc.setLocalDescription(sessionDescription)
-                    .then(() => sendMessage(sessionDescription, room, userId));
+                    .then(() => sendMessage(sessionDescription, roomName, userId));
             }
         })
         .catch(e => console.log(e));
@@ -263,22 +252,11 @@ const handleIceCandidate =
                 label: event.candidate.sdpMLineIndex,
                 id: event.candidate.sdpMid,
                 candidate: event.candidate.candidate
-            }, room, userId);
+            }, roomName, userId);
         } else {
             console.log('End of candidates.');
         }
     }
-
-const handleCreateOfferError = (event: DOMException): void => {
-    console.log('createOffer() error: ', event);
-}
-
-const doCall = (pc: RTCPeerConnection, userId: UserId): void => {
-    console.log(`Sending offer to peer ${userId}`);
-    pc.createOffer()
-        .then(setLocalAndSendMessage(pc, userId))
-        .catch(handleCreateOfferError);
-}
 
 const doAnswer = (pc: RTCPeerConnection, userId: UserId): void => {
     console.log(`Sending answer to peer ${userId}`);
@@ -294,7 +272,7 @@ const setLocalAndSendMessage =
                 .then(() => {
                     console.log(`setLocalAndSendMessage sending message to ${userId}`,
                         sessionDescription);
-                    sendMessage(sessionDescription, room, userId);
+                    sendMessage(sessionDescription, roomName, userId);
                 })
                 .catch(e => console.log(e));
         }
