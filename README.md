@@ -10,7 +10,7 @@ An online meeting app runs on browser.
 1. `npm install`
 2. `npm run build`
 3. `npm run start`
-4. open `localhost:8000`
+4. open `localhost:8000` on your browser
 
 ## Directory structure
 
@@ -36,6 +36,6 @@ An online meeting app runs on browser.
 
 ## Acknowledgements
 
-Our implementation is currently based on `https://github.com/webtutsplus/videoChat-WebFrontend`.
+Our implementation is currently based on <https://github.com/webtutsplus/videoChat-WebFrontend>.
 
 
