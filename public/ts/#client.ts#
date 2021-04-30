@@ -133,6 +133,7 @@ socket.on('message', (userId: UserId, message: Message, room: string) => {
             maybeStart(userId);
             break;
         case 'offer':
+            console.log(``);
             if (remote.pc === null)
                 throw Error(`received an offer but the peer connection is null`);
             if (!remote.isInitiator && !remote.isStarted) {

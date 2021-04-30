@@ -37,19 +37,26 @@ io.sockets.on('connection', (socket: Socket): void => {
 
     // Client to clients messaging
     socket.on('message',
-        (myUserId: UserId, message: Message, toRoom: RoomName, toUserId: UserId | null): void => {
+        (fromUserId: UserId,
+            message: Message, toRoom: RoomName, toUserId: UserId | null): void => {
             if (message.type !== 'candidate'
                 && message.type !== 'offer'
                 && message.type !== 'answer'
             ) {
-                console.log('Client said: ', message, toUserId);
-            }
-            if (toUserId === null) {
-                socket.to(toRoom).emit('message', myUserId, message, toRoom);
+                console.log('${fromUserId} -> ${toUserId}', message);
             } else {
-                socket.to(toRoom)
+                if (message.type !== 'candidate') {
+                    console.log(`${fromUserId} -> ${toUserId}`, message.type);
+                }
+            }
+
+            if (toUserId === null) {
+                console.log('toUserId is null');
+                socket.to(toRoom).emit('message', fromUserId, message, toRoom);
+            } else {
+                socket //.to(toRoom)
                     .to(users.get(toRoom)!.get(toUserId)!.socketId)
-                    .emit('message', myUserId, message, toRoom);
+                    .emit('message', fromUserId, message, toRoom);
             }
         });
 
