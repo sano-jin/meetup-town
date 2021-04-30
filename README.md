@@ -1,6 +1,12 @@
 # Meetup Town
+An online meeting app runs on browser.
 
-## How to use
+## Getting started
+### Prerequisites
+- `Nodejs`
+- `npm`
+
+### How to install
 1. `npm install`
 2. `npm run build`
 3. `npm run start`
@@ -12,14 +18,24 @@
 +- public/
 |   +- css/styles.css
 |   +- dist/bundle.js
-|   |  % generated after running `npm run build`
+|   |  % run `npm run build` to generate
 |   +- ts/
 |   |   +- main.ts
 |   |   +- client.ts
 |   |   +- config.ts
-|  
+|   |   +- ...
 |
-
-
++- src/
+|  +- server.ts
+|  
++- dist/ % run `npm run build` to generate
+|
++ ...
 
 ```
+
+## Acknowledgements
+
+Our implementation is currently based on `https://github.com/webtutsplus/videoChat-WebFrontend`.
+
+
