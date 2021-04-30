@@ -4,11 +4,12 @@ import { createServer, Server as httpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { UserInfo, UserId } from '../public/ts/userInfo';
 import { Message } from '../public/ts/message';
+import { map2Json } from './util'
 
 type SocketId = string;
 type RoomName = string
-const users: Map<RoomName, Map<UserId,
-    { socketId: SocketId, userInfo: UserInfo }>> = new Map();
+const users: Map<RoomName, Map<UserId, { socketId: SocketId, userInfo: UserInfo }>>
+    = new Map();
 // room -> userid -> { socketId, userInfo }
 
 
@@ -31,6 +32,7 @@ const io: Server = new Server(server);
 
 io.sockets.on('connection', (socket: Socket): void => {
 
+    // For logging to client.
     const log = (...param: Array<string>): void => {
         socket.emit('log', ['Message from server:', ...param]);
     };
@@ -39,24 +41,25 @@ io.sockets.on('connection', (socket: Socket): void => {
     socket.on('message',
         (fromUserId: UserId,
             message: Message, toRoom: RoomName, toUserId: UserId | null): void => {
-            if (message.type !== 'candidate'
-                && message.type !== 'offer'
-                && message.type !== 'answer'
-            ) {
-                console.log('${fromUserId} -> ${toUserId}', message);
-            } else {
-                if (message.type !== 'candidate') {
+            if (message.type !== 'candidate') {
+                if (message.type === 'offer' || message.type === 'answer') {
                     console.log(`${fromUserId} -> ${toUserId}`, message.type);
+                } else {
+                    console.log('${fromUserId} -> ${toUserId}', message);
                 }
             }
 
             if (toUserId === null) {
-                console.log('toUserId is null');
+                console.log(`broadcasting to the room ${toRoom}`);
                 socket.to(toRoom).emit('message', fromUserId, message, toRoom);
             } else {
-                socket //.to(toRoom)
-                    .to(users.get(toRoom)!.get(toUserId)!.socketId)
-                    .emit('message', fromUserId, message, toRoom);
+                if (users.has(toRoom) && users.get(toRoom)!.has(toUserId)) {
+                    socket
+                        .to(users.get(toRoom)!.get(toUserId)!.socketId)
+                        .emit('message', fromUserId, message, toRoom);
+                } else {
+                    throw Error(`roomName ${toRoom} or userId ${toUserId} is not set in ${users}`);
+                }
             }
         });
 
@@ -65,7 +68,8 @@ io.sockets.on('connection', (socket: Socket): void => {
 
         const userId: UserId = socket.id;
         socket.join(room);
-        if (!users.get(room)) users.set(room, new Map());
+
+        if (!users.has(room)) users.set(room, new Map());
         users.get(room)!.set(userId, { socketId: socket.id, userInfo: userInfo });
 
         const clientsInRoom: Set<string> =
@@ -85,17 +89,8 @@ io.sockets.on('connection', (socket: Socket): void => {
                     .filter(([uid, _]) => uid !== userId)
                     .map(([uid, users]) => [uid, users.userInfo])
                 );
-            const jsonOtherUsersInRoom =
-                JSON.stringify(otherUsersInRoom, (key, val) => {
-                    if (val instanceof Map) {
-                        return {
-                            __type__: 'Map',
-                            __value__: [...val]
-                        };
-                    }
-                    return val;
-                });
 
+            const jsonOtherUsersInRoom = map2Json(otherUsersInRoom);
             console.log(otherUsersInRoom);
 
             socket.to(room).emit('join', room, userId, userInfo);
@@ -121,5 +116,3 @@ io.sockets.on('connection', (socket: Socket): void => {
     });
 
 });
-
-

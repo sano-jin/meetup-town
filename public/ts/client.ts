@@ -2,6 +2,8 @@ import io from "socket.io-client";
 import { turnConfig } from './config';
 import { Message } from './message';
 import { UserInfo, UserId } from './userInfo';
+import { json2Map } from '../../src/util'
+import { ClientState, Remote } from './clientState'
 
 // Initialize turn/stun server here
 const pcConfig = turnConfig;
@@ -10,33 +12,11 @@ const pcConfig = turnConfig;
 const localVideo = document.querySelector<HTMLVideoElement>('#localVideo')!;
 const remoteVideos = document.querySelector<HTMLUListElement>('#remotes')!;
 
-// const remoteVideo = document.querySelector<HTMLVideoElement>('#remoteVideo')!;
 
 // Initializing socket.io
 const socket = io();
 
 // Defining some global utility variables
-interface ClientState {
-    userId: null | UserId,
-    localStream: null | MediaStream,       // Local camera
-    remotes: Map<string, Remote>,      // A map from socket.id
-    localStreamConstraints: StreamConstraints,
-}
-
-interface Remote {
-    userInfo: UserInfo,                 // Information of the user
-    isChannelReady: boolean,                  // Is channel ready 
-    isInitiator: boolean,                  // Am I a initiator
-    isStarted: boolean,                  // Has started ???
-    pc: null | RTCPeerConnection, // Peer connection
-    remoteStream: null | MediaStream        // Remote camera
-}
-
-interface StreamConstraints {
-    audio: boolean,
-    video: boolean
-}
-
 const clientState: ClientState = {
     userId: null,
     localStream: null,
@@ -88,13 +68,8 @@ socket.on('join', (room: string, userId: UserId, userInfo: UserInfo): void => {
 socket.on('joined', (room: string, userId: UserId, jsonStrOtherUsers: string): void => {
     console.log(`me joined to the room ${room}`, jsonStrOtherUsers);
     clientState.userId = userId;
-    const otherUsers: Map<UserId, UserInfo> =
-        JSON.parse(jsonStrOtherUsers, function (key, val) {
-            if (val != null && val.__type__ === 'Map') {
-                return new Map(val.__value__);
-            }
-            return val;
-        });
+
+    const otherUsers: Map<UserId, UserInfo> = json2Map(jsonStrOtherUsers);
     console.log(otherUsers);
 
     for (const [userId, userInfo] of otherUsers) {
@@ -341,12 +316,6 @@ const handleRemoteStream = (userId: string) => (event: RTCTrackEvent): void => {
 
     // TODO: Replace these with React or something ...
     remoteVideos.textContent = null;
-
-    /*
-    while (remoteVideos.firstChild) {
-        remoteVideos.removeChild(remoteVideos.firstChild);
-    }
-    */
 
     for (const [userId, remote] of clientState.remotes) {
         console.log(`remote.remoteStream of user ${userId}`, remote.remoteStream);
