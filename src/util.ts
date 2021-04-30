@@ -28,4 +28,3 @@ const getStringFromUser = (message: string): string => {
     }
     return roomName;
 }
-

@@ -31,7 +31,6 @@ An online meeting app runs on browser.
 +- dist/ % run `npm run build` to generate
 |
 + ...
-
 ```
 
 ## Acknowledgements
