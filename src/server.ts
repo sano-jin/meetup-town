@@ -2,6 +2,17 @@ import { networkInterfaces, NetworkInterfaceInfo } from 'os';
 import express from 'express';
 import { createServer, Server as httpServer } from 'http';
 import { Server, Socket } from 'socket.io';
+import { UserInfo, UserId } from '../public/ts/userInfo';
+import { Message } from '../public/ts/message';
+import { map2Json } from './util'
+
+type SocketId = string;
+type RoomName = string
+const users: Map<RoomName, Map<UserId, { socketId: SocketId, userInfo: UserInfo }>>
+    = new Map();
+// room -> userid -> { socketId, userInfo }
+
+
 // For signalling in WebRTC
 
 // initializing express
@@ -19,62 +30,89 @@ server.listen(process.env.PORT || 8000);
 
 const io: Server = new Server(server);
 
-io.sockets.on('connection', (socket: Socket) : void => {
-    
-    const log = (param: Array<string>) : void => {
-        const array: Array<string> = ['Message from server:', ...param];
-        socket.emit('log', array);
+io.sockets.on('connection', (socket: Socket): void => {
+
+    // For logging to client.
+    const log = (...param: Array<string>): void => {
+        socket.emit('log', ['Message from server:', ...param]);
     };
 
-
-    // Defining Socket Connections
-    socket.on('message', (message: string, room: string) : void => {
-        log(['Client said: ', message]);
-        // for a real app, would be room-only (not broadcast)
-        socket.in(room).emit('message', message, room);
-    });
-
-    socket.on('create or join', (room: string) => {
-        log([`Received request to create or join room ${room}`]);
-
-        const clientsInRoom: Set<string> | undefined =
-            io.sockets.adapter.rooms.get(room);
-
-        const numClients : number =
-            clientsInRoom ? clientsInRoom.size : 0;
-        log([`Room ${room} now has ${numClients} client(s)`]);
-
-        if (numClients === 0) {
-            socket.join(room);
-            log([`Client ID ${socket.id} created room ${room}`]);
-            socket.emit('created', room, socket.id);
-
-        } else if (numClients === 1) {
-            log([`Client ID ${socket.id} joined room ${room}`]);
-            io.sockets.in(room).emit('join', room);
-            socket.join(room);
-            socket.emit('joined', room, socket.id);
-            io.sockets.in(room).emit('ready');
-        } else { // max two clients
-            socket.emit('full', room);
-        }
-    });
-
-    socket.on('ipaddr', () : void => {
-        const ifaces = networkInterfaces();
-        for (const dev in ifaces) {
-            ifaces[dev]!.forEach((details: NetworkInterfaceInfo) => {
-                if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
-                    socket.emit('ipaddr', details.address);
+    // Client to clients messaging
+    socket.on('message',
+        (fromUserId: UserId,
+            message: Message, toRoom: RoomName, toUserId: UserId | null): void => {
+            if (message.type !== 'candidate') {
+                if (message.type === 'offer' || message.type === 'answer') {
+                    console.log(`${fromUserId} -> ${toUserId}`, message.type);
+                } else {
+                    console.log('${fromUserId} -> ${toUserId}', message);
                 }
-        });
-        }
-});
+            }
 
-    socket.on('bye', () : void => {
-        console.log(['received bye']);
+            if (toUserId === null) {
+                console.log(`broadcasting to the room ${toRoom}`);
+                socket.to(toRoom).emit('message', fromUserId, message, toRoom);
+            } else {
+                if (users.has(toRoom) && users.get(toRoom)!.has(toUserId)) {
+                    socket
+                        .to(users.get(toRoom)!.get(toUserId)!.socketId)
+                        .emit('message', fromUserId, message, toRoom);
+                } else {
+                    throw Error(`roomName ${toRoom} or userId ${toUserId} is not set in ${users}`);
+                }
+            }
+        });
+
+    socket.on('create or join', (room: string, userInfo: UserInfo): void => {
+        console.log(`Received request to create or join room ${room} from user ${socket.id}`);
+
+        const userId: UserId = socket.id;
+        socket.join(room);
+
+        if (!users.has(room)) users.set(room, new Map());
+        users.get(room)!.set(userId, { socketId: socket.id, userInfo: userInfo });
+
+        const clientsInRoom: Set<string> =
+            io.sockets.adapter.rooms.get(room)!;
+
+        const numClients: number = clientsInRoom.size;
+        console.log(`Room ${room} now has ${numClients} client(s)`);
+
+        if (numClients === 1) {
+            console.log(`Client ID ${socket.id} created room ${room}`);
+            socket.emit('created', room, userId);
+        } else {
+            console.log(`Client ID ${socket.id} joined room ${room}`, users.get(room));
+            const otherUsersInRoom:
+                Map<UserId, UserInfo> =
+                new Map(Array.from(users.get(room)!)
+                    .filter(([uid, _]) => uid !== userId)
+                    .map(([uid, users]) => [uid, users.userInfo])
+                );
+
+            const jsonOtherUsersInRoom = map2Json(otherUsersInRoom);
+            console.log(otherUsersInRoom);
+
+            socket.to(room).emit('join', room, userId, userInfo);
+            socket.emit('joined', room, userId, jsonOtherUsersInRoom);
+        }
+    });
+
+    socket.on('ipaddr', (): void => {
+        for (const dev of Object.values(networkInterfaces())) {
+            if (dev) {
+                dev.forEach((details: NetworkInterfaceInfo) => {
+                    if (details.family === 'IPv4'
+                        && details.address !== '127.0.0.1') {
+                        socket.emit('ipaddr', details.address);
+                    }
+                })
+            }
+        }
+    });
+
+    socket.on('bye', (): void => {
+        console.log('received bye');
     });
 
 });
-
-
