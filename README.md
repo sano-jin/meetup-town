@@ -27,6 +27,7 @@ An online meeting app runs on browser.
 |
 +- src/
 |  +- server.ts
+|  +- ...
 |  
 +- dist/ % run `npm run build` to generate
 |

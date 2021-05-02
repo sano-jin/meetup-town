@@ -1,4 +1,10 @@
-export { map2Json, json2Map, getStringFromUser };
+export {
+    map2Json,
+    json2Map,
+    getStringFromUser,
+    waitPred,
+    waitNonNull
+};
 
 const map2Json = (mapObject: Map<any, any>): string => {
     return JSON.stringify(mapObject, (_, val) => {
@@ -27,4 +33,28 @@ const getStringFromUser = (message: string): string => {
         roomName = prompt(message);
     }
     return roomName;
+}
+
+
+
+function waitForOnce<T>(thunk: () => T): Promise<T> {
+    const promise: Promise<T> = new Promise((resolve, _) => {
+        window.setTimeout(() => resolve(thunk()), 500);
+    });
+    return promise;
+};
+
+/** 
+ *  wait a bound value to become non null.
+*/
+async function waitPred<T>(pred: (arg: T) => boolean, thunk: () => T): Promise<T> {
+    let th = thunk();
+    while (pred(th)) {
+        th = await waitForOnce<T>(thunk);
+    }
+    return th;
+};
+
+async function waitNonNull<T>(thunk: () => T | null | undefined): Promise<T> {
+    return (await waitPred<T | null | undefined>(th => th === null || th === undefined, thunk))!;
 }

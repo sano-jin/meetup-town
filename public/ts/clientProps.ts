@@ -1,186 +1,203 @@
+/** 
+ * An auxiliary functions for 'client'
+ */
+export {
+    initialClientState,
+    anotherUserJoin,
+    myJoin,
+    onMessage,
+    getLocalStream,
+}
+
 import io from "socket.io-client";
-import { turnConfig } from './config';
+// import { turnConfig } from './config';
 import { Message } from './message';
 import { UserInfo, UserId } from './userInfo';
-import { json2Map, getStringFromUser } from '../../src/util'
+import { json2Map, /* getStringFromUser, */ waitNonNull } from '../../src/util'
 import { ClientState, Remote } from './clientState'
 
 // Initialize turn/stun server here
-const pcConfig = turnConfig;
+// const pcConfig = turnConfig;
 
 // Displaying Local Stream and Remote Stream on webpage
-const localVideo = document.querySelector<HTMLVideoElement>('#localVideo')!;
-const remoteVideos = document.querySelector<HTMLUListElement>('#remotes')!;
+// const localVideo = document.querySelector<HTMLVideoElement>('#localVideo')!;
+// const remoteVideos = document.querySelector<HTMLUListElement>('#remotes')!;
 
 
 // Initializing socket.io
-const socket = io();
+// const socket = io();
 
 // Prompting for room name:
-const roomName: string = getStringFromUser('Enter room name:');
-const userName: string = getStringFromUser('Enter your name:');
+// const roomName: string = getStringFromUser('Enter room name:');
+// const userName: string = getStringFromUser('Enter your name:');
 
 // Defining some global utility variables
-const clientState: ClientState = {
-    userId: null,
-    roomName: roomName,
-    userInfo: { userName: userName },
-    localStream: null,
-    remotes: new Map<UserId, Remote>(),
-    localStreamConstraints: {
-        audio: true,
-        video: true
-    }
-}
-
-socket.emit('create or join', roomName, { userName: userName });
-console.log('Attempted to create or join room', roomName);
-
-socket.on('created', (roomName: string, userId: UserId): void => {
-    console.log(`Created room ${roomName}`);
-    clientState.userId = userId;
-});
-
-socket.on('join', (roomName: string, userId: UserId, userInfo: UserInfo): void => {
-    console.log(`Another user ${userId} has joined to our room ${roomName}`);
-    clientState.remotes.set(
-        userId,
-        {
-            userInfo: userInfo,
-            isChannelReady: true,
-            isInitiator: false,
-            isStarted: false,
-            pc: null,
-            remoteStream: null
+const initialClientState =
+    (userName: string, roomName: string): ClientState => {
+        return {
+            userId: null,
+            roomName: roomName;
+            userInfo: { userName: userName },
+            localStream: null,
+            remotes: new Map<UserId, Remote>(),
+            localStreamConstraints: {
+                audio: true,
+                video: true
+            }
         }
-    );
-    console.log("remotes", clientState.remotes);
-});
+    };
 
+const anotherUserJoin =
+    (clientState: ClientState) =>
+        (roomName: string, userId: UserId, userInfo: UserInfo): ClientState => {
+            console.log(`Another user ${userId} has joined to our room ${roomName}`);
+            clientState.remotes.set(
+                userId,
+                {
+                    userInfo: userInfo,
+                    isChannelReady: true,
+                    isInitiator: false,
+                    isStarted: false,
+                    pc: null,
+                    remoteStream: null
+                }
+            );
+            console.log("remotes", clientState.remotes);
+            return clientState;
+        };
 
-socket.on('joined', (roomName: string, userId: UserId, jsonStrOtherUsers: string): void => {
-    console.log(`me joined to the room ${roomName}`, jsonStrOtherUsers);
-    clientState.userId = userId;
+const myJoin =
+    (clientState: ClientState) =>
+        (roomName: string, myUserId: UserId, jsonStrOtherUsers: string): ClientState => {
+            console.log(`me joined to the room ${roomName} with userId ${myUserId}`,
+                jsonStrOtherUsers);
 
-    const otherUsers: Map<UserId, UserInfo> = json2Map(jsonStrOtherUsers);
-    console.log(otherUsers);
+            clientState.userId = myUserId;
 
-    for (const [userId, userInfo] of otherUsers) {
-        clientState.remotes.set(
-            userId,
-            {
-                userInfo: userInfo,
-                isChannelReady: true,
-                isInitiator: true,
-                isStarted: false,
-                pc: null,
-                remoteStream: null
+            const otherUsers: Map<UserId, UserInfo> = json2Map(jsonStrOtherUsers);
+
+            for (const [userId, userInfo] of otherUsers) {
+                clientState.remotes.set(
+                    userId,
+                    {
+                        userInfo: userInfo,
+                        isChannelReady: true,
+                        isInitiator: true,
+                        isStarted: false,
+                        pc: null,
+                        remoteStream: null
+                    }
+                );
             }
-        );
-    }
-    console.log("remotes", clientState.remotes);
-});
+            console.log("remotes", clientState.remotes);
+            return clientState;
+        };
 
-socket.on('log', (array: Array<string>): void => {
-    console.log(console, ...array);
-});
-
-
-// Driver code
-socket.on('message', (userId: UserId, message: Message, roomName: string) => {
-    if (message.type !== 'candidate') {
-        console.log('Client received message:', message, `from user ${userId} in room ${roomName}`);
-    }
-    if (!clientState.remotes.has(userId)) {
-        throw Error(`remote is null for ${userId}`);
-    }
-    const remote: Remote = clientState.remotes.get(userId)!;
-    switch (message.type) {
-        case 'got user media':
-            maybeStart(userId);
-            break;
-        case 'bye':
-            if (remote.isStarted) {
-                // handleRemoteHangup(userId);
+const onMessage =
+    (clientState: ClientState) =>
+        (userId: UserId, message: Message) => {
+            if (message.type !== 'candidate') {
+                console.log('Client received message:', message, `from user ${userId}`);
             }
-            break;
-        default:
-            if (remote.pc === null)
-                throw Error(`received an offer/answer/candidate but the peer connection is null`);
+            if (!clientState.remotes.has(userId)) {
+                throw Error(`remote is null for ${userId}`);
+            }
+            const remote: Remote = clientState.remotes.get(userId)!;
             switch (message.type) {
-                case 'offer':
-                    if (!remote.isInitiator && !remote.isStarted) {
-                        console.log(`starting communication with ${userId} with an offer`);
-                        maybeStart(userId);
-                    }
-                    remote.pc
-                        .setRemoteDescription(message)
-                        .then(() => {
-                            if (remote.pc !== null) {
-                                doAnswer(remote.pc, userId);
-                            } else throw Error(`remote.pc is null for user ${userId}`)
-                        })
-                        .catch(e => console.log(e));
+                case 'got user media':
+                    maybeStart(userId);
                     break;
-                case 'answer':
+                case 'bye':
                     if (remote.isStarted) {
-                        remote.pc.setRemoteDescription(message)
-                            .catch(e => console.log(e));
-                    }
-                    break;
-                case 'candidate':
-                    if (remote.isStarted) {
-                        const candidate = new RTCIceCandidate({
-                            sdpMLineIndex: message.label,
-                            candidate: message.candidate
-                        });
-                        remote.pc.addIceCandidate(candidate);
+                        // handleRemoteHangup(userId);
                     }
                     break;
                 default:
-                    throw Error(`received message has unknown type ${message.type}`)
+                    handleRTCMessage(remote, userId, message);
             }
-    }
-});
+        };
+
 
 // to send message in a room
-const sendMessage = (message: Message, toRoom: string, toUserId?: UserId): void => {
-    // console.log('Client sending message: ', message, toRoom, toUserId);
-    if (clientState.userId === null) {
-        setTimeout(sendMessage, 500, message, toRoom, toUserId);
-        return;
-    }
-    socket.emit('message', clientState.userId, message, toRoom, toUserId);
-}
+const sendMessage =
+    (clientState: ClientState, sendSocket: Function) =>
+        (message: Message, toUserId?: UserId): void => {
+            // console.log('Client sending message: ', message, toRoom, toUserId);
+            if (clientState.userId === null) {
+                setTimeout(sendMessage, 500,
+                    message, clientState.roomName, toUserId);
+                return;
+            }
+            sendSocket('message', clientState.userId, message, clientState.roomName, toUserId);
+        };
 
-console.log("Going to find Local media");
-console.log('Getting user media with constraints', clientState.localStreamConstraints);
+
+
+
+const handleRTCMessage =
+    async (remote: Remote, userId: UserId, message: Message) => {
+        const pc = await waitNonNull<RTCPeerConnection>(() => remote.pc);
+        switch (message.type) {
+            case 'offer':
+                if (!remote.isInitiator && !remote.isStarted) {
+                    console.log(`starting communication with ${userId} with an offer`);
+                    maybeStart(userId);
+                }
+                await pc.setRemoteDescription(message)
+                    .catch(e => console.log(e));
+                doAnswer(pc, userId);
+                break;
+            case 'answer':
+                if (remote.isStarted) {
+                    pc.setRemoteDescription(message)
+                        .catch(e => console.log(e));
+                }
+                break;
+            case 'candidate':
+                if (remote.isStarted) {
+                    const candidate = new RTCIceCandidate({
+                        sdpMLineIndex: message.label,
+                        candidate: message.candidate
+                    });
+                    pc.addIceCandidate(candidate);
+                }
+                break;
+            default:
+                throw Error(`received message has unknown type ${message.type}`)
+        }
+    };
+
+
 
 // If found local stream
-const gotStream = (stream: MediaStream): void => {
-    console.log('Adding local stream.');
-    clientState.localStream = stream;
-    localVideo.srcObject = stream;
-    const sendGotUserMedia = () => {
-        if (clientState.userId === null) {
-            setTimeout(sendGotUserMedia, 500);
-            return;
-        }
+const callOthers =
+    async (clientState: ClientState, sendSocket: Function): Promise<void> => {
+        // wait the clientState.userId to be non-null.
+        await waitNonNull<string>(() => clientState.userId);
         for (const [userId, remote] of clientState.remotes.entries()) {
-            sendMessage({ type: 'got user media' }, roomName, userId);
+            sendMessage(clientState, sendSocket)({ type: 'got user media' }, userId);
             if (remote.isInitiator) {
                 maybeStart(userId);
             }
         }
-    }
-    sendGotUserMedia();
-}
+    };
 
-navigator.mediaDevices.getUserMedia(clientState.localStreamConstraints)
-    .then(gotStream)
-    .catch((e) => {
-        alert(`getUserMedia() error: ${e.name}`);
-    });
+const setStream =
+    (clientState: ClientState, localVideo: HTMLVideoElement) =>
+        (stream: MediaStream): void => {
+            console.log('Adding local stream.');
+            clientState.localStream = stream;
+            localVideo.srcObject = stream;
+        };
+
+const getLocalStream =
+    async (clientState: ClientState, localVideo: HTMLVideoElement, sendSocket: Function) =>
+        navigator.mediaDevices.getUserMedia(clientState.localStreamConstraints)
+            .then(setStream(clientState, localVideo))
+            .then(() => callOthers(clientState, sendSocket))
+            .catch(e => {
+                alert(`getUserMedia() error: ${e.name}`);
+            });
 
 // If initiator, create the peer connection
 const maybeStart = (userId: UserId): void => {
