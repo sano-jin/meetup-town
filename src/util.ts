@@ -49,7 +49,8 @@ function waitForOnce<T>(thunk: () => T): Promise<T> {
 */
 async function waitPred<T>(pred: (arg: T) => boolean, thunk: () => T): Promise<T> {
     let th = thunk();
-    while (pred(th)) {
+    let i = 0;
+    while (pred(th) && i++ < 4) {
         th = await waitForOnce<T>(thunk);
     }
     return th;

@@ -24,6 +24,7 @@ const userName: string = getStringFromUser('Enter your name:');
 const clientState: ClientState = {
     userId: null,
     roomName: roomName,
+    socket: socket,
     userInfo: { userName: userName },
     localStream: null,
     remotes: new Map<UserId, Remote>(),

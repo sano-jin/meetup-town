@@ -4,6 +4,7 @@ import { UserInfo, UserId } from './userInfo';
 // Defining some global utility variables
 interface ClientState {
     userId: null | UserId,
+    socket: SocketIOClient.Socket,
     roomName: string,
     userInfo: UserInfo,
     localStream: null | MediaStream,       // Local camera
