@@ -5,6 +5,7 @@ import { Message } from './message';
 import { UserInfo, UserId } from './userInfo';
 import { json2Map, map2Json, getStringFromUser } from '../../src/util'
 import { ClientState, Remote } from './clientState'
+import { ChatMessage } from './chatMessage'
 
 // Initialize turn/stun server here
 const pcConfig = turnConfig;
@@ -12,7 +13,9 @@ const pcConfig = turnConfig;
 // Displaying Local Stream and Remote Stream on webpage
 const localVideo = document.querySelector<HTMLVideoElement>('#localVideo')!;
 const remoteVideos = document.querySelector<HTMLUListElement>('#remotes')!;
-
+const chatBoard = document.querySelector<HTMLDivElement>('#chatBoard')!;
+const textbox = document.querySelector<HTMLTextAreaElement>("#input-message")!;
+const sendButton = document.querySelector<HTMLButtonElement>("#send-button")!;
 
 // Initializing socket.io
 const socket = io();
@@ -30,7 +33,8 @@ const clientState: ClientState = {
     localStreamConstraints: {
         audio: true,
         video: true
-    }
+    },
+    chats: [],
 }
 
 socket.emit('join', roomName, { userName: userName });
@@ -90,6 +94,10 @@ socket.on('message', (userId: UserId, message: Message, roomName: string) => {
     switch (message.type) {
         case 'call':
             maybeStart(userId);
+            break;
+        case 'chat':
+            clientState.chats.push(message.chatMessage);
+            addChatMessage(message.chatMessage);
             break;
         case 'bye':
             console.log("received bye");
@@ -366,3 +374,55 @@ const handleSignalingStateChangeEvent =
                     break;
             }
         };
+
+const createElement = (tagName: string, className: string, content: string): HTMLElement => {
+    const item = document.createElement(tagName);
+    item.className = className;
+    item.textContent = content;
+    return item;
+}
+
+const getChatMessageElement =
+    (fromUser: string, time: string, content: string) => {
+        const messageItem = createElement("div", `chat-message-item`, content);
+        const userNameItem =
+            createElement("span", `chat-userName-item`, fromUser);
+        const dateItem = createElement("span", `chat-date-item`, time);
+        const userNameDateContainer = createElement("div", `chat-userName-date-container`, "")
+        userNameDateContainer.appendChild(userNameItem);
+        userNameDateContainer.appendChild(dateItem);
+        const chatContainer = createElement("div", `chat-item`, "");
+        chatContainer.appendChild(userNameDateContainer);
+        chatContainer.appendChild(messageItem);
+        return chatContainer;
+    }
+
+const addChatMessage =
+    (chatMessage: ChatMessage) => {
+        console.log(`adding ${chatMessage}`);
+        chatBoard.appendChild(getChatMessageElement(
+            clientState.remotes.get(chatMessage.fromUser)!.userInfo.userName,
+            chatMessage.time,
+            chatMessage.message
+        ));
+    };
+
+
+const sendChatMessage = (_: MouseEvent) => {
+    console.log(`sendChatMessage`);
+    const inputValue = textbox.value;
+    const date = new Date();
+    const chatMessage = {
+        fromUser: clientState.userId!,
+        time: `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
+        message: inputValue,
+    };
+    sendMessage({ type: "chat", chatMessage: chatMessage });
+    chatBoard.appendChild(getChatMessageElement(
+        clientState.userInfo.userName,
+        chatMessage.time,
+        chatMessage.message
+    ));
+};
+
+sendButton.onclick = sendChatMessage;

@@ -1,5 +1,6 @@
 export { ClientState, Remote };
 import { UserInfo, UserId } from './userInfo';
+import { ChatMessage } from './chatMessage';
 
 // Defining some global utility variables
 interface ClientState {
@@ -8,6 +9,7 @@ interface ClientState {
     localStream: null | MediaStream,  // Local camera
     remotes: Map<string, Remote>,     // A map from socket.id
     localStreamConstraints: StreamConstraints,
+    chats: ChatMessage[],
 }
 
 interface Remote {
@@ -24,4 +26,5 @@ interface StreamConstraints {
     audio: boolean,
     video: boolean
 }
+
 

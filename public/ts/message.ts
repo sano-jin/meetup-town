@@ -1,4 +1,5 @@
 export { Message };
+import { ChatMessage } from './chatMessage';
 
 interface Candidate {
     type: 'candidate',
@@ -8,11 +9,16 @@ interface Candidate {
 }
 
 interface Bye {
-    type: "bye",
+    type: 'bye',
 }
 
 interface Call {
-    type: "call",
+    type: 'call',
 }
 
-type Message = Candidate | Bye | Call | RTCSessionDescriptionInit;
+interface Chat {
+    type: 'chat',
+    chatMessage: ChatMessage,
+}
+
+type Message = Bye | Call | Chat | RTCSessionDescriptionInit | Candidate;
