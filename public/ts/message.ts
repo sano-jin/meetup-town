@@ -5,14 +5,14 @@ interface Candidate {
     label: RTCIceCandidate["sdpMLineIndex"],
     id: RTCIceCandidate["sdpMid"],
     candidate: RTCIceCandidate["candidate"],
-} 
+}
 
 interface Bye {
     type: "bye",
 }
 
-interface GotUserMedia {
-    type: "got user media",
+interface Call {
+    type: "call",
 }
 
-type Message = Candidate | Bye | GotUserMedia | RTCSessionDescriptionInit;
+type Message = Candidate | Bye | Call | RTCSessionDescriptionInit;
