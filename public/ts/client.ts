@@ -3,7 +3,7 @@ import io from "socket.io-client";
 import { turnConfig } from './config';
 import { Message } from './message';
 import { UserInfo, UserId } from './userInfo';
-import { json2Map, map2Json, getStringFromUser } from '../../src/util'
+import { json2Map, map2Json, getStringFromUser, getTimeString } from '../../src/util'
 import { ClientState, Remote } from './clientState'
 import { ChatMessage } from './chatMessage'
 
@@ -208,18 +208,12 @@ const maybeStart = (userId: UserId): void => {
     }
 }
 
-// Sending bye if user closes the window
 window.onbeforeunload = (e: Event): void => {
-    // イベントをキャンセルする
     e.preventDefault();
-    // Chrome では returnValue を設定する必要がある
     e.returnValue = false;
-
     for (const [userId, _] of clientState.remotes.entries()) {
         sendMessage({ type: 'bye' }, userId);
     }
-
-    // sendMessage({ type: 'bye' });
 };
 
 
@@ -233,9 +227,7 @@ const createPeerConnection =
             pc.onnegotiationneeded = handleNegotiationNeededEvent(pc, userId);
             pc.oniceconnectionstatechange = handleICEConnectionStateChangeEvent(pc, userId);
             pc.onsignalingstatechange = handleSignalingStateChangeEvent(pc, userId);
-
-            // pc.onremovestream = handleRemoteStreamRemoved;
-            // Somehow deprecated ...
+            // pc.onremovestream = handleRemoteStreamRemoved; // deprecated
             console.log('Created RTCPeerConnnection');
             return pc;
         } catch (e) {
@@ -356,7 +348,7 @@ const stop = (remote: Remote): void => {
 
 const handleICEConnectionStateChangeEvent =
     (pc: RTCPeerConnection, userId: UserId) =>
-        (event: Event) => {
+        (_: Event) => {
             switch (pc.iceConnectionState) {
                 case "closed":
                 case "failed":
@@ -367,7 +359,7 @@ const handleICEConnectionStateChangeEvent =
 
 const handleSignalingStateChangeEvent =
     (pc: RTCPeerConnection, userId: UserId) =>
-        (event: Event) => {
+        (_: Event) => {
             switch (pc.signalingState) {
                 case "closed":
                     handleRemoteHangup(userId);
@@ -383,7 +375,7 @@ const createElement = (tagName: string, className: string, content: string): HTM
 }
 
 const getChatMessageElement =
-    (fromUser: string, time: string, content: string) => {
+    (fromUser: string, time: string, content: string): HTMLElement => {
         const messageItem = createElement("div", `chat-message-item`, content);
         const userNameItem =
             createElement("span", `chat-userName-item`, fromUser);
@@ -398,31 +390,35 @@ const getChatMessageElement =
     }
 
 const addChatMessage =
-    (chatMessage: ChatMessage) => {
+    (chatMessage: ChatMessage): void => {
         console.log(`adding ${chatMessage}`);
         chatBoard.appendChild(getChatMessageElement(
             clientState.remotes.get(chatMessage.fromUser)!.userInfo.userName,
             chatMessage.time,
             chatMessage.message
         ));
+        const parent: HTMLElement = chatBoard.parentElement!;
+        parent.scrollTop = parent.scrollHeight;
     };
 
-
-const sendChatMessage = (_: MouseEvent) => {
+const sendChatMessage = (_: MouseEvent): void => {
     console.log(`sendChatMessage`);
     const inputValue = textbox.value;
-    const date = new Date();
+    textbox.value = "";
+    if (inputValue === "") return;
     const chatMessage = {
         fromUser: clientState.userId!,
-        time: `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
+        time: getTimeString(),
         message: inputValue,
     };
     sendMessage({ type: "chat", chatMessage: chatMessage });
-    chatBoard.appendChild(getChatMessageElement(
+    const chatMessageElement = getChatMessageElement(
         clientState.userInfo.userName,
         chatMessage.time,
         chatMessage.message
-    ));
+    );
+    chatMessageElement.className += " my-message";
+    chatBoard.appendChild(chatMessageElement);
 };
 
 sendButton.onclick = sendChatMessage;

@@ -1,4 +1,4 @@
-export { map2Json, json2Map, getStringFromUser };
+export { map2Json, json2Map, getStringFromUser, getTimeString };
 
 const map2Json = (mapObject: Map<any, any>): string => {
     return JSON.stringify(mapObject, (_, val) => {
@@ -28,3 +28,14 @@ const getStringFromUser = (message: string): string => {
     }
     return roomName;
 }
+
+const getTimeString = (): string => {
+    const date = new Date();
+    const hours = `0${date.getHours()}`.slice(-2);
+    const minutes = `0${date.getMinutes()}`.slice(-2);
+    //    const seconds = `0${date.getSeconds()}`.slice(-2);
+    const dateString = `${hours}:${minutes}`;
+    return dateString;
+};
+
+

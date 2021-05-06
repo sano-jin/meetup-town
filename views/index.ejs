@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap" rel="stylesheet">
+<link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
   </head>
 
@@ -21,14 +22,18 @@
       </div>
     </div>
     
-    <div id="chatBoard">
+
+    <div id="chatBoardContainer">
+      <div id="chatBoard">
+      </div>
+
+      <form id="message-from" action="#">
+        <textarea id="input-message"></textarea>
+        <button id="send-button" type="button" class="send-button">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
     </div>
-
-
-    <form id="form1" action="#">
-      <textarea id="input-message"></textarea>
-      <input type="button" id="send-button" onclick="showMessage()" value="送信">
-    </form>
     
     <!-- Import WebRTC adapter for compatibility with all the browsers  -->
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>

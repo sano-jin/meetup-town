@@ -21,7 +21,11 @@ body {
     color: #212529;
     text-align: left;
     display: block;
-    background-color: #00e0bD;
+    background-color: #3c3c3c;
+    height: 100%;
+    /*
+      #00e0bD;
+   */
     font-family: 'Noto Sans JP', sans-serif;
 }
 
@@ -35,6 +39,96 @@ body {
     -ms-flex-wrap: wrap;
     flex-wrap: wrap;
 
+}
+
+.send-button {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    font-size: 30px;
+    text-align: center;
+    margin: 10px 5px 10px;
+    padding: 0px;
+    color: #595959;
+    background-color: transparent;
+    border: none;
+}
+
+.send-button:hover{
+    color: #5eb9e0ff;
+    cursor: pointer;
+}
+
+#message-form {
+    display: block;
+    height: 100px;
+    width: 500px
+    vertical-align: top;
+}
+
+#chatBoardContainer {
+    background-color: #3c3c3c;
+    width: 500px;
+    padding: 10px;
+    margin: 20px;
+    box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
+    overflow-y: scroll;
+    height: 50vh;
+    scroll-snap-type: y proximity;
+}
+
+#chatBoard>.chat-item {
+    padding: 10px;
+    background-color: #595959;
+    border-radius: 8px;
+    margin: 10px 5px 10px;
+    box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
+}
+
+#chatBoard>.chat-item>.chat-userName-date-container {
+    display: block;
+}
+
+#chatBoard>.chat-item>.chat-userName-date-container>.chat-userName-item {
+    color: #c0e1ee;
+    font-size: 16px;
+}
+
+#chatBoard>.chat-item>.chat-userName-date-container>.chat-date-item {
+    color: #e7e7e7;
+    float: right;
+    font-size: 14px;
+}
+
+#chatBoard>.chat-item>.chat-message-item {
+    display: block;
+    color: #fff;
+    font-size: 14px;
+}
+
+#chatBoard>.my-message {
+    background-color: #3c3c3c;
+}
+
+#input-message {
+    color: #fff;
+/*
+    border: 1px solid #ddd;
+    border-radius: 0px;
+*/
+    border: none;
+    outline: none;
+    margin: 10px 5px 10px;
+    font-family: 'Noto Sans JP', sans-serif;
+    width: 400px;
+    background-color: #3c3c3c;
+    box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
+    display: inline-block;
+}
+
+#input-message:hover {
+    border: 2px solid #5eb9e0;
+    box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
 }
 
 .ml-auto, .mx-auto {
@@ -139,16 +233,13 @@ body {
     .local_div {
 	width:33%;
 	float:left
+        box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.2);
     }
 
     .remote_div {
 	width:33%;
-	float:left
-    }
-
-    .remote2_div {
-	width:33%;
-	float:left
+	float:left;
+        box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.2);
     }
 
     #video_container {
