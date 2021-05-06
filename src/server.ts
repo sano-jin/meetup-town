@@ -32,15 +32,10 @@ const io: Server = new Server(server);
 
 io.sockets.on('connection', (socket: Socket): void => {
 
-    // For logging to client.
-    const log = (...param: Array<string>): void => {
-        socket.emit('log', ['Message from server:', ...param]);
-    };
-
     // Client to clients messaging
     socket.on('message',
         (fromUserId: UserId,
-            message: Message, toRoom: RoomName, toUserId: UserId | null): void => {
+            message: Message, toRoom: RoomName, toUserId: UserId | null | undefined): void => {
             if (message.type !== 'candidate') {
                 if (message.type === 'offer' || message.type === 'answer') {
                     console.log(`${fromUserId} -> ${toUserId}`, message.type);
@@ -49,7 +44,7 @@ io.sockets.on('connection', (socket: Socket): void => {
                 }
             }
 
-            if (toUserId === null) {
+            if (toUserId === null || toUserId === undefined) {
                 console.log(`broadcasting to the room ${toRoom}`);
                 socket.to(toRoom).emit('message', fromUserId, message, toRoom);
             } else {
@@ -63,7 +58,7 @@ io.sockets.on('connection', (socket: Socket): void => {
             }
         });
 
-    socket.on('create or join', (room: string, userInfo: UserInfo): void => {
+    socket.on('join', (room: string, userInfo: UserInfo): void => {
         console.log(`Received request to create or join room ${room} from user ${socket.id}`);
 
         const userId: UserId = socket.id;
@@ -78,24 +73,19 @@ io.sockets.on('connection', (socket: Socket): void => {
         const numClients: number = clientsInRoom.size;
         console.log(`Room ${room} now has ${numClients} client(s)`);
 
-        if (numClients === 1) {
-            console.log(`Client ID ${socket.id} created room ${room}`);
-            socket.emit('created', room, userId);
-        } else {
-            console.log(`Client ID ${socket.id} joined room ${room}`, users.get(room));
-            const otherUsersInRoom:
-                Map<UserId, UserInfo> =
-                new Map(Array.from(users.get(room)!)
-                    .filter(([uid, _]) => uid !== userId)
-                    .map(([uid, users]) => [uid, users.userInfo])
-                );
+        console.log(`Client ID ${socket.id} joined room ${room}`, users.get(room));
+        const otherUsersInRoom:
+            Map<UserId, UserInfo> =
+            new Map(Array.from(users.get(room)!)
+                .filter(([uid, _]) => uid !== userId)
+                .map(([uid, users]) => [uid, users.userInfo])
+            );
 
-            const jsonOtherUsersInRoom = map2Json(otherUsersInRoom);
-            console.log(otherUsersInRoom);
+        const jsonOtherUsersInRoom = map2Json(otherUsersInRoom);
+        console.log(otherUsersInRoom);
 
-            socket.to(room).emit('join', room, userId, userInfo);
-            socket.emit('joined', room, userId, jsonOtherUsersInRoom);
-        }
+        socket.to(room).emit('anotherJoin', room, userId, userInfo);
+        socket.emit('joined', room, userId, jsonOtherUsersInRoom);
     });
 
     socket.on('ipaddr', (): void => {
@@ -111,8 +101,18 @@ io.sockets.on('connection', (socket: Socket): void => {
         }
     });
 
-    socket.on('bye', (): void => {
-        console.log('received bye');
+    socket.on('disconnect', (): void => {
+        console.log('disconnect');
+        for (const [toRoom, usersInRoom] of users.entries()) {
+            for (const [userId, socketAndInfo] of usersInRoom.entries()) {
+                if (socket.id === socketAndInfo.socketId) {
+                    socket.to(toRoom).emit('message', userId, { type: "bye" }, toRoom);
+                    users.get(toRoom)!.delete(userId);
+                    console.log(users);
+                    return;
+                }
+            }
+        }
     });
 
 });

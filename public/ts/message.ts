@@ -1,18 +1,24 @@
 export { Message };
+import { ChatMessage } from './chatMessage';
 
 interface Candidate {
     type: 'candidate',
     label: RTCIceCandidate["sdpMLineIndex"],
     id: RTCIceCandidate["sdpMid"],
     candidate: RTCIceCandidate["candidate"],
-} 
+}
 
 interface Bye {
-    type: "bye",
+    type: 'bye',
 }
 
-interface GotUserMedia {
-    type: "got user media",
+interface Call {
+    type: 'call',
 }
 
-type Message = Candidate | Bye | GotUserMedia | RTCSessionDescriptionInit;
+interface Chat {
+    type: 'chat',
+    chatMessage: ChatMessage,
+}
+
+type Message = Bye | Call | Chat | RTCSessionDescriptionInit | Candidate;
