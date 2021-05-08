@@ -2,7 +2,7 @@ export { hangup };
 import io from "socket.io-client";
 import { turnConfig } from './config';
 import { Message } from './message';
-import { UserInfo, UserId } from './userInfo';
+import { UserInfo, UserId } from './userInfo'; // 
 import { json2Map, map2Json, getStringFromUser, getTimeString } from '../../src/util'
 import { ClientState, Remote } from './clientState'
 import { ChatMessage } from './chatMessage'
@@ -422,3 +422,4 @@ const sendChatMessage = (_: MouseEvent): void => {
 };
 
 sendButton.onclick = sendChatMessage;
+
