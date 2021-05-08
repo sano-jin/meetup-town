@@ -3,7 +3,7 @@
     "plugins": [],
     "globals": {},
     "rules": {
-                "arrow-body-style": "error",
+        "arrow-body-style": "error",
         "arrow-parens": "error",
         "arrow-spacing": "error",
         "generator-star-spacing": "error",
@@ -32,4 +32,4 @@
         "node": true
     }
 }
-    
+

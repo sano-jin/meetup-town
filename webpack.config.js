@@ -39,7 +39,7 @@ module.exports = [
             path: __dirname + '/public/dist',
             filename: 'bundle.js',
         },
-        target: 'web',
+        target: ['web', 'es5'],
         externals: ['bufferutil', 'utf-8-validate'], 
         mode: 'development',
         module: {
