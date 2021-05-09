@@ -1,4 +1,4 @@
-export { hangup };
+export { hangup, clientState, userName, roomName };
 import io from "socket.io-client";
 import { turnConfig } from './config';
 import { Message } from './message';
@@ -6,16 +6,26 @@ import { UserInfo, UserId } from './userInfo'; //
 import { json2Map, map2Json, getStringFromUser, getTimeString } from '../../src/util'
 import { ClientState, Remote } from './clientState'
 import { ChatMessage } from './chatMessage'
+import {
+    localVideo,
+    remoteVideos,
+    chatBoard,
+    textbox,
+    sendButton
+} from './../pages/user'
+
 
 // Initialize turn/stun server here
 const pcConfig = turnConfig;
 
+
 // Displaying Local Stream and Remote Stream on webpage
-const localVideo = document.querySelector<HTMLVideoElement>('#localVideo')!;
-const remoteVideos = document.querySelector<HTMLUListElement>('#remotes')!;
-const chatBoard = document.querySelector<HTMLDivElement>('#chatBoard')!;
-const textbox = document.querySelector<HTMLTextAreaElement>("#input-message")!;
-const sendButton = document.querySelector<HTMLButtonElement>("#send-button")!;
+// const localVideo = document.querySelector<HTMLVideoElement>('#localVideo')!;
+// const remoteVideos = document.querySelector<HTMLUListElement>('#remotes')!;
+// const chatBoard = document.querySelector<HTMLDivElement>('#chatBoard')!;
+// const textbox = document.querySelector<HTMLTextAreaElement>("#input-message")!;
+// const sendButton = document.querySelector<HTMLButtonElement>("#send-button")!;
+
 
 // Initializing socket.io
 const socket = io();
@@ -393,7 +403,7 @@ const addChatMessage =
     (chatMessage: ChatMessage): void => {
         console.log(`adding ${chatMessage}`);
         chatBoard.appendChild(getChatMessageElement(
-            clientState.remotes.get(chatMessage.fromUser)!.userInfo.userName,
+            clientState.remotes.get(chatMessage.userId)!.userInfo.userName,
             chatMessage.time,
             chatMessage.message
         ));
@@ -406,8 +416,8 @@ const sendChatMessage = (_: MouseEvent): void => {
     const inputValue = textbox.value;
     textbox.value = "";
     if (inputValue === "") return;
-    const chatMessage = {
-        fromUser: clientState.userId!,
+    const chatMessage: ChatMessage = {
+        userId: clientState.userId!,
         time: getTimeString(),
         message: inputValue,
     };
