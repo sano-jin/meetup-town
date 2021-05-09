@@ -1,4 +1,4 @@
-export { hangup, clientState, userName, roomName };
+export { hangup, clientState, userName, roomName, getInitRemotes, getInitRemote };
 import io from "socket.io-client";
 import { turnConfig } from './config';
 import { Message } from './message';
@@ -6,10 +6,10 @@ import { UserInfo, UserId } from './userInfo'; //
 import { json2Map, map2Json, getStringFromUser, getTimeString } from '../../src/util'
 import { ClientState, Remote } from './clientState'
 import { ChatMessage } from './chatMessage'
+import { chatBoard } from "./../components/chatMessage";
 import {
     localVideo,
     remoteVideos,
-    chatBoard,
     textbox,
     sendButton
 } from './../pages/user'
@@ -47,55 +47,47 @@ const clientState: ClientState = {
     chats: [],
 }
 
-socket.emit('join', roomName, { userName: userName });
-console.log('Attempted to create or join room', roomName);
+const getInitRemotes =
+    (jsonStrOtherUsers: string): Map<UserId, Remote> => {
+        const otherUsers: Map<UserId, UserInfo> = json2Map(jsonStrOtherUsers);
+        console.log(otherUsers);
 
-socket.on('joined', (roomName: string, userId: UserId, jsonStrOtherUsers: string): void => {
-    console.log(`me joined to the room ${roomName}`, jsonStrOtherUsers);
-    clientState.userId = userId;
-
-    const otherUsers: Map<UserId, UserInfo> = json2Map(jsonStrOtherUsers);
-    console.log(otherUsers);
-
-    for (const [userId, userInfo] of otherUsers) {
-        clientState.remotes.set(
-            userId,
-            {
-                userInfo: userInfo,
-                isChannelReady: true,
-                isInitiator: true,
-                isStarted: false,
-                pc: null,
-                remoteStream: null,
-                remoteVideoElement: null
-            }
-        );
-    }
-    console.log("remotes", map2Json(clientState.remotes));
-});
-
-socket.on('anotherJoin', (roomName: string, userId: UserId, userInfo: UserInfo): void => {
-    console.log(`Another user ${userId} has joined to our room ${roomName}`);
-    clientState.remotes.set(
-        userId,
-        {
-            userInfo: userInfo,
-            isChannelReady: true,
-            isInitiator: false,
-            isStarted: false,
-            pc: null,
-            remoteStream: null,
-            remoteVideoElement: null
+        const remotes = new Map<UserId, Remote>();
+        for (const [userId, userInfo] of otherUsers) {
+            remotes.set(
+                userId,
+                {
+                    userInfo: userInfo,
+                    isChannelReady: true,
+                    isInitiator: true,
+                    isStarted: false,
+                    pc: null,
+                    remoteStream: null,
+                    remoteVideoElement: null
+                }
+            );
         }
-    );
-    console.log("remotes", map2Json(clientState.remotes));
-});
+        console.log("remotes", map2Json(clientState.remotes));
+        return remotes;
+    };
+
+const getInitRemote = (userInfo: UserInfo) => {
+    return {
+        userInfo: userInfo,
+        isChannelReady: true,
+        isInitiator: false,
+        isStarted: false,
+        pc: null,
+        remoteStream: null,
+        remoteVideoElement: null
+    }
+};
 
 
 // Driver code
-socket.on('message', (userId: UserId, message: Message, roomName: string) => {
+socket.on('message', (userId: UserId, message: Message) => {
     if (message.type !== 'candidate') {
-        console.log('Received message:', message, `from user ${userId} in room ${roomName}`);
+        console.log('Received message:', message, `from user ${userId}`);
     }
     if (!clientState.remotes.has(userId)) {
         throw Error(`remote is null for ${userId}`);
@@ -402,6 +394,11 @@ const getChatMessageElement =
 const addChatMessage =
     (chatMessage: ChatMessage): void => {
         console.log(`adding ${chatMessage}`);
+
+        chatBoard.addChatMessage(chatMessage);
+
+
+        /*
         chatBoard.appendChild(getChatMessageElement(
             clientState.remotes.get(chatMessage.userId)!.userInfo.userName,
             chatMessage.time,
@@ -409,6 +406,8 @@ const addChatMessage =
         ));
         const parent: HTMLElement = chatBoard.parentElement!;
         parent.scrollTop = parent.scrollHeight;
+        */
+
     };
 
 const sendChatMessage = (_: MouseEvent): void => {
@@ -422,6 +421,8 @@ const sendChatMessage = (_: MouseEvent): void => {
         message: inputValue,
     };
     sendMessage({ type: "chat", chatMessage: chatMessage });
+
+    /*
     const chatMessageElement = getChatMessageElement(
         clientState.userInfo.userName,
         chatMessage.time,
@@ -429,6 +430,10 @@ const sendChatMessage = (_: MouseEvent): void => {
     );
     chatMessageElement.className += " my-message";
     chatBoard.appendChild(chatMessageElement);
+    */
+
+
+
 };
 
 sendButton.onclick = sendChatMessage;

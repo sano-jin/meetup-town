@@ -1,4 +1,4 @@
-export { ChatBoardProps, ChatBoard };
+export { chatBoard };
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 import { ChatMessage } from "./../ts/chatMessage";
@@ -37,8 +37,8 @@ type ChatBoardProps = {
 class ChatBoard extends React.Component<ChatBoardProps, {}> {
     render() {
         return <div className="chatBoardContainer">
-            <ul className="chatBoard">
-                {
+        <ul className="chatBoard">
+        {
                     this.props.chatMessages.map((chatMessage, index) =>
                         <ChatMessageContainer
                             key     ={index.toString()}
@@ -50,5 +50,4 @@ class ChatBoard extends React.Component<ChatBoardProps, {}> {
         </div>
     }
 }
-
 
