@@ -6,7 +6,7 @@ import { Remote } from './../ts/clientState';
 import { UserId } from './../ts/userInfo';
 
 
-type ChatMessageProps = {
+interface ChatMessageProps {
     key: string;
     chatMessage: ChatMessage;
     fromUser: string;
@@ -27,12 +27,21 @@ class ChatMessageContainer extends React.Component<ChatMessageProps, {}> {
 }
 
 
-type ChatBoardProps = {
+interface ChatBoardProps {
     chatMessages: ChatMessage[];
     remotes: Map<UserId, Remote>;
 }
 
 class ChatBoard extends React.Component<ChatBoardProps, {}> {
+    //    el: React.RefObject<HTMLElement> | null;
+    //    el: HTMLDivElement;
+    
+    el: any;
+    constructor(props: ChatBoardProps) {
+        super(props)
+        this.el = React.createRef()
+    }
+
 
     componentDidMount() {
         this.scrollToBottom();
@@ -54,7 +63,7 @@ class ChatBoard extends React.Component<ChatBoardProps, {}> {
                         <ChatMessageContainer
                             key         ={index.toString()}
                             chatMessage ={chatMessage}
-                            fromUser    ={this.props.remotes.get(this.props.chatMessage.userId).userInfo.userName ?? "unknown"}
+                            fromUser    ={this.props.remotes.get(chatMessage.userId)?.userInfo.userName ?? "unknown"}
                         />
                     )
                 }
