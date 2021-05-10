@@ -85,9 +85,6 @@ const handleMessage =
                 }
                 return [undefined, undefined];
             default:
-                if (remote.pc === null) {
-                    throw Error(`received an offer/answer/candidate but the peer connection is null`);
-                }
                 switch (message.type) {
                     case 'offer':
                         let newRemote = remote;
@@ -95,22 +92,28 @@ const handleMessage =
                             console.log(`starting communication with an offer`);
                             newRemote = maybeStart(remote, localStream, props);
                         }
-                        newRemote.pc
+                        newRemote.pc!
                             .setRemoteDescription(message)
                             .then(() => {
                                 if (remote.pc !== null) {
-                                    doAnswer(remote.pc, sendMessage);
+                                    doAnswer(remote.pc, props.sendMessage);
                                 } else throw Error(`remote.pc is null`)
                             })
                             .catch(e => console.log(e));
                         return [newRemote, undefined];
                     case 'answer':
+                        if (remote.pc === null) {
+                            throw Error(`received an answer but the peer connection is null`);
+                        }
                         if (remote.isStarted) {
                             remote.pc.setRemoteDescription(message)
                                 .catch(e => console.log(e));
                         }
                         return [remote, undefined];
                     case 'candidate':
+                        if (remote.pc === null) {
+                            throw Error(`received a candidate but the peer connection is null`);
+                        }
                         if (remote.isStarted) {
                             const candidate = new RTCIceCandidate({
                                 sdpMLineIndex: message.label,
@@ -333,40 +336,10 @@ const addChatMessage =
  //       ));
  //       const parent: HTMLElement = chatBoard.parentElement!;
  //       parent.scrollTop = parent.scrollHeight;
- 
+
     };
 
 */
 
 
-
-const sendChatMessage = (_: MouseEvent): void => {
-    console.log(`sendChatMessage`);
-    const inputValue = textbox.value;
-    textbox.value = "";
-    if (inputValue === "") return;
-    const chatMessage: ChatMessage = {
-        userId: clientState.userId!,
-        time: getTimeString(),
-        message: inputValue,
-    };
-    sendMessage({ type: "chat", chatMessage: chatMessage });
-
-    /*
-    const chatMessageElement = getChatMessageElement(
-        clientState.userInfo.userName,
-        chatMessage.time,
-        chatMessage.message
-    );
-    chatMessageElement.className += " my-message";
-    chatBoard.appendChild(chatMessageElement);
-    */
-
-
-
-};
-
-
-
-sendButton.onclick = sendChatMessage;
 

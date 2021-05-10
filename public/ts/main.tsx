@@ -1,7 +1,8 @@
 import { getStringFromUser } from '../../src/util'
 import * as client from "./client";
 import { ClientState } from "./clientState";
-import { chatBoard } from "./../components/chatMessage";
+import { ChatBoard } from "./../components/chatMessage";
+import { VideoElement, VideoBoard } from "./../components/videoElement";
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 
@@ -49,7 +50,7 @@ class App extends React.Component<Props, ClientState> {
         });
 
         const sendMessageTo =
-            (toUserId: UserId) => (message: Message) => {
+            (toUserId: UserId?) => (message: Message) => {
                 const send = () => {
                     const myUserId = this.state.userId;
                     if (myUserId === null) {
@@ -69,33 +70,46 @@ class App extends React.Component<Props, ClientState> {
                     console.log(remoteStream);
                 };
 
+
+            const updateRemote = (f: (oldRemote: Remote) => Remote?) => {
+                this.setState(oldState => {
+                    const oldRemote = oldState.remotes.get(userId);
+                    if (oldRemote === undefined) return oldState;
+                    const newRemote = f(oldRemote);
+                    if (newRemote === undefined)
+                        return {...oldState, remote: new Map([...oldState.remotes].filter([id, _] => id !== userId)])};
+                    return {...oldState, remote: new Map([...oldState.remotes, [userId, newRemote]])};
+                });
+            };
+                    
             const hangup = () => {
                 console.log('Hanging up.');
                 if (remote === undefined || remote === null) {
                     throw Error(`trying to hanging up the unknown user ${toUserId}`);
                 }
-                stop();
+                stopVideo();
                 sendMessage({ type: 'bye' });
-
-                // remote.remoteStream = null;
-
             };
 
             const handleRemoteHangup = (): void => {
                 console.log('Session terminated.');
-                stop();
-                // remote.isInitiator = false;
-                // remote.remoteVideoElement!.remove(); // hide remote video
-                // clientState.remotes.delete(toUserId);
+                stopVideo();
             };
 
-            const stop = (): void => {
+            const stopVideo = (): void => {
+                this.state.remotes.get(userId)?.pc?.close();
+                updateRemote(oldRemote => {...oldRemote, remoteStream: null, isStarted: false, });
+                
                 // remote.isStarted = false;
                 // remote.pc!.close();
                 // remote.pc = null;
             };
 
-
+            const block = (): void => {
+                this.state.remotes.get(userId)?.pc?.close();
+                updateRemote(_ => undefined);
+            }
+            
 
         }
         socket.on('message', (userId: UserId, message: Message) => {
@@ -136,12 +150,28 @@ class App extends React.Component<Props, ClientState> {
         socket.emit('join', this.state.roomName, { userName: this.state.userName });
     }
     
-    
+    const sendChatMessage = (message: string) => {
+        const chatMessage: ChatMessage = {
+            userId: this.state.userId,
+            time: getTimeString(),
+            message: message,
+        };
+        sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage });
+    };
+
     render() {
         return <div>
             <div>
                 <span>{this.props.roomName}</span>
                 <span>{this.props.userName}</span>
+            </div>
+            <div>
+                <VideoElement id="localVideoElement" userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
+                <VideoBoard remotes={this.state.remotes} />
+            </div>
+            <div>
+                <ChatBoard ChatMessages={this.state.chats} remtoes={this.state.remotes} />
+                <ChatSender sendChatMessage={sendChatMessage} />                
             </div>
         </div>
     }

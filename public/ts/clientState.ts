@@ -20,7 +20,6 @@ interface Remote {
     isStarted: boolean,               // Has started ???
     pc: null | RTCPeerConnection,     // Peer connection
     remoteStream: null | MediaStream, // Remote camera
-    remoteVideoElement: null | HTMLLIElement // HTMLVideoElement
 }
 
 interface StreamConstraints {
