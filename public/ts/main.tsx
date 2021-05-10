@@ -30,11 +30,12 @@ class App extends React.Component<Props, ClientState> {
     }
 
     componentDidMount(){
-        socket.on('joined', (userId: UserId, jsonStrOtherUsers: string) => {
-            console.log(`me ${userId} joined with`, jsonStrOtherUsers);
+        const socket = io();
+        socket.on('joined', (myUserId: UserId, jsonStrOtherUsers: string) => {
+            console.log(`me ${myUerId} joined with`, jsonStrOtherUsers);
             this.setState((state) => {
                 ...state,
-                userId: userId,
+                userId: myUserId,
                 remotes: new Map([...state.remotes, ...client.getInitRemotes(jsonStrOtherUsers)])
             });
         });
@@ -47,27 +48,94 @@ class App extends React.Component<Props, ClientState> {
             });
         });
 
-        
-        
-        
-        socket.on('chatMessage',(obj) => {
-            //WebSocketサーバーからchatMessageを受け取った際の処理
-            const logs2 = this.state.logs
-            //logs2に今までのlogを格納する
-            obj.key = 'key_' + (this.state.logs.length + 1)
-            //メッセージ毎に独自のキーを設定して判別できるようにする
-            console.log(obj)
-            //consolelogにobj.key、name、messageを表示する
-            logs2.unshift(obj)
-            //配列の一番最初に最新のメッセージを入れる。
-            //そうすることで新しいメッセージほど上に表示されるようになる
-            this.setState({logs: logs2})
-            //最新のkey、name、messageが入ったlogs2をlogsに入れる。
-        });
+        const sendMessageTo =
+            (toUserId: UserId) => (message: Message) => {
+                const send = () => {
+                    const myUserId = this.state.userId;
+                    if (myUserId === null) {
+                        setTimeout(send, 500);
+                        return;
+                    }
+                    socket.emit('message', myUserId, message, this.state.roomName, toUserId);
+                }
+                send();
+            };
 
+
+        const props = (userId: UserId) => {
+            const sendMessage = sendMessageTo(userId);
+            const addVideoElement =
+                (remoteStream: MediaStream) => {
+                    console.log(remoteStream);
+                };
+
+            const hangup = () => {
+                console.log('Hanging up.');
+                if (remote === undefined || remote === null) {
+                    throw Error(`trying to hanging up the unknown user ${toUserId}`);
+                }
+                stop();
+                sendMessage({ type: 'bye' });
+
+                // remote.remoteStream = null;
+
+            };
+
+            const handleRemoteHangup = (): void => {
+                console.log('Session terminated.');
+                stop();
+                // remote.isInitiator = false;
+                // remote.remoteVideoElement!.remove(); // hide remote video
+                // clientState.remotes.delete(toUserId);
+            };
+
+            const stop = (): void => {
+                // remote.isStarted = false;
+                // remote.pc!.close();
+                // remote.pc = null;
+            };
+
+
+
+        }
+        socket.on('message', (userId: UserId, message: Message) => {
+            if (message.type !== 'candidate') {
+                console.log('Received message:', message, `from user ${userId}`);
+            }
+            const remote: Remote? = this.state.remotes.get(userId)!;
+            if (remote === undefined) {
+                throw Error(`remote is null for ${userId}`);
+            }
+            handleMessage(remote, message, this.state.localStream, props(userId));
+
+            
+        });
+        
+
+        console.log("Going to find Local media");
+        // console.log('Getting user media with constraints', clientState.localStreamConstraints);
+
+        // If found local stream
+        const gotStream = (stream: MediaStream): void => {
+            console.log('Adding local stream.');
+            this.setState(state => {...state, localStream: stream});
+            for (const [userId, remote] of this.state.remotes.entries()) {
+                sendMessageTo(userId)({ type: 'call' });
+                if (remote.isInitiator) {
+                    maybeStart(remote, stream, props(userId));
+                }
+            }
+        }
+
+        navigator.mediaDevices.getUserMedia(clientState.localStreamConstraints)
+                 .then(gotStream)
+                 .catch((e) => {
+                     alert(`getUserMedia() error: ${e.name}`);
+                 });
+        
         socket.emit('join', this.state.roomName, { userName: this.state.userName });
     }
-
+    
     
     render() {
         return <div>

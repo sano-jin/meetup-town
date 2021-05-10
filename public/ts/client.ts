@@ -1,15 +1,13 @@
-export { hangup, clientState, userName, roomName, getInitRemotes, getInitRemote };
-import io from "socket.io-client";
+export { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart };
+// import io from "socket.io-client";
 import { turnConfig } from './config';
 import { Message } from './message';
 import { UserInfo, UserId } from './userInfo'; // 
-import { json2Map, map2Json, getStringFromUser, getTimeString } from '../../src/util'
-import { ClientState, Remote } from './clientState'
+import { json2Map, map2Json, getTimeString } from '../../src/util'
+import { Remote } from './clientState'
 import { ChatMessage } from './chatMessage'
-import { chatBoard } from "./../components/chatMessage";
+// import { chatBoard } from "./../components/chatMessage";
 import {
-    localVideo,
-    remoteVideos,
     textbox,
     sendButton
 } from './../pages/user'
@@ -18,34 +16,17 @@ import {
 // Initialize turn/stun server here
 const pcConfig = turnConfig;
 
+type SendMessage = (message: Message) => Promise<void>;
+type AddVideoElement = (remoteStream: MediaStream | null) => Promise<void>;
+type HandleRemoteHangup = () => Promise<void>;
+type Hangup = () => Promise<void>;
+type ClientProps = {
+    sendMessage: SendMessage,
+    addVideoElement: AddVideoElement,
+    handleRemoteHangup: HandleRemoteHangup,
+    hangup: Hangup,
+};
 
-// Displaying Local Stream and Remote Stream on webpage
-// const localVideo = document.querySelector<HTMLVideoElement>('#localVideo')!;
-// const remoteVideos = document.querySelector<HTMLUListElement>('#remotes')!;
-// const chatBoard = document.querySelector<HTMLDivElement>('#chatBoard')!;
-// const textbox = document.querySelector<HTMLTextAreaElement>("#input-message")!;
-// const sendButton = document.querySelector<HTMLButtonElement>("#send-button")!;
-
-
-// Initializing socket.io
-const socket = io();
-
-// Prompting for room name:
-const roomName: string = getStringFromUser('Enter room name:');
-const userName: string = getStringFromUser('Enter your name:');
-
-// Defining some global utility variables
-const clientState: ClientState = {
-    userId: null,
-    userInfo: { userName: userName },
-    localStream: null,
-    remotes: new Map<UserId, Remote>(),
-    localStreamConstraints: {
-        audio: true,
-        video: true
-    },
-    chats: [],
-}
 
 const getInitRemotes =
     (jsonStrOtherUsers: string): Map<UserId, Remote> => {
@@ -84,132 +65,87 @@ const getInitRemote = (userInfo: UserInfo) => {
 };
 
 
-// Driver code
-socket.on('message', (userId: UserId, message: Message) => {
-    if (message.type !== 'candidate') {
-        console.log('Received message:', message, `from user ${userId}`);
-    }
-    if (!clientState.remotes.has(userId)) {
-        throw Error(`remote is null for ${userId}`);
-    }
-    const remote: Remote = clientState.remotes.get(userId)!;
-    switch (message.type) {
-        case 'call':
-            maybeStart(userId);
-            break;
-        case 'chat':
-            clientState.chats.push(message.chatMessage);
-            addChatMessage(message.chatMessage);
-            break;
-        case 'bye':
-            console.log("received bye");
-            if (remote.isStarted) {
-                handleRemoteHangup(userId);
-            }
-            break;
-        default:
-            if (remote.pc === null) {
-                throw Error(`received an offer/answer/candidate but the peer connection is null`);
-            }
-            switch (message.type) {
-                case 'offer':
-                    if (!remote.isInitiator && !remote.isStarted) {
-                        console.log(`starting communication with ${userId} with an offer`);
-                        maybeStart(userId);
-                    }
-                    remote.pc
-                        .setRemoteDescription(message)
-                        .then(() => {
-                            if (remote.pc !== null) {
-                                doAnswer(remote.pc, userId);
-                            } else throw Error(`remote.pc is null for user ${userId}`)
-                        })
-                        .catch(e => console.log(e));
-                    break;
-                case 'answer':
-                    if (remote.isStarted) {
-                        remote.pc.setRemoteDescription(message)
+const handleMessage =
+    (remote: Remote, message: Message, localStream: MediaStream | null,
+        props: ClientProps): [Remote?, ChatMessage?] => {
+        switch (message.type) {
+            case 'call':
+                if (localStream === null) return [remote, undefined];
+                return [maybeStart(remote, localStream, props), undefined];
+            case 'chat':
+                return [remote, message.chatMessage];
+            /*
+              clientState.chats.push(message.chatMessage);
+              addChatMessage(message.chatMessage);
+            */
+            case 'bye':
+                console.log("received bye");
+                if (remote.isStarted) {
+                    props.handleRemoteHangup();
+                }
+                return [undefined, undefined];
+            default:
+                if (remote.pc === null) {
+                    throw Error(`received an offer/answer/candidate but the peer connection is null`);
+                }
+                switch (message.type) {
+                    case 'offer':
+                        let newRemote = remote;
+                        if (!remote.isInitiator && localStream !== null) {
+                            console.log(`starting communication with an offer`);
+                            newRemote = maybeStart(remote, localStream, props);
+                        }
+                        newRemote.pc
+                            .setRemoteDescription(message)
+                            .then(() => {
+                                if (remote.pc !== null) {
+                                    doAnswer(remote.pc, sendMessage);
+                                } else throw Error(`remote.pc is null`)
+                            })
                             .catch(e => console.log(e));
-                    }
-                    break;
-                case 'candidate':
-                    if (remote.isStarted) {
-                        const candidate = new RTCIceCandidate({
-                            sdpMLineIndex: message.label,
-                            candidate: message.candidate
-                        });
-                        remote.pc.addIceCandidate(candidate);
-                    }
-                    break;
-                default:
-                    throw Error(`received message has unknown type ${message.type}`)
-            }
-    }
-});
-
-// to send message in a room
-const sendMessage = (message: Message, toUserId?: UserId): void => {
-    // console.log('Client sending message: ', message, toRoom, toUserId);
-    if (clientState.userId === null) {
-        setTimeout(sendMessage, 500, message, toUserId);
-        return;
-    }
-    socket.emit('message', clientState.userId, message, roomName, toUserId);
-}
-
-console.log("Going to find Local media");
-console.log('Getting user media with constraints', clientState.localStreamConstraints);
-
-// If found local stream
-const gotStream = (stream: MediaStream): void => {
-    console.log('Adding local stream.');
-    clientState.localStream = stream;
-    localVideo.srcObject = stream;
-    const sendGotUserMedia = () => {
-        if (clientState.userId === null) {
-            setTimeout(sendGotUserMedia, 500);
-            return;
+                        return [newRemote, undefined];
+                    case 'answer':
+                        if (remote.isStarted) {
+                            remote.pc.setRemoteDescription(message)
+                                .catch(e => console.log(e));
+                        }
+                        return [remote, undefined];
+                    case 'candidate':
+                        if (remote.isStarted) {
+                            const candidate = new RTCIceCandidate({
+                                sdpMLineIndex: message.label,
+                                candidate: message.candidate
+                            });
+                            remote.pc.addIceCandidate(candidate);
+                        }
+                        return [remote, undefined];
+                    default:
+                        throw Error(`received message has unknown type ${message.type}`)
+                }
         }
-        for (const [userId, remote] of clientState.remotes.entries()) {
-            sendMessage({ type: 'call' }, userId);
-            if (remote.isInitiator) {
-                maybeStart(userId);
-            }
-        }
-    }
-    sendGotUserMedia();
-}
-
-navigator.mediaDevices.getUserMedia(clientState.localStreamConstraints)
-    .then(gotStream)
-    .catch((e) => {
-        alert(`getUserMedia() error: ${e.name}`);
-    });
+    };
 
 // If initiator, create the peer connection
-const maybeStart = (userId: UserId): void => {
-    const remote: Remote = clientState.remotes.get(userId)!;
-    console.log(
-        '>>>>>>> maybeStart() ',
-        userId,
-        remote.isStarted,
-        clientState.localStream,
-        remote.isChannelReady
-    );
-    if (!remote.isStarted
-        && clientState.localStream !== null
-        && remote.isChannelReady) {
-        console.log('>>>>>> creating peer connection', userId);
-        remote.pc = createPeerConnection(userId);
-        if (remote.pc === null) throw Error(`Peer connection to ${userId} is null`);
-        if (clientState.localStream === null) throw Error(`Local stream is null`);;
-        clientState.localStream
-            .getTracks()
-            .forEach(track => remote.pc!.addTrack(track, clientState.localStream!));
-        remote.isStarted = true;
-    }
-}
+const maybeStart =
+    (remote: Remote, localStream: MediaStream, props: ClientProps): Remote => {
+        console.log(
+            '>>>>>>> maybeStart() ',
+            remote.isStarted,
+            localStream,
+            remote.isChannelReady
+        );
+        if (!remote.isStarted && remote.isChannelReady) {
+            console.log('>>>>>> creating peer connection');
+            const pc = createPeerConnection(remote, props);
+            localStream
+                .getTracks()
+                .forEach(track => pc.addTrack(track, localStream));
 
+            return { ...remote, pc: pc, isStarted: true };
+        } else return remote;
+    }
+
+/*
 window.onbeforeunload = (e: Event): void => {
     e.preventDefault();
     e.returnValue = false;
@@ -217,35 +153,34 @@ window.onbeforeunload = (e: Event): void => {
         sendMessage({ type: 'bye' }, userId);
     }
 };
-
+*/
 
 // Creating peer connection
 const createPeerConnection =
-    (userId: UserId): RTCPeerConnection | null => {
+    (remote: Remote, props: ClientProps): RTCPeerConnection => {
         try {
             const pc = new RTCPeerConnection(pcConfig);
-            pc.onicecandidate = handleIceCandidate(userId);
-            pc.ontrack = handleRemoteStream(userId);
-            pc.onnegotiationneeded = handleNegotiationNeededEvent(pc, userId);
-            pc.oniceconnectionstatechange = handleICEConnectionStateChangeEvent(pc, userId);
-            pc.onsignalingstatechange = handleSignalingStateChangeEvent(pc, userId);
+            pc.onicecandidate = handleIceCandidate(props.sendMessage);
+            pc.ontrack = handleRemoteStream(props.addVideoElement);
+            pc.onnegotiationneeded = handleNegotiationNeededEvent(pc, remote, props.sendMessage);
+            pc.oniceconnectionstatechange = handleICEConnectionStateChangeEvent(pc, props);
+            pc.onsignalingstatechange = handleSignalingStateChangeEvent(pc, props);
             // pc.onremovestream = handleRemoteStreamRemoved; // deprecated
             console.log('Created RTCPeerConnnection');
             return pc;
         } catch (e) {
             console.log(`Failed to create PeerConnection, exception: ${e.message}`);
-            alert('Cannot create RTCPeerConnection object.');
-            return null;
+            throw Error('Cannot create RTCPeerConnection object.');
         }
     }
 
 const handleNegotiationNeededEvent =
-    (pc: RTCPeerConnection, userId: UserId) => () => {
-        console.log(`handleNegotiationNeededEvent`, userId);
+    (pc: RTCPeerConnection, remote: Remote, sendMessage: SendMessage) => () => {
+        console.log(`handleNegotiationNeededEvent`, remote);
         pc.createOffer()
             .then((sessionDescription) => {
-                if (clientState.remotes.get(userId)!.isInitiator) {
-                    setLocalAndSendMessage(pc, userId)(sessionDescription);
+                if (remote.isInitiator) {
+                    setLocalAndSendMessage(pc, sendMessage)(sessionDescription);
                 }
             })
             .catch(e => console.log(e));
@@ -253,58 +188,48 @@ const handleNegotiationNeededEvent =
 
 // to handle Ice candidates
 const handleIceCandidate =
-    (userId: UserId) => (event: RTCPeerConnectionIceEvent): void => {
+    (sendMessage: SendMessage) => (event: RTCPeerConnectionIceEvent): void => {
         if (event.candidate) {
             sendMessage({
                 type: 'candidate',
                 label: event.candidate.sdpMLineIndex,
                 id: event.candidate.sdpMid,
                 candidate: event.candidate.candidate
-            }, userId);
+            });
         } else {
             console.log('End of candidates.');
         }
     }
 
-const doAnswer = (pc: RTCPeerConnection, userId: UserId): void => {
-    console.log(`Sending answer to peer ${userId}`);
+const doAnswer = (pc: RTCPeerConnection, sendMessage: SendMessage): void => {
+    console.log(`Sending answer to peer`);
     pc.createAnswer()
-        .then(setLocalAndSendMessage(pc, userId))
-        .catch((error) => console.trace(`Failed to create session description: ${error.toString()}`));
-}
+        .then(setLocalAndSendMessage(pc, sendMessage))
+        .catch(error => console.trace(`Failed to create session description: ${error.toString()}`));
+};
 
 const setLocalAndSendMessage =
-    (pc: RTCPeerConnection, userId: UserId) =>
+    (pc: RTCPeerConnection, sendMessage: SendMessage) =>
         (sessionDescription: RTCSessionDescriptionInit): void => {
             pc.setLocalDescription(sessionDescription)
                 .then(() => {
-                    console.log(`setLocalAndSendMessage sending message to ${userId}`,
-                        sessionDescription);
-                    sendMessage(sessionDescription, userId);
+                    console.log("sending sessionDescription", sessionDescription);
+                    sendMessage(sessionDescription);
                 })
                 .catch(e => console.log(e));
+        };
+
+
+const handleRemoteStream =
+    (addVideoElement: AddVideoElement) => (event: RTCTrackEvent): void => {
+        if (event.streams.length >= 1) {
+            addVideoElement(event.streams[0]);
+        } else {
+            addVideoElement(null);
         }
+    };
 
-
-const handleRemoteStream = (userId: string) => (event: RTCTrackEvent): void => {
-    const remote = clientState.remotes.get(userId)!;
-    if (event.streams.length >= 1) {
-        console.log(`Remote stream of userId ${userId} added.`);
-        const remoteStream = event.streams[0];
-        if (remote.remoteStream === null) {
-            remote.remoteStream = remoteStream;
-            const item = addVideoElement(userId, remoteStream);
-            remote.remoteVideoElement = item;
-            remoteVideos.appendChild(item);
-        }
-    } else {
-        console.log(`Remote stream of userId ${userId} removed.`);
-        remote.remoteStream = null;
-        remote.remoteVideoElement!.remove(); // Removal from DOM
-    }
-    console.log("clientState.remotes", clientState.remotes);
-}
-
+/*
 const addVideoElement =
     (toUserId: UserId, remoteStream: MediaStream): HTMLLIElement => {
         console.log(`adding ${toUserId} of ${remoteStream!.id}`);
@@ -317,21 +242,23 @@ const addVideoElement =
         item.appendChild(videoElement);
         return item;
     }
+*/
 
-const hangup = (toUserId: UserId): void => {
+
+/*
+const hangup = (remote: Remote, sendMessage: SendMessage): void => {
     console.log('Hanging up.');
-    const remote = clientState.remotes.get(toUserId);
     if (remote === undefined || remote === null) {
         throw Error(`trying to hanging up the unknown user ${toUserId}`);
     }
     stop(remote);
-    sendMessage({ type: 'bye' }, toUserId);
+    sendMessage({ type: 'bye' });
 
     remote.remoteStream = null;
 
 }
 
-const handleRemoteHangup = (toUserId: UserId): void => {
+const handleRemoteHangup = (props: ClientProps): void => {
     console.log('Session terminated.');
     const remote = clientState.remotes.get(toUserId)!;
     stop(remote);
@@ -346,29 +273,30 @@ const stop = (remote: Remote): void => {
     remote.pc = null;
 }
 
-
+*/
 
 const handleICEConnectionStateChangeEvent =
-    (pc: RTCPeerConnection, userId: UserId) =>
+    (pc: RTCPeerConnection, props: ClientProps) =>
         (_: Event) => {
             switch (pc.iceConnectionState) {
                 case "closed":
                 case "failed":
-                    handleRemoteHangup(userId);
+                    props.handleRemoteHangup();
                     break;
             }
         };
 
 const handleSignalingStateChangeEvent =
-    (pc: RTCPeerConnection, userId: UserId) =>
+    (pc: RTCPeerConnection, props: ClientProps) =>
         (_: Event) => {
             switch (pc.signalingState) {
                 case "closed":
-                    handleRemoteHangup(userId);
+                    props.handleRemoteHangup();
                     break;
             }
         };
 
+/*
 const createElement = (tagName: string, className: string, content: string): HTMLElement => {
     const item = document.createElement(tagName);
     item.className = className;
@@ -398,17 +326,19 @@ const addChatMessage =
         chatBoard.addChatMessage(chatMessage);
 
 
-        /*
-        chatBoard.appendChild(getChatMessageElement(
-            clientState.remotes.get(chatMessage.userId)!.userInfo.userName,
-            chatMessage.time,
-            chatMessage.message
-        ));
-        const parent: HTMLElement = chatBoard.parentElement!;
-        parent.scrollTop = parent.scrollHeight;
-        */
-
+ //       chatBoard.appendChild(getChatMessageElement(
+ //           clientState.remotes.get(chatMessage.userId)!.userInfo.userName,
+ //           chatMessage.time,
+ //           chatMessage.message
+ //       ));
+ //       const parent: HTMLElement = chatBoard.parentElement!;
+ //       parent.scrollTop = parent.scrollHeight;
+ 
     };
+
+*/
+
+
 
 const sendChatMessage = (_: MouseEvent): void => {
     console.log(`sendChatMessage`);
@@ -435,6 +365,8 @@ const sendChatMessage = (_: MouseEvent): void => {
 
 
 };
+
+
 
 sendButton.onclick = sendChatMessage;
 
