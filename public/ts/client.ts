@@ -3,14 +3,10 @@ export { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart }
 import { turnConfig } from './config';
 import { Message } from './message';
 import { UserInfo, UserId } from './userInfo'; // 
-import { json2Map, map2Json, getTimeString } from '../../src/util'
+import { json2Map, map2Json } from '../../src/util'
 import { Remote } from './clientState'
 import { ChatMessage } from './chatMessage'
 // import { chatBoard } from "./../components/chatMessage";
-import {
-    textbox,
-    sendButton
-} from './../pages/user'
 
 
 // Initialize turn/stun server here
@@ -18,13 +14,17 @@ const pcConfig = turnConfig;
 
 type SendMessage = (message: Message) => Promise<void>;
 type AddVideoElement = (remoteStream: MediaStream | null) => Promise<void>;
-type HandleRemoteHangup = () => Promise<void>;
 type Hangup = () => Promise<void>;
-type ClientProps = {
-    sendMessage: SendMessage,
-    addVideoElement: AddVideoElement,
-    handleRemoteHangup: HandleRemoteHangup,
-    hangup: Hangup,
+type ReceiveChat = (chat: ChatMessage) => Promise<void>;
+type UpdateRemote = (f: (oldRemote: Remote) => Remote | undefined) => Promise<void>;
+interface ClientProps {
+    sendMessage: SendMessage;
+    addVideoElement: AddVideoElement;
+    handleRemoteHangup: Hangup;
+    hangup: Hangup;
+    block: Hangup;
+    receiveChat: ReceiveChat;
+    updateRemote: UpdateRemote;
 };
 
 
@@ -43,12 +43,11 @@ const getInitRemotes =
                     isInitiator: true,
                     isStarted: false,
                     pc: null,
-                    remoteStream: null,
-                    remoteVideoElement: null
+                    remoteStream: null
                 }
             );
         }
-        console.log("remotes", map2Json(clientState.remotes));
+        console.log("remotes", map2Json(remotes));
         return remotes;
     };
 
@@ -59,48 +58,48 @@ const getInitRemote = (userInfo: UserInfo) => {
         isInitiator: false,
         isStarted: false,
         pc: null,
-        remoteStream: null,
-        remoteVideoElement: null
+        remoteStream: null
     }
 };
 
 
 const handleMessage =
     (remote: Remote, message: Message, localStream: MediaStream | null,
-        props: ClientProps): [Remote?, ChatMessage?] => {
+        props: ClientProps): void => {
         switch (message.type) {
             case 'call':
-                if (localStream === null) return [remote, undefined];
-                return [maybeStart(remote, localStream, props), undefined];
+                if (localStream === null) return;
+                props.updateRemote(remote => maybeStart(remote, localStream, props));
+                break;
             case 'chat':
-                return [remote, message.chatMessage];
-            /*
-              clientState.chats.push(message.chatMessage);
-              addChatMessage(message.chatMessage);
-            */
+                props.receiveChat(message.chatMessage);
+                break;
             case 'bye':
                 console.log("received bye");
                 if (remote.isStarted) {
                     props.handleRemoteHangup();
                 }
-                return [undefined, undefined];
+                break;
             default:
                 switch (message.type) {
                     case 'offer':
-                        let newRemote = remote;
-                        if (!remote.isInitiator && localStream !== null) {
-                            console.log(`starting communication with an offer`);
-                            newRemote = maybeStart(remote, localStream, props);
-                        }
-                        newRemote.pc!
-                            .setRemoteDescription(message)
-                            .then(() => {
-                                if (remote.pc !== null) {
-                                    doAnswer(remote.pc, props.sendMessage);
-                                } else throw Error(`remote.pc is null`)
-                            })
-                            .catch(e => console.log(e));
-                        return [newRemote, undefined];
+                        props.updateRemote(remote => {
+                            let newRemote = remote;
+                            if (!remote.isInitiator && localStream !== null) {
+                                console.log(`starting communication with an offer`);
+                                newRemote = maybeStart(remote, localStream, props);
+                            }
+                            newRemote.pc!
+                                .setRemoteDescription(message)
+                                .then(() => {
+                                    if (newRemote.pc !== null) {
+                                        doAnswer(newRemote.pc, props.sendMessage);
+                                    } else throw Error(`remote.pc is null`)
+                                })
+                                .catch(e => console.log(e));
+                            return newRemote;
+                        });
+                        break;
                     case 'answer':
                         if (remote.pc === null) {
                             throw Error(`received an answer but the peer connection is null`);
@@ -109,7 +108,7 @@ const handleMessage =
                             remote.pc.setRemoteDescription(message)
                                 .catch(e => console.log(e));
                         }
-                        return [remote, undefined];
+                        break;
                     case 'candidate':
                         if (remote.pc === null) {
                             throw Error(`received a candidate but the peer connection is null`);
@@ -121,7 +120,7 @@ const handleMessage =
                             });
                             remote.pc.addIceCandidate(candidate);
                         }
-                        return [remote, undefined];
+                        break;
                     default:
                         throw Error(`received message has unknown type ${message.type}`)
                 }
@@ -232,52 +231,6 @@ const handleRemoteStream =
         }
     };
 
-/*
-const addVideoElement =
-    (toUserId: UserId, remoteStream: MediaStream): HTMLLIElement => {
-        console.log(`adding ${toUserId} of ${remoteStream!.id}`);
-        const item = document.createElement("li");
-        item.className = `remote_div username_${toUserId}`;
-        const videoElement = document.createElement("video")
-        videoElement.srcObject = remoteStream;
-        videoElement.autoplay = true;
-        videoElement.playsInline = true;
-        item.appendChild(videoElement);
-        return item;
-    }
-*/
-
-
-/*
-const hangup = (remote: Remote, sendMessage: SendMessage): void => {
-    console.log('Hanging up.');
-    if (remote === undefined || remote === null) {
-        throw Error(`trying to hanging up the unknown user ${toUserId}`);
-    }
-    stop(remote);
-    sendMessage({ type: 'bye' });
-
-    remote.remoteStream = null;
-
-}
-
-const handleRemoteHangup = (props: ClientProps): void => {
-    console.log('Session terminated.');
-    const remote = clientState.remotes.get(toUserId)!;
-    stop(remote);
-    remote.isInitiator = false;
-    remote.remoteVideoElement!.remove(); // hide remote video
-    clientState.remotes.delete(toUserId);
-}
-
-const stop = (remote: Remote): void => {
-    remote.isStarted = false;
-    remote.pc!.close();
-    remote.pc = null;
-}
-
-*/
-
 const handleICEConnectionStateChangeEvent =
     (pc: RTCPeerConnection, props: ClientProps) =>
         (_: Event) => {
@@ -298,48 +251,5 @@ const handleSignalingStateChangeEvent =
                     break;
             }
         };
-
-/*
-const createElement = (tagName: string, className: string, content: string): HTMLElement => {
-    const item = document.createElement(tagName);
-    item.className = className;
-    item.textContent = content;
-    return item;
-}
-
-const getChatMessageElement =
-    (fromUser: string, time: string, content: string): HTMLElement => {
-        const messageItem = createElement("div", `chat-message-item`, content);
-        const userNameItem =
-            createElement("span", `chat-userName-item`, fromUser);
-        const dateItem = createElement("span", `chat-date-item`, time);
-        const userNameDateContainer = createElement("div", `chat-userName-date-container`, "")
-        userNameDateContainer.appendChild(userNameItem);
-        userNameDateContainer.appendChild(dateItem);
-        const chatContainer = createElement("div", `chat-item`, "");
-        chatContainer.appendChild(userNameDateContainer);
-        chatContainer.appendChild(messageItem);
-        return chatContainer;
-    }
-
-const addChatMessage =
-    (chatMessage: ChatMessage): void => {
-        console.log(`adding ${chatMessage}`);
-
-        chatBoard.addChatMessage(chatMessage);
-
-
- //       chatBoard.appendChild(getChatMessageElement(
- //           clientState.remotes.get(chatMessage.userId)!.userInfo.userName,
- //           chatMessage.time,
- //           chatMessage.message
- //       ));
- //       const parent: HTMLElement = chatBoard.parentElement!;
- //       parent.scrollTop = parent.scrollHeight;
-
-    };
-
-*/
-
 
 

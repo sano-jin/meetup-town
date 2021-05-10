@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as ReactDOM from "react-dom";
 import { ChatMessage } from "./../ts/chatMessage";
 import { Remote } from './../ts/clientState';
+import { UserId } from './../ts/userInfo';
 
 
 type ChatMessageProps = {
@@ -32,19 +33,33 @@ type ChatBoardProps = {
 }
 
 class ChatBoard extends React.Component<ChatBoardProps, {}> {
+
+    componentDidMount() {
+        this.scrollToBottom();
+    }
+
+    componentDidUpdate() {
+        this.scrollToBottom();
+    }
+
+    scrollToBottom() {
+        this.el.scrollIntoView({ behavior: 'smooth' });
+    }
+
     render() {
         return <div className="chatBoardContainer">
-        <ul className="chatBoard">
-        {
-            this.props.chatMessages.map((chatMessage, index) =>
-                <ChatMessageContainer
-                    key         ={index.toString()}
-                    chatMessage ={chatMessage}
-                    fromUser    ={this.props.remotes.get(this.props.chatMessage.userId).userInfo.userName ?? "unknown"}
-                />
-            )
-        }
+            <ul className="chatBoard">
+                {
+                    this.props.chatMessages.map((chatMessage, index) =>
+                        <ChatMessageContainer
+                            key         ={index.toString()}
+                            chatMessage ={chatMessage}
+                            fromUser    ={this.props.remotes.get(this.props.chatMessage.userId).userInfo.userName ?? "unknown"}
+                        />
+                    )
+                }
             </ul>
+            <div className="dummy" ref={(el) => { this.el = el; }} />
         </div>
     }
 }

@@ -1,20 +1,22 @@
-import { getStringFromUser } from '../../src/util'
-import * as client from "./client";
+import { getStringFromUser, getTimeString } from '../../src/util'
+import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./client";
 import { ClientState } from "./clientState";
 import { ChatBoard } from "./../components/chatMessage";
+import { UserInfo, UserId } from './userInfo';
 import { VideoElement, VideoBoard } from "./../components/videoElement";
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
+import io from "socket.io-client";
 
-client;
+const socket = io();
 
-type Props {
+interface AppProps {
     userName: string;
-    userRoom: string;
+    roomName: string;
 }
 
-class App extends React.Component<Props, ClientState> {
-    constructor(props){
+class MainApp extends React.Component<AppProps, ClientState> {
+    constructor(props: AppProps){
         super(props)
         this.state = {
             userId: null,
@@ -31,13 +33,12 @@ class App extends React.Component<Props, ClientState> {
     }
 
     componentDidMount(){
-        const socket = io();
         socket.on('joined', (myUserId: UserId, jsonStrOtherUsers: string) => {
             console.log(`me ${myUerId} joined with`, jsonStrOtherUsers);
             this.setState((state) => {
                 ...state,
                 userId: myUserId,
-                remotes: new Map([...state.remotes, ...client.getInitRemotes(jsonStrOtherUsers)])
+                remotes: new Map([...state.remotes, ...getInitRemotes(jsonStrOtherUsers)])
             });
         });
 
@@ -45,7 +46,7 @@ class App extends React.Component<Props, ClientState> {
             console.log(`Another user ${userId} has joined to our room`, userInfo);
             this.setState((state) => {
                 ...state,
-                remotes: new Map([...state.remotes, [userId, client.getInitRemote(userInfo)]])
+                remotes: new Map([...state.remotes, [userId, getInitRemote(userInfo)]])
             });
         });
 
@@ -63,13 +64,8 @@ class App extends React.Component<Props, ClientState> {
             };
 
 
-        const props = (userId: UserId) => {
+        const props = (userId: UserId): ClientProps => {
             const sendMessage = sendMessageTo(userId);
-            const addVideoElement =
-                (remoteStream: MediaStream) => {
-                    console.log(remoteStream);
-                };
-
 
             const updateRemote = (f: (oldRemote: Remote) => Remote?) => {
                 this.setState(oldState => {
@@ -81,37 +77,43 @@ class App extends React.Component<Props, ClientState> {
                     return {...oldState, remote: new Map([...oldState.remotes, [userId, newRemote]])};
                 });
             };
-                    
+
+            const addVideoElement =
+                (remoteStream: MediaStream) => {
+                  updateRemote(oldRemote => {...oldRemote, remoteStream})
+                };
+
+
             const hangup = () => {
                 console.log('Hanging up.');
-                if (remote === undefined || remote === null) {
-                    throw Error(`trying to hanging up the unknown user ${toUserId}`);
-                }
                 stopVideo();
                 sendMessage({ type: 'bye' });
             };
 
             const handleRemoteHangup = (): void => {
-                console.log('Session terminated.');
                 stopVideo();
             };
 
             const stopVideo = (): void => {
-                this.state.remotes.get(userId)?.pc?.close();
-                updateRemote(oldRemote => {...oldRemote, remoteStream: null, isStarted: false, });
+                 updateRemote(oldRemote => {...oldRemote, remoteStream: null, isStarted: false, });
                 
                 // remote.isStarted = false;
                 // remote.pc!.close();
                 // remote.pc = null;
             };
 
+            const receiveChat = (chat: ChatMessage): void => {
+                this.setState(state => {...state, chats: [...state.chats, chat]});
+            };
+
             const block = (): void => {
+                console.log('Session terminated.');
                 this.state.remotes.get(userId)?.pc?.close();
                 updateRemote(_ => undefined);
             }
-            
-
+            return { sendMessage, addVideoElement, handleRemoteHangup, hangup, block, receiveChat, updateRemote };
         }
+
         socket.on('message', (userId: UserId, message: Message) => {
             if (message.type !== 'candidate') {
                 console.log('Received message:', message, `from user ${userId}`);
@@ -121,8 +123,6 @@ class App extends React.Component<Props, ClientState> {
                 throw Error(`remote is null for ${userId}`);
             }
             handleMessage(remote, message, this.state.localStream, props(userId));
-
-            
         });
         
 
@@ -132,7 +132,7 @@ class App extends React.Component<Props, ClientState> {
         // If found local stream
         const gotStream = (stream: MediaStream): void => {
             console.log('Adding local stream.');
-            this.setState(state => {...state, localStream: stream});
+            this.setState((state) => {...state, localStream: stream});
             for (const [userId, remote] of this.state.remotes.entries()) {
                 sendMessageTo(userId)({ type: 'call' });
                 if (remote.isInitiator) {
@@ -141,7 +141,7 @@ class App extends React.Component<Props, ClientState> {
             }
         }
 
-        navigator.mediaDevices.getUserMedia(clientState.localStreamConstraints)
+        navigator.mediaDevices.getUserMedia(this.state.localStreamConstraints)
                  .then(gotStream)
                  .catch((e) => {
                      alert(`getUserMedia() error: ${e.name}`);
@@ -182,38 +182,7 @@ const roomName: string = getStringFromUser('Enter room name:');
 const userName: string = getStringFromUser('Enter your name:');
 
 ReactDOM.render(
-    <App userName={userName} roomName={roomName} />,
+    <MainApp userName={userName} roomName={roomName} />,
     document.getElementById('root')
 );
-
-/*
-   type Props = {
-   name: string;
-   };
-
-   type State = {
-   clientState: ClientState;
-   userName: string;
-   roomName: string;
-   };
-
-   class Welcome extends React.Component<Props, State> {
-   constructor(props: Props) {
-   super(props);
-   this.state = {
-   clientState: client.clientState,
-   userName: client.userName,
-   roomName: client.roomName
-   };
-   }
-   
-   render() {
-   return <div>
-   <span>{this.state.roomName}</span>
-   <span>{this.state.userName}</span>
-   </div>
-   }
-   }
-
- */
 
