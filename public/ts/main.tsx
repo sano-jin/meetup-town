@@ -1,7 +1,10 @@
 import { getStringFromUser, getTimeString } from '../../src/util'
 import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./client";
-import { ClientState } from "./clientState";
+import { ClientState, Remote } from "./clientState";
+import { Message } from './message';
+import { ChatMessage } from './chatMessage';
 import { ChatBoard } from "./../components/chatMessage";
+import { ChatSender } from "./../components/chatSender";
 import { UserInfo, UserId } from './userInfo';
 import { VideoElement, VideoBoard } from "./../components/videoElement";
 import * as React from 'react';
@@ -16,6 +19,7 @@ interface AppProps {
 }
 
 class MainApp extends React.Component<AppProps, ClientState> {
+    sendMessageTo: (toUserId: UserId | undefined) => (message: Message) => void;
     constructor(props: AppProps){
         super(props)
         this.state = {
@@ -30,28 +34,8 @@ class MainApp extends React.Component<AppProps, ClientState> {
             },
             chats: []
         }
-    }
-
-    componentDidMount(){
-        socket.on('joined', (myUserId: UserId, jsonStrOtherUsers: string) => {
-            console.log(`me ${myUerId} joined with`, jsonStrOtherUsers);
-            this.setState((state) => {
-                ...state,
-                userId: myUserId,
-                remotes: new Map([...state.remotes, ...getInitRemotes(jsonStrOtherUsers)])
-            });
-        });
-
-        socket.on('anotherJoin', (userId: UserId, userInfo: UserInfo) => {
-            console.log(`Another user ${userId} has joined to our room`, userInfo);
-            this.setState((state) => {
-                ...state,
-                remotes: new Map([...state.remotes, [userId, getInitRemote(userInfo)]])
-            });
-        });
-
-        const sendMessageTo =
-            (toUserId: UserId?) => (message: Message) => {
+        this.sendMessageTo =
+            (toUserId: UserId | undefined) => (message: Message) => {
                 const send = () => {
                     const myUserId = this.state.userId;
                     if (myUserId === null) {
@@ -62,25 +46,54 @@ class MainApp extends React.Component<AppProps, ClientState> {
                 }
                 send();
             };
+    }
 
+    componentDidMount(){
+        socket.on('joined', (myUserId: UserId, jsonStrOtherUsers: string) => {
+            console.log(`me ${myUserId} joined with`, jsonStrOtherUsers);
+            this.setState((state) => {
+                return {
+                    ...state,
+                    userId: myUserId,
+                    remotes: new Map([...state.remotes, ...getInitRemotes(jsonStrOtherUsers)])
+                };
+            });
+        });
+
+        socket.on('anotherJoin', (userId: UserId, userInfo: UserInfo) => {
+            console.log(`Another user ${userId} has joined to our room`, userInfo);
+            this.setState((state) => {
+                return {
+                    ...state,
+                    remotes: new Map([...state.remotes, [userId, getInitRemote(userInfo)]])
+                };
+            });
+        });
 
         const props = (userId: UserId): ClientProps => {
-            const sendMessage = sendMessageTo(userId);
+            const sendMessage = this.sendMessageTo(userId);
 
-            const updateRemote = (f: (oldRemote: Remote) => Remote?) => {
-                this.setState(oldState => {
+            const updateRemote = (f: (oldRemote: Remote) => Remote | undefined) => {
+                this.setState((oldState: ClientState) => {
                     const oldRemote = oldState.remotes.get(userId);
                     if (oldRemote === undefined) return oldState;
                     const newRemote = f(oldRemote);
-                    if (newRemote === undefined)
-                        return {...oldState, remote: new Map([...oldState.remotes].filter([id, _] => id !== userId)])};
-                    return {...oldState, remote: new Map([...oldState.remotes, [userId, newRemote]])};
+                    if (newRemote === undefined) {
+                        return {
+                            ...oldState,
+                            remotes: new Map([...oldState.remotes]
+                                .filter(([id, _]) => id !== userId)
+                            )
+                        };
+                    } else { 
+                        return {...oldState, remotes: new Map([...oldState.remotes, [userId, newRemote]])};
+                    }
                 });
             };
 
             const addVideoElement =
-                (remoteStream: MediaStream) => {
-                  updateRemote(oldRemote => {...oldRemote, remoteStream})
+                (remoteStream: MediaStream | null) => {
+                    updateRemote(oldRemote => { return {...oldRemote, remoteStream}; });
                 };
 
 
@@ -95,7 +108,7 @@ class MainApp extends React.Component<AppProps, ClientState> {
             };
 
             const stopVideo = (): void => {
-                 updateRemote(oldRemote => {...oldRemote, remoteStream: null, isStarted: false, });
+                 updateRemote(oldRemote => { return {...oldRemote, remoteStream: null, isStarted: false }});
                 
                 // remote.isStarted = false;
                 // remote.pc!.close();
@@ -103,7 +116,7 @@ class MainApp extends React.Component<AppProps, ClientState> {
             };
 
             const receiveChat = (chat: ChatMessage): void => {
-                this.setState(state => {...state, chats: [...state.chats, chat]});
+                this.setState(state => { return {...state, chats: [...state.chats, chat]}; });
             };
 
             const block = (): void => {
@@ -111,14 +124,22 @@ class MainApp extends React.Component<AppProps, ClientState> {
                 this.state.remotes.get(userId)?.pc?.close();
                 updateRemote(_ => undefined);
             }
-            return { sendMessage, addVideoElement, handleRemoteHangup, hangup, block, receiveChat, updateRemote };
+            return {
+                sendMessage,
+                addVideoElement,
+                handleRemoteHangup,
+                hangup,
+                block,
+                receiveChat,
+                updateRemote
+            };
         }
 
         socket.on('message', (userId: UserId, message: Message) => {
             if (message.type !== 'candidate') {
                 console.log('Received message:', message, `from user ${userId}`);
             }
-            const remote: Remote? = this.state.remotes.get(userId)!;
+            const remote: Remote | undefined = this.state.remotes.get(userId)!;
             if (remote === undefined) {
                 throw Error(`remote is null for ${userId}`);
             }
@@ -132,9 +153,9 @@ class MainApp extends React.Component<AppProps, ClientState> {
         // If found local stream
         const gotStream = (stream: MediaStream): void => {
             console.log('Adding local stream.');
-            this.setState((state) => {...state, localStream: stream});
+            this.setState((state) => { return {...state, localStream: stream}; });
             for (const [userId, remote] of this.state.remotes.entries()) {
-                sendMessageTo(userId)({ type: 'call' });
+                this.sendMessageTo(userId)({ type: 'call' });
                 if (remote.isInitiator) {
                     maybeStart(remote, stream, props(userId));
                 }
@@ -147,16 +168,16 @@ class MainApp extends React.Component<AppProps, ClientState> {
                      alert(`getUserMedia() error: ${e.name}`);
                  });
         
-        socket.emit('join', this.state.roomName, { userName: this.state.userName });
+        socket.emit('join', this.state.roomName, this.state.userInfo);
     }
     
-    const sendChatMessage = (message: string) => {
+    sendChatMessage (message: string){
         const chatMessage: ChatMessage = {
-            userId: this.state.userId,
+            userId: this.state.userId ?? "undefined",
             time: getTimeString(),
             message: message,
         };
-        sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage });
+        this.sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage });
     };
 
     render() {
@@ -166,14 +187,16 @@ class MainApp extends React.Component<AppProps, ClientState> {
                 <span>{this.props.userName}</span>
             </div>
             <div>
-                <VideoElement id="localVideoElement" userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
+                <div id="localVideoElement">
+                    <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
+                </div>
                 <VideoBoard remotes={this.state.remotes} />
+                </div>
+                <div>
+                    <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} />
+                    <ChatSender sendChatMessage={this.sendChatMessage} />                
+                </div>
             </div>
-            <div>
-                <ChatBoard ChatMessages={this.state.chats} remtoes={this.state.remotes} />
-                <ChatSender sendChatMessage={sendChatMessage} />                
-            </div>
-        </div>
     }
 }
 

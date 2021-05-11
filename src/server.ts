@@ -40,7 +40,7 @@ io.sockets.on('connection', (socket: Socket): void => {
                 if (message.type === 'offer' || message.type === 'answer') {
                     console.log(`${fromUserId} -> ${toUserId}`, message.type);
                 } else {
-                    console.log('${fromUserId} -> ${toUserId}', message);
+                    console.log(`${fromUserId} -> ${toUserId}`, message);
                 }
             }
 

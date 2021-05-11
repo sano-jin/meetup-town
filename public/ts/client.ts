@@ -12,11 +12,11 @@ import { ChatMessage } from './chatMessage'
 // Initialize turn/stun server here
 const pcConfig = turnConfig;
 
-type SendMessage = (message: Message) => Promise<void>;
-type AddVideoElement = (remoteStream: MediaStream | null) => Promise<void>;
-type Hangup = () => Promise<void>;
-type ReceiveChat = (chat: ChatMessage) => Promise<void>;
-type UpdateRemote = (f: (oldRemote: Remote) => Remote | undefined) => Promise<void>;
+type SendMessage = (message: Message) => void;
+type AddVideoElement = (remoteStream: MediaStream | null) => void;
+type Hangup = () => void;
+type ReceiveChat = (chat: ChatMessage) => void;
+type UpdateRemote = (f: (oldRemote: Remote) => Remote | undefined) => void;
 interface ClientProps {
     sendMessage: SendMessage;
     addVideoElement: AddVideoElement;
@@ -92,16 +92,14 @@ const handleMessage =
                             newRemote.pc!
                                 .setRemoteDescription(message)
                                 .then(() => {
-                                    if (newRemote.pc !== null) {
-                                        doAnswer(newRemote.pc, props.sendMessage);
-                                    } else throw Error(`remote.pc is null`)
-                                })
-                                .catch(e => console.log(e));
+                                    doAnswer(newRemote.pc!, props.sendMessage);
+                                });
                             return newRemote;
                         });
                         break;
                     case 'answer':
                         if (remote.pc === null) {
+                            console.log(remote);
                             throw Error(`received an answer but the peer connection is null`);
                         }
                         if (remote.isStarted) {
@@ -142,6 +140,8 @@ const maybeStart =
             localStream
                 .getTracks()
                 .forEach(track => pc.addTrack(track, localStream));
+            remote.pc = pc;
+            remote.isStarted = true;
 
             return { ...remote, pc: pc, isStarted: true };
         } else return remote;
@@ -224,6 +224,7 @@ const setLocalAndSendMessage =
 
 const handleRemoteStream =
     (addVideoElement: AddVideoElement) => (event: RTCTrackEvent): void => {
+        console.log("handleRemoteStream", event);
         if (event.streams.length >= 1) {
             addVideoElement(event.streams[0]);
         } else {

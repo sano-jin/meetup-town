@@ -6,7 +6,7 @@ import { Message } from "./../ts/message";
 import { UserId } from './../ts/userInfo';
 
 interface ChatMessageProps {
-    sendChatMessage: (message: string) => Promise<void>;
+    sendChatMessage: (message: string) => void;
 };
 
 class ChatSender extends React.Component<ChatMessageProps, { value: string }> {
@@ -17,11 +17,11 @@ class ChatSender extends React.Component<ChatMessageProps, { value: string }> {
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    handleChange(event: Event) {
+    handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
         this.setState({ value: event.target!.value });
     }
 
-    handleSubmit(event: Event) {
+    handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const message = this.state.value;
         if (message === "") return;
@@ -36,8 +36,8 @@ class ChatSender extends React.Component<ChatMessageProps, { value: string }> {
                     <textarea value={this.state.value} onChange={this.handleChange} id="input-message" />
                 </label>
                 <label>
-                    <input type="submit" value="Send" className="send-button" />
-                    <i class="fas fa-paper-plane"></i>
+                <input type="submit" value="Send" className="send-button" />
+                    <i className="fas fa-paper-plane"></i>
                 </label>
             </form>
         );
