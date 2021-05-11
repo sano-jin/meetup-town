@@ -108,7 +108,7 @@ class MainApp extends React.Component<AppProps, ClientState> {
             };
 
             const stopVideo = (): void => {
-                 updateRemote(oldRemote => { return {...oldRemote, remoteStream: null, isStarted: false }});
+                updateRemote(oldRemote => { return {...oldRemote, remoteStream: null, isStarted: false }});
                 
                 // remote.isStarted = false;
                 // remote.pc!.close();
@@ -191,12 +191,12 @@ class MainApp extends React.Component<AppProps, ClientState> {
                     <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
                 </div>
                 <VideoBoard remotes={this.state.remotes} />
-                </div>
-                <div>
-                    <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} />
-                    <ChatSender sendChatMessage={this.sendChatMessage} />                
-                </div>
             </div>
+            <div>
+                <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} />
+                <ChatSender sendChatMessage={this.sendChatMessage} />                
+            </div>
+        </div>
     }
 }
 

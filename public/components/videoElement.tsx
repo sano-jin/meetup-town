@@ -44,6 +44,7 @@ class VideoBoard extends React.Component<VideoBoardProps, {}> {
             {
                 [...this.props.remotes].map(([userId, remote]) =>
                     <VideoElement
+                        key ={userId}
                         userId ={userId}
                         stream ={remote.remoteStream}
                         userInfo={remote.userInfo}
