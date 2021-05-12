@@ -1,16 +1,11 @@
 export { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart };
-// import io from "socket.io-client";
 import { turnConfig } from './config';
 import { Message } from './message';
 import { UserInfo, UserId } from './userInfo'; // 
 import { json2Map, map2Json } from '../../src/util'
 import { Remote } from './clientState'
 import { ChatMessage } from './chatMessage'
-// import { chatBoard } from "./../components/chatMessage";
 
-
-// Initialize turn/stun server here
-const pcConfig = turnConfig;
 
 type SendMessage = (message: Message) => void;
 type AddVideoElement = (remoteStream: MediaStream | null) => void;
@@ -78,7 +73,7 @@ const handleMessage =
                 console.log("received bye");
                 if (remote.isStarted) {
                     props.block();
-//                    props.handleRemoteHangup();
+                    //                    props.handleRemoteHangup();
                 }
                 break;
             default:
@@ -162,7 +157,7 @@ window.onbeforeunload = (e: Event): void => {
 const createPeerConnection =
     (remote: Remote, props: ClientProps): RTCPeerConnection => {
         try {
-            const pc = new RTCPeerConnection(pcConfig);
+            const pc = new RTCPeerConnection(turnConfig);
             pc.onicecandidate = handleIceCandidate(props.sendMessage);
             pc.ontrack = handleRemoteStream(props.addVideoElement);
             pc.onnegotiationneeded = handleNegotiationNeededEvent(pc, remote, props.sendMessage);

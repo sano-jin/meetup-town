@@ -34,9 +34,8 @@ interface ChatBoardProps {
 
 class ChatBoard extends React.Component<ChatBoardProps, {}> {
     //    el: React.RefObject<HTMLElement> | null;
-    //    el: HTMLDivElement;
-    
-    el: any;
+    //    el: HTMLDivElement;    
+    el: any; // Todo: type this
     constructor(props: ChatBoardProps) {
         super(props)
         this.el = React.createRef()
@@ -63,8 +62,11 @@ class ChatBoard extends React.Component<ChatBoardProps, {}> {
                         <ChatMessageContainer
                             key         ={index.toString()}
                             chatMessage ={chatMessage}
-                        fromUser    ={
-                            this.props.remotes.get(chatMessage.userId)?.userInfo.userName ?? this.props.myInfo.userName}
+                            fromUser    ={
+                            this.props.remotes.get(chatMessage.userId)?.userInfo.userName ??
+                            // If not other user then it's me!
+                            this.props.myInfo.userName
+                            }
                         />
                     )
                 }

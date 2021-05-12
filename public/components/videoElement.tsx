@@ -18,9 +18,9 @@ class VideoElement extends React.Component<VideoElementProps, {}> {
     }
 
     render() {
-        return <div className="videoContainer" key={this.props.userId}> {
+        return <div className="video-container" key={this.props.userId}> {
             this.props.stream !== null ?
-            <div className="videoElement">
+            <div className="video-item">
                 <video ref={video => {if (video !== null) {video.srcObject = this.props.stream;}}} autoPlay muted playsInline />
             </div>
             :
@@ -40,13 +40,13 @@ type VideoBoardProps = {
 
 class VideoBoard extends React.Component<VideoBoardProps, {}> {
     render() {
-        return <div className="VideoBoardContainer">
+        return <div className="video-board-container">
             {
                 [...this.props.remotes].map(([userId, remote]) =>
                     <VideoElement
-                        key ={userId}
-                        userId ={userId}
-                        stream ={remote.remoteStream}
+                        key     ={userId}
+                        userId  ={userId}
+                        stream  ={remote.remoteStream}
                         userInfo={remote.userInfo}
                     />
                 )

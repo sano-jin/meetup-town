@@ -18,7 +18,7 @@ div {
 body {
     margin: 0;
     line-height: 1.5;
-    color: #212529;
+    color: #bbb;
     text-align: left;
     display: block;
     background-color: #3c3c3c;
@@ -68,7 +68,7 @@ body {
     margin: 20px;
     box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
     overflow-y: scroll;
-    height: 50vh;
+    height: 40vh;
     scroll-snap-type: y proximity;
 }
 
@@ -256,11 +256,48 @@ body {
         box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.2);
     }
 
-    #video_container {
+    .header {
+        text-align: center;
+    }
+
+    .header>span {
+        margin: 30px 5px;
+        text-color: #999;
+    }
+    
+    
+    .video-board-container {
 	display: flex;
-	width: 85%;
+        width: 80vw;
+        height:30vh;
+    }
+    
+    .video-container {
+ 	width: 33%;
 	margin: auto;
-	height: 80% 
+	height: 100% 
+        box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    #local-video {
+        width: 30%;
+        height: 30%;
+    }
+    
+    #local-video>.video-board-container {
+        display: block;
+        float: left;
+        margin: 0;
+        /*
+	width: 20%;
+	height: 50%;
+       */
+    }
+
+    #local-video>.video-board-container {
+    	width: 100%;
+        margin: 0;
+	height: 100% 
     }
     
     video {

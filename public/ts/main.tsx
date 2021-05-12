@@ -187,18 +187,18 @@ class App extends React.Component<AppProps, ClientState> {
 
     render() {
         return <div>
-            <div>
-                <span>{this.props.roomName}</span>
-                <span>{this.props.userName}</span>
+            <div className="header">
+                <span className="room-name">{this.props.roomName}</span>
+                <span className="user-name">{this.props.userName}</span>
             </div>
             <div>
-                <div id="localVideoElement">
+                <div id="local-video">
                     <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
                 </div>
                 <VideoBoard remotes={this.state.remotes} />
             </div>
             <div>
-        <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
+                <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
                 <ChatSender sendChatMessage={this.sendChatMessage} />                
             </div>
         </div>
