@@ -3,18 +3,17 @@ import * as React from 'react';
 import * as ReactDOM from "react-dom";
 import { ChatMessage } from "./../ts/chatMessage";
 import { Remote } from './../ts/clientState';
-import { UserId } from './../ts/userInfo';
+import { UserId, UserInfo } from './../ts/userInfo';
 
 
 interface ChatMessageProps {
-    key: string;
     chatMessage: ChatMessage;
     fromUser: string;
 };
 
 class ChatMessageContainer extends React.Component<ChatMessageProps, {}> {
     render() {
-        return <li className="chatContainer" key={this.props.key}>
+        return <div className="chat-item">
             <div className="chat-userName-date-container">
                 <span className="chat-userName-item">{this.props.fromUser}</span>
                 <span className="chat-date-item">{this.props.chatMessage.time}</span> 
@@ -22,12 +21,13 @@ class ChatMessageContainer extends React.Component<ChatMessageProps, {}> {
             <div className="chat-message-item">
                 {this.props.chatMessage.message}
             </div>
-        </li>;
+        </div>;
     }
 }
 
 
 interface ChatBoardProps {
+    myInfo: UserInfo;
     chatMessages: ChatMessage[];
     remotes: Map<UserId, Remote>;
 }
@@ -57,17 +57,18 @@ class ChatBoard extends React.Component<ChatBoardProps, {}> {
 
     render() {
         return <div className="chatBoardContainer">
-            <ul className="chatBoard">
+            <div className="chatBoard">
                 {
                     this.props.chatMessages.map((chatMessage, index) =>
                         <ChatMessageContainer
                             key         ={index.toString()}
                             chatMessage ={chatMessage}
-                            fromUser    ={this.props.remotes.get(chatMessage.userId)?.userInfo.userName ?? "unknown"}
+                        fromUser    ={
+                            this.props.remotes.get(chatMessage.userId)?.userInfo.userName ?? this.props.myInfo.userName}
                         />
                     )
                 }
-            </ul>
+            </div>
             <div className="dummy" ref={(el) => { this.el = el; }} />
         </div>
     }

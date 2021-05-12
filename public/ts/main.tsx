@@ -18,7 +18,7 @@ interface AppProps {
     roomName: string;
 }
 
-class MainApp extends React.Component<AppProps, ClientState> {
+class App extends React.Component<AppProps, ClientState> {
     sendMessageTo: (toUserId: UserId | undefined) => (message: Message) => void;
     constructor(props: AppProps){
         super(props)
@@ -46,6 +46,7 @@ class MainApp extends React.Component<AppProps, ClientState> {
                 }
                 send();
             };
+      this.sendChatMessage = this.sendChatMessage.bind(this);
     }
 
     componentDidMount(){
@@ -150,7 +151,7 @@ class MainApp extends React.Component<AppProps, ClientState> {
         console.log("Going to find Local media");
         // console.log('Getting user media with constraints', clientState.localStreamConstraints);
 
-        // If found local stream
+      // If found local stream
         const gotStream = (stream: MediaStream): void => {
             console.log('Adding local stream.');
             this.setState((state) => { return {...state, localStream: stream}; });
@@ -171,14 +172,18 @@ class MainApp extends React.Component<AppProps, ClientState> {
         socket.emit('join', this.state.roomName, this.state.userInfo);
     }
     
-    sendChatMessage (message: string){
-        const chatMessage: ChatMessage = {
-            userId: this.state.userId ?? "undefined",
-            time: getTimeString(),
-            message: message,
-        };
-        this.sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage });
-    };
+  sendChatMessage (message: string){
+    this.setState(state => {
+      console.log("this.state", state);
+      const chatMessage: ChatMessage = {
+        userId: state.userId ?? "undefined",
+        time: getTimeString(),
+        message: message,
+      };
+      this.sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage });
+      return { ...state, chats: [...state.chats, chatMessage]};
+    });
+  };
 
     render() {
         return <div>
@@ -193,7 +198,7 @@ class MainApp extends React.Component<AppProps, ClientState> {
                 <VideoBoard remotes={this.state.remotes} />
             </div>
             <div>
-                <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} />
+        <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
                 <ChatSender sendChatMessage={this.sendChatMessage} />                
             </div>
         </div>
@@ -205,7 +210,7 @@ const roomName: string = getStringFromUser('Enter room name:');
 const userName: string = getStringFromUser('Enter your name:');
 
 ReactDOM.render(
-    <MainApp userName={userName} roomName={roomName} />,
+    <App userName={userName} roomName={roomName} />,
     document.getElementById('root')
 );
 

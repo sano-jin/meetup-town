@@ -11,7 +11,7 @@ type VideoElementProps = {
 };
 
 class VideoElement extends React.Component<VideoElementProps, {}> {
-    video: any;
+    video: React.RefObject<HTMLVideoElement>;
     constructor(props: VideoElementProps) {
         super(props)
         this.video = React.createRef();

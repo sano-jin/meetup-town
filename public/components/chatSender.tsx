@@ -21,22 +21,24 @@ class ChatSender extends React.Component<ChatMessageProps, { value: string }> {
         this.setState({ value: event.target!.value });
     }
 
-    handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    handleSubmit(event: React.MouseEvent<HTMLInputElement, MouseEvent>) {
         event.preventDefault();
-        const message = this.state.value;
-        if (message === "") return;
-        console.log(`sendChatMessage`, message);
-        this.props.sendChatMessage(message);
+        this.setState(state => {
+            const message = state.value;
+            if (message === "") return state;
+            console.log(`sendChatMessage`, message);
+            this.props.sendChatMessage(message);
+            return { value: "" };
+        });
     }
 
     render() {
         return (
-            <form onSubmit={this.handleSubmit} id="message-from">
-                <label>
-                    <textarea value={this.state.value} onChange={this.handleChange} id="input-message" />
-                </label>
-                <label>
-                <input type="submit" value="Send" className="send-button" />
+            <form id="message-from" action="#">
+                <textarea value={this.state.value} onChange={this.handleChange} id="input-message" />
+                
+                <label className="send-button-container">
+                    <input type="submit" value="Send" className="send-button" onClick={this.handleSubmit} />
                     <i className="fas fa-paper-plane"></i>
                 </label>
             </form>

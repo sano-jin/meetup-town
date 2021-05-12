@@ -54,19 +54,14 @@ body {
     border: none;
 }
 
-.send-button:hover{
-    color: #5eb9e0ff;
-    cursor: pointer;
-}
-
-#message-form {
+.message-form {
     display: block;
     height: 100px;
     width: 500px
     vertical-align: top;
 }
 
-#chatBoardContainer {
+.chatBoardContainer {
     background-color: #3c3c3c;
     width: 500px;
     padding: 10px;
@@ -77,7 +72,7 @@ body {
     scroll-snap-type: y proximity;
 }
 
-#chatBoard>.chat-item {
+.chatBoard>.chat-item {
     padding: 10px;
     background-color: #595959;
     border-radius: 10px;
@@ -85,28 +80,28 @@ body {
     box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
 }
 
-#chatBoard>.chat-item>.chat-userName-date-container {
+.chatBoard>.chat-item>.chat-userName-date-container {
     display: block;
 }
 
-#chatBoard>.chat-item>.chat-userName-date-container>.chat-userName-item {
+.chatBoard>.chat-item>.chat-userName-date-container>.chat-userName-item {
     color: #c0e1ee;
     font-size: 16px;
 }
 
-#chatBoard>.chat-item>.chat-userName-date-container>.chat-date-item {
+.chatBoard>.chat-item>.chat-userName-date-container>.chat-date-item {
     color: #e7e7e7;
     float: right;
     font-size: 14px;
 }
 
-#chatBoard>.chat-item>.chat-message-item {
+.chatBoard>.chat-item>.chat-message-item {
     display: block;
     color: #fff;
     font-size: 14px;
 }
 
-#chatBoard>.my-message {
+.chatBoard>.my-message {
     background-color: #3c3c3c;
 }
 
@@ -129,6 +124,25 @@ body {
 #input-message:hover {
     border: 2px solid #5eb9e0;
     box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
+}
+
+.send-button-container {
+    width: 30px;
+    font-size: 30px;
+}
+
+.send-button:hover{
+    color: #5eb9e0ff;
+    cursor: pointer;
+}
+
+.send-button-container:hover {
+    color: #5eb9e0ff;
+    cursor: pointer;
+}
+
+.send-button-container>input {
+    display: none;
 }
 
 .ml-auto, .mx-auto {

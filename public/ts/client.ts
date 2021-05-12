@@ -77,7 +77,8 @@ const handleMessage =
             case 'bye':
                 console.log("received bye");
                 if (remote.isStarted) {
-                    props.handleRemoteHangup();
+                    props.block();
+//                    props.handleRemoteHangup();
                 }
                 break;
             default:
