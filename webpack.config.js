@@ -26,7 +26,7 @@ module.exports = [
             ]
         },
         resolve: {
-            extensions: [".ts", ".js", ".json"],
+            extensions: [".ts", ".js", ".json", "tsx"],
             alias: {
                 "@": path.join(__dirname, "/src/")
             }
@@ -34,28 +34,28 @@ module.exports = [
     },
     {
         name: 'client',
-        entry: './public/ts/main.ts',
+        entry: './public/ts/main.tsx',
         output: {
             path: __dirname + '/public/dist',
             filename: 'bundle.js',
         },
-        target: 'web',
+        target: ['web', 'es5'],
         externals: ['bufferutil', 'utf-8-validate'], 
         mode: 'development',
         module: {
             rules: [
                 {
-                    test: /\.ts$/,
+                    test: /\.tsx?$/,
                     exclude: /node_modules/,
                     loader: "ts-loader",
                     options: {
-                        configFile: "tsconfig.json"
+                        configFile: "tsconfig.json",
                     }
                 }
             ]
         },
         resolve: {
-            extensions: [".ts", ".js", ".json"],
+            extensions: [".ts", ".js", ".json", ".tsx"],
             alias: {
                 "@": path.join(__dirname, "/src/")
             }

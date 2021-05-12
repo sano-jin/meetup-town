@@ -18,7 +18,7 @@ div {
 body {
     margin: 0;
     line-height: 1.5;
-    color: #212529;
+    color: #bbb;
     text-align: left;
     display: block;
     background-color: #3c3c3c;
@@ -54,59 +54,54 @@ body {
     border: none;
 }
 
-.send-button:hover{
-    color: #5eb9e0ff;
-    cursor: pointer;
-}
-
-#message-form {
+.message-form {
     display: block;
     height: 100px;
     width: 500px
     vertical-align: top;
 }
 
-#chatBoardContainer {
+.chatBoardContainer {
     background-color: #3c3c3c;
     width: 500px;
     padding: 10px;
     margin: 20px;
     box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
     overflow-y: scroll;
-    height: 50vh;
+    height: 40vh;
     scroll-snap-type: y proximity;
 }
 
-#chatBoard>.chat-item {
+.chatBoard>.chat-item {
     padding: 10px;
     background-color: #595959;
-    border-radius: 8px;
+    border-radius: 10px;
     margin: 10px 5px 10px;
     box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
 }
 
-#chatBoard>.chat-item>.chat-userName-date-container {
+.chatBoard>.chat-item>.chat-userName-date-container {
     display: block;
 }
 
-#chatBoard>.chat-item>.chat-userName-date-container>.chat-userName-item {
+.chatBoard>.chat-item>.chat-userName-date-container>.chat-userName-item {
     color: #c0e1ee;
     font-size: 16px;
 }
 
-#chatBoard>.chat-item>.chat-userName-date-container>.chat-date-item {
+.chatBoard>.chat-item>.chat-userName-date-container>.chat-date-item {
     color: #e7e7e7;
     float: right;
     font-size: 14px;
 }
 
-#chatBoard>.chat-item>.chat-message-item {
+.chatBoard>.chat-item>.chat-message-item {
     display: block;
     color: #fff;
     font-size: 14px;
 }
 
-#chatBoard>.my-message {
+.chatBoard>.my-message {
     background-color: #3c3c3c;
 }
 
@@ -129,6 +124,25 @@ body {
 #input-message:hover {
     border: 2px solid #5eb9e0;
     box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
+}
+
+.send-button-container {
+    width: 30px;
+    font-size: 30px;
+}
+
+.send-button:hover{
+    color: #5eb9e0ff;
+    cursor: pointer;
+}
+
+.send-button-container:hover {
+    color: #5eb9e0ff;
+    cursor: pointer;
+}
+
+.send-button-container>input {
+    display: none;
 }
 
 .ml-auto, .mx-auto {
@@ -242,11 +256,48 @@ body {
         box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.2);
     }
 
-    #video_container {
+    .header {
+        text-align: center;
+    }
+
+    .header>span {
+        margin: 30px 5px;
+        text-color: #999;
+    }
+    
+    
+    .video-board-container {
 	display: flex;
-	width: 85%;
+        width: 80vw;
+        height:30vh;
+    }
+    
+    .video-container {
+ 	width: 33%;
 	margin: auto;
-	height: 80% 
+	height: 100% 
+        box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    #local-video {
+        width: 30%;
+        height: 30%;
+    }
+    
+    #local-video>.video-board-container {
+        display: block;
+        float: left;
+        margin: 0;
+        /*
+	width: 20%;
+	height: 50%;
+       */
+    }
+
+    #local-video>.video-board-container {
+    	width: 100%;
+        margin: 0;
+	height: 100% 
     }
     
     video {

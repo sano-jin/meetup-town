@@ -5,6 +5,7 @@ import { ChatMessage } from './chatMessage';
 // Defining some global utility variables
 interface ClientState {
     userId: null | UserId,
+    roomName: string;
     userInfo: UserInfo,
     localStream: null | MediaStream,  // Local camera
     remotes: Map<string, Remote>,     // A map from socket.id
@@ -19,7 +20,6 @@ interface Remote {
     isStarted: boolean,               // Has started ???
     pc: null | RTCPeerConnection,     // Peer connection
     remoteStream: null | MediaStream, // Remote camera
-    remoteVideoElement: null | HTMLLIElement // HTMLVideoElement
 }
 
 interface StreamConstraints {

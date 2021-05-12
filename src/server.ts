@@ -40,18 +40,18 @@ io.sockets.on('connection', (socket: Socket): void => {
                 if (message.type === 'offer' || message.type === 'answer') {
                     console.log(`${fromUserId} -> ${toUserId}`, message.type);
                 } else {
-                    console.log('${fromUserId} -> ${toUserId}', message);
+                    console.log(`${fromUserId} -> ${toUserId}`, message);
                 }
             }
 
             if (toUserId === null || toUserId === undefined) {
                 console.log(`broadcasting to the room ${toRoom}`);
-                socket.to(toRoom).emit('message', fromUserId, message, toRoom);
+                socket.to(toRoom).emit('message', fromUserId, message);
             } else {
                 if (users.has(toRoom) && users.get(toRoom)!.has(toUserId)) {
                     socket
                         .to(users.get(toRoom)!.get(toUserId)!.socketId)
-                        .emit('message', fromUserId, message, toRoom);
+                        .emit('message', fromUserId, message);
                 } else {
                     throw Error(`roomName ${toRoom} or userId ${toUserId} is not set in ${users}`);
                 }
@@ -84,8 +84,8 @@ io.sockets.on('connection', (socket: Socket): void => {
         const jsonOtherUsersInRoom = map2Json(otherUsersInRoom);
         console.log(otherUsersInRoom);
 
-        socket.to(room).emit('anotherJoin', room, userId, userInfo);
-        socket.emit('joined', room, userId, jsonOtherUsersInRoom);
+        socket.to(room).emit('anotherJoin', userId, userInfo);
+        socket.emit('joined', userId, jsonOtherUsersInRoom);
     });
 
     socket.on('ipaddr', (): void => {
