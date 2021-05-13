@@ -1,11 +1,12 @@
+export { Main };
 import { getStringFromUser, getTimeString } from '../../src/util'
-import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./client";
-import { ClientState, Remote } from "./clientState";
-import { Message } from './message';
-import { ChatMessage } from './chatMessage';
+import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./../ts/client";
+import { ClientState, Remote } from "./../ts/clientState";
+import { Message } from './../ts/message';
+import { ChatMessage } from './../ts/chatMessage';
 import { ChatBoard } from "./../components/chatMessage";
 import { ChatSender } from "./../components/chatSender";
-import { UserInfo, UserId } from './userInfo';
+import { UserInfo, UserId } from './../ts/userInfo';
 import { VideoElement, VideoBoard } from "./../components/videoElement";
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
@@ -13,14 +14,14 @@ import io from "socket.io-client";
 
 const socket = io();
 
-interface AppProps {
+interface MainProps {
     userName: string;
     roomName: string;
 }
 
-class App extends React.Component<AppProps, ClientState> {
+class Main extends React.Component<MainProps, ClientState> {
     sendMessageTo: (toUserId: UserId | undefined) => (message: Message) => void;
-    constructor(props: AppProps){
+    constructor(props: MainProps){
         super(props)
         this.state = {
             userId: null,
@@ -205,12 +206,15 @@ class App extends React.Component<AppProps, ClientState> {
     }
 }
 
+/*
+
 // Prompting for room name:
 const roomName: string = getStringFromUser('Enter room name:');
 const userName: string = getStringFromUser('Enter your name:');
 
 ReactDOM.render(
-    <App userName={userName} roomName={roomName} />,
+    <Main userName={userName} roomName={roomName} />,
     document.getElementById('root')
 );
 
+*/
