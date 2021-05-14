@@ -9,7 +9,7 @@ An online meeting app runs on browser.
 ### How to install
 1. `npm install`
 2. `npm run dev` 
-3. Open [localhost:8000](127.0.0.1:8000) on your browser
+3. Open [localhost:8000](http://localhost:8000) on your browser
 
 ## Directory structure
 
