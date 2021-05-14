@@ -1,5 +1,8 @@
 # Meetup Town
 An online meeting app runs on browser.
+Deployed at https://meetup-online.glitch.me/.
+
+Visit https://sano-jin.github.io/meetup-town/ for more information.
 
 ## Getting started
 ### Prerequisites
