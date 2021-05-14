@@ -11,7 +11,7 @@ callouts: about_callouts
 
 # About
 **Meetup onine** is a _free_ and _open-source_ online meeting app runs on browser.
-<object data="./meetup-online-slide.pdf" type="application/pdf" width="600px" height="400px">
+<object data="./meetup-online-slide.pdf" type="application/pdf" width="600px" height="500px">
     <embed src="http://yoursite.com/the.pdf">
         <p>This browser does not support PDFs. Please download the PDF to view it: <a href="./meetup-online-slide.pdf">Download PDF</a>.</p>
     </embed>
