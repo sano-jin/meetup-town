@@ -1,0 +1,16 @@
+style: is-light
+items:
+  - title: High quality screen sharing
+    subtitle: Share complete slide images without any noises during the meeting
+    icon: fa-share-square
+    description: >
+      
+      
+  - title: Free to use
+    subtitle: Cost $0 to use
+    icon: fa-user-plus
+
+  - title: Open source
+    subtitle: Visit our github repository to see the full source codes
+    icon: fa-github
+    icon_brand: true

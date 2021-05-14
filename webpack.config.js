@@ -4,10 +4,10 @@ const nodeExternals = require('webpack-node-externals')
 module.exports = [
     {
         name: 'server',
-        entry: './src/server.ts',
+        entry: './src/server/server.ts',
         target: 'node',
         output: {
-            path: __dirname + '/dist/server',
+            path: __dirname + '/dist',
             filename: 'server.js',
         },
         target: 'node',
@@ -34,7 +34,7 @@ module.exports = [
     },
     {
         name: 'client',
-        entry: './public/ts/main.tsx',
+        entry: './src/client/App.tsx',
         output: {
             path: __dirname + '/public/dist',
             filename: 'bundle.js',
