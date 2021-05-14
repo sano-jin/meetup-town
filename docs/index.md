@@ -6,21 +6,6 @@ hero_height: is-large
 hero_link: https://meetup-online.glitch.me/
 hero_link_text: Try it!
 show_sidebar: true
----
-
-
-# About
-*Meetup onine* is a _free_ and _open-source_ online meeting app runs on browser.
-
-## Create a callout data file
-
-Create a data file following the below format. The style is for classes to set the background colour and sizes you would like to use of the Bulma hero container for the callouts.
-
-**New in 0.5.7** You can set the height of the callouts in the data file, such as is-small, is-medium or is-large. If unset it will be is-medium by default.
-
-The items have 6 fields, but only the title and subtitle are required. If the icon is a brand icon, such as GitHub in the below example, set `icon_brand: true`.
-
----
 style: is-light
 height: is-medium
 items:
@@ -53,6 +38,19 @@ items:
     call_to_action_name: Call to action 3
     call_to_action_link: /page-3/
 ---
+
+
+# About
+*Meetup onine* is a _free_ and _open-source_ online meeting app runs on browser.
+
+## Create a callout data file
+
+Create a data file following the below format. The style is for classes to set the background colour and sizes you would like to use of the Bulma hero container for the callouts.
+
+**New in 0.5.7** You can set the height of the callouts in the data file, such as is-small, is-medium or is-large. If unset it will be is-medium by default.
+
+The items have 6 fields, but only the title and subtitle are required. If the icon is a brand icon, such as GitHub in the below example, set `icon_brand: true`.
+
 
 
 ## Set the callouts in the frontmatter
