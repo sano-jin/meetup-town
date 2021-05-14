@@ -1,10 +1,10 @@
 style: is-light
 height: is-medium
 items:
-  - title: High quality screen sharing with light-weight traffic
+  - title: High quality screen sharing
     icon: fa-share-square
     description: >
-      We have developed our original methods that allow us to share complete slide images without any noises during the meeting.
+      Share complete slide images without any noises with during the meeting.
       
   - title: Free to use
     icon: fa-user-plus
