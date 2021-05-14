@@ -12,69 +12,15 @@ callouts: about_callouts
 # About
 *Meetup onine* is a _free_ and _open-source_ online meeting app runs on browser.
 
-## Create a callout data file
+<object data="./meetup-online-slide.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="http://yoursite.com/the.pdf">
+        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://yoursite.com/the.pdf">Download PDF</a>.</p>
+    </embed>
+</object>
+    
 
-Create a data file following the below format. The style is for classes to set the background colour and sizes you would like to use of the Bulma hero container for the callouts.
+# How to contribute
+For information about developing the software, please see the Readme at the GitHub repo: https://github.com/sano-jin/meetup-town/README.md
 
-**New in 0.5.7** You can set the height of the callouts in the data file, such as is-small, is-medium or is-large. If unset it will be is-medium by default.
-
-The items have 6 fields, but only the title and subtitle are required. If the icon is a brand icon, such as GitHub in the below example, set `icon_brand: true`.
-
-
-
-## Set the callouts in the frontmatter
-
-To display the callouts on your page, add a callouts property in the frontmatter and set it to the name of your data file without the extension.
-
-```yaml
-layout: page
-title: Example Landing Page
-subtitle: This is an example landing page
-callouts: example_callouts
-```
-
-[Introduction slide](meetup-online-slide.pdf)
-
-## How to contribute
-### Prerequisites
-- `Nodejs`
-- `npm`
-
-### How to install
-1. `npm install`
-2. `npm run dev` 
-3. Open [localhost:8000](http://localhost:8000) on your browser
-
-## Directory structure
-
-```
-+- public/
-|   +- App.tsx
-|   +- css/styles.css
-|   +- assets/meetup_icon.svg
-|   +- dist/bundle.js
-|      % run `npm run build` to generate
-+- src/
-|   +- server/
-|   |   +- server.ts
-|   +- client/
-|   |   +- ts/
-|   |   |   +- client.ts
-|   |   |   +- config.ts
-|   |   |   +- ...
-|   |   +- components/
-|   |       +- main.tsx
-|   |       +- chatMessage.tsx
-|   |       +- videoElement.tsx
-|   |       +- ...
-|   +- util.ts
-+- dist/server.js % run `npm run build` to generate
-+- view/index.ejs
-+ ...
-```
-
-## Acknowledgements
-
-Our implementation is currently based on <https://github.com/webtutsplus/videoChat-WebFrontend>.
 
 

@@ -1,28 +1,20 @@
 style: is-light
 height: is-medium
 items:
-  - title: Example callout 1
-    subtitle: Example subtitle 1
-    icon: fa-space-shuttle
+  - title: High quality screen sharing with light-weight traffic
+    icon: fa-share-square
     description: >
-      The example description text goes here and can be multiple lines.
-      For example, such as this. 
-    call_to_action_name: Call to action 1
-    call_to_action_link: /page-1/
-  - title: Example callout 2
-    subtitle: Example subtitle 2
-    icon: fa-wrench
+      We have developed our original methods that allow us to share complete slide images without any noises during the meeting.
+      This is done with a very light weight network traffic.
+      
+  - title: Free to use
+    icon: fa-user-plus
     description: >
-      The example description text goes here and can be multiple lines.
-      For example, such as this.
-    call_to_action_name: Call to action 2
-    call_to_action_link: /page-2/
-  - title: Example callout 3
-    subtitle: Example subtitle 3
+      Our product is totally free to use without any limitations.
+
+  - title: Open Source
     icon: fa-github
     icon_brand: true
     description: >
-      The example description text goes here and can be multiple lines.
-      For example, such as this.
-    call_to_action_name: Call to action 3
-    call_to_action_link: https://www.csrhymes.com/bulma-clean-theme/page-3/
+      This is an open source software.
+      Visit our github repository to see the full source codes.
