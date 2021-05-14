@@ -5,7 +5,6 @@ items:
     icon: fa-share-square
     description: >
       We have developed our original methods that allow us to share complete slide images without any noises during the meeting.
-      This is done with a very light weight network traffic.
       
   - title: Free to use
     icon: fa-user-plus
