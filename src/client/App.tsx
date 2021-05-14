@@ -1,5 +1,5 @@
 import { Main } from "./components/main";
-import { getStringFromUser, getTimeString } from '../src/util'
+import { getStringFromUser, getTimeString } from '../util'
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 

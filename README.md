@@ -8,28 +8,31 @@ An online meeting app runs on browser.
 
 ### How to install
 1. `npm install`
-2. `npm run build`
-3. `npm run start`
-4. open `localhost:8000` on your browser
+2. `npm run dev` 
+3. open `localhost:8000` on your browser
 
 ## Directory structure
 
 ```
 +- public/
+|   +- App.tsx
 |   +- css/styles.css
 |   +- dist/bundle.js
 |   |  % run `npm run build` to generate
 |   +- ts/
-|   |   +- main.ts
 |   |   +- client.ts
 |   |   +- config.ts
 |   |   +- ...
-|
+|   +- components/
+|   |   +- main.tsx
+|   |   +- chatMessage.tsx
+|   |   +- videoElement.tsx
+|   |   +- ...
 +- src/
 |  +- server.ts
-|  
+|  +- util.ts
 +- dist/ % run `npm run build` to generate
-|
++- view/index.ejs
 + ...
 ```
 

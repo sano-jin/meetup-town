@@ -1,5 +1,5 @@
 export { Main };
-import { getStringFromUser, getTimeString } from '../../src/util'
+import { getStringFromUser, getTimeString } from '../../util'
 import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./../ts/client";
 import { ClientState, Remote } from "./../ts/clientState";
 import { Message } from './../ts/message';
