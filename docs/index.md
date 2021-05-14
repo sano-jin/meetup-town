@@ -20,7 +20,7 @@ Create a data file following the below format. The style is for classes to set t
 
 The items have 6 fields, but only the title and subtitle are required. If the icon is a brand icon, such as GitHub in the below example, set `icon_brand: true`.
 
-```yaml
+---
 style: is-light
 height: is-medium
 items:
@@ -52,7 +52,8 @@ items:
       For example, such as this.
     call_to_action_name: Call to action 3
     call_to_action_link: /page-3/
-```
+---
+
 
 ## Set the callouts in the frontmatter
 
