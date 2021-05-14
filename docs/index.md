@@ -2,6 +2,7 @@
 title: Meetup online
 subtitle: A free open-source online meeting app
 layout: page
+callouts: home_callouts
 hero_height: is-large
 hero_link: https://meetup-online.glitch.me/
 hero_link_text: Try it!
