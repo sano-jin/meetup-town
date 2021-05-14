@@ -1,6 +1,10 @@
 # Meetup Town
 An online meeting app runs on browser.
 
+## About
+
+[Introduction slide](meetup-online-slide.pdf)
+
 ## Getting started
 ### Prerequisites
 - `Nodejs`
