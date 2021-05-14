@@ -20,7 +20,7 @@ callouts: about_callouts
     
 
 # How to contribute
-For information about developing the software, please see the Readme at the GitHub repo: https://github.com/sano-jin/meetup-town/README.md
+For information about developing the software, please see the Readme at the GitHub repo: https://github.com/sano-jin/meetup-town/blob/develop/README.md
 
 
 
