@@ -5,6 +5,8 @@ import { Server, Socket } from 'socket.io';
 import { UserInfo, UserId } from './../userInfo';
 import { Message } from './../message';
 import { map2Json } from './../util'
+import { v4 as uuid } from 'uuid';
+
 
 type SocketId = string;
 type RoomName = string
@@ -61,7 +63,7 @@ io.sockets.on('connection', (socket: Socket): void => {
     socket.on('join', (room: string, userInfo: UserInfo): void => {
         console.log(`Received request to create or join room ${room} from user ${socket.id}`);
 
-        const userId: UserId = socket.id;
+        const userId: UserId = uuid(); // Create a new user id
         socket.join(room);
 
         if (!users.has(room)) users.set(room, new Map());
