@@ -2,8 +2,8 @@ import { networkInterfaces, NetworkInterfaceInfo } from 'os';
 import express from 'express';
 import { createServer, Server as httpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { UserInfo, UserId } from '../client/ts/userInfo';
-import { Message } from '../client/ts/message';
+import { UserInfo, UserId } from './../userInfo';
+import { Message } from './../message';
 import { map2Json } from './../util'
 
 type SocketId = string;
@@ -20,7 +20,7 @@ const app: express.Express = express();
 
 app.use(express.static('public'))
 
-app.get("/", (_: express.Request, res: express.Response) => {
+app.get("/*", (_: express.Request, res: express.Response) => {
     res.render("index.ejs");
 });
 

@@ -2,11 +2,11 @@ export { Main };
 import { getStringFromUser, getTimeString } from '../../util'
 import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./../ts/client";
 import { ClientState, Remote } from "./../ts/clientState";
-import { Message } from './../ts/message';
-import { ChatMessage } from './../ts/chatMessage';
+import { Message } from './../../message';
+import { ChatMessage } from './../../chatMessage';
 import { ChatBoard } from "./../components/chatMessage";
 import { ChatSender } from "./../components/chatSender";
-import { UserInfo, UserId } from './../ts/userInfo';
+import { UserInfo, UserId } from './../../userInfo';
 import { VideoElement, VideoBoard } from "./../components/videoElement";
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
@@ -15,7 +15,7 @@ import io from "socket.io-client";
 const socket = io();
 
 interface MainProps {
-    userName: string;
+    userInfo: UserInfo;
     roomName: string;
 }
 
@@ -26,7 +26,7 @@ class Main extends React.Component<MainProps, ClientState> {
         this.state = {
             userId: null,
             roomName: props.roomName,
-            userInfo: { userName: props.userName },
+            userInfo: props.userInfo,
             localStream: null,
             remotes: new Map<UserId, Remote>(),
             localStreamConstraints: {
@@ -190,7 +190,7 @@ class Main extends React.Component<MainProps, ClientState> {
         return <div>
             <div className="header">
                 <span className="room-name">{this.props.roomName}</span>
-                <span className="user-name">{this.props.userName}</span>
+                <span className="user-name">{this.props.userInfo.userName}</span>
             </div>
             <div>
                 <div id="local-video">

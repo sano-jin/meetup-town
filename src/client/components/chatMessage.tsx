@@ -1,9 +1,9 @@
 export { ChatBoard };
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
-import { ChatMessage } from "./../ts/chatMessage";
+import { ChatMessage } from "./../../chatMessage";
 import { Remote } from './../ts/clientState';
-import { UserId, UserInfo } from './../ts/userInfo';
+import { UserId, UserInfo } from './../../userInfo';
 
 
 interface ChatMessageProps {

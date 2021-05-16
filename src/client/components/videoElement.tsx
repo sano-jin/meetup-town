@@ -2,7 +2,7 @@ export { VideoElement, VideoBoard };
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 import { Remote } from './../ts/clientState';
-import { UserInfo, UserId } from './../ts/userInfo';
+import { UserInfo, UserId } from './../../userInfo';
 
 type VideoElementProps = {
     userId: UserId;
