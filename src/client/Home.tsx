@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 class Home extends React.Component<{}, {}> {
     render() {
 	return (
-            <Link to={`/rooms/${uuid()}`}>Create a new room</Link>	    
+            <Link className="createNewRoom" to={`/rooms/${uuid()}`}>Create a new room</Link>	    
 	);
     }
 }
