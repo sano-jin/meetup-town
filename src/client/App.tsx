@@ -1,6 +1,6 @@
 import { Main } from "./components/main";
 import { Home } from "./Home";
-import { User } from "./User";
+import { RoomEntry } from "./RoomEntry";
 import { getStringFromUser, getTimeString } from '../util'
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
@@ -22,7 +22,7 @@ class App extends React.Component {
 			<Switch>
 			    <Route path='/rooms/:roomId' component={() => {
 				const { roomId } = useParams<{roomId: string}>();
-				return <User roomId={roomId} />
+				return <RoomEntry roomId={roomId} />
 				}}/>
 			    <Route exact path='/' component={Home}/>
 			</Switch>
@@ -37,17 +37,4 @@ ReactDOM.render(
     <App />,
     document.getElementById('root')
 );
-
-
-/*
-   // Prompting for room name:
-   const roomName: string = getStringFromUser('Enter room name:');
-   const userName: string = getStringFromUser('Enter your name:');
-
-   ReactDOM.render(
-   <Main userName={userName} roomName={roomName} />,
-   document.getElementById('root')
-   );
-
- */
 

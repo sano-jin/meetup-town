@@ -31,10 +31,11 @@ class NameForm extends React.Component<NameFormProps, { value: string }> {
     render() {
 	return (
             <form id="name-form" action="#">
-                <input type="text" value={this.state.value} onChange={this.handleChange}/>
+                <input type="text" value={this.state.value} onChange={this.handleChange} placeholder="Your name" name="username"/>
                 
                 <label className="send-button-container">
-                    <input type="submit" value="Join" className="send-button" onClick={this.handleSubmit} />
+                <input type="submit" value="Join" className="send-buttun" onClick={this.handleSubmit}
+	    name="join" />
                     <i className="fas fa-door-open"></i>
                 </label>
             </form>
