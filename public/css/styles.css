@@ -14,14 +14,18 @@ div {
 body {
     margin: 0;
     line-height: 1.5;
+    height: 100%;
+/*
     color: #bbb;
     text-align: left;
     display: block;
     background-color: #3c3c3c;
     height: 100%;
+*/
     font-family: 'Noto Sans JP', sans-serif;
 }
 
+/*
 .row {
     display: -ms-flexbox;
     display: flex;
@@ -162,10 +166,11 @@ body {
     margin-right: auto;
     margin-left: auto;
 }
-
+*/
 
 
 /* For Desktop  */
+/*
 .col-12 {
     position: relative;
     width: 40%;
@@ -272,10 +277,8 @@ body {
         display: block;
         float: left;
         margin: 0;
-        /*
 	width: 20%;
 	height: 50%;
-       */
     }
 
     #local-video>.video-board-container {
@@ -289,8 +292,10 @@ body {
     }
 
 }
-/* For Mobile */
+*/
 
+/* For Mobile */
+/*
 @media (orientation: portrait)
 {
     .row {
@@ -312,7 +317,6 @@ body {
     }
 
     .jumbotron {
-	/* padding: 0.02rem 2rem; */
 	padding: 2rem 1rem;
 	margin-bottom: 2rem;
 	border-radius: .3rem;
@@ -419,4 +423,5 @@ body {
 
 
 
+*/
 

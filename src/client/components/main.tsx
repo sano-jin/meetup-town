@@ -11,6 +11,12 @@ import { VideoElement, VideoBoard } from "./../components/videoElement";
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 import io from "socket.io-client";
+import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
+// import Container from '@material-ui/core/Container';
+import Box from '@material-ui/core/Box';
+
+
 
 const socket = io();
 
@@ -187,22 +193,26 @@ class Main extends React.Component<MainProps, ClientState> {
   };
 
     render() {
-        return <div>
-            <div className="header">
-                <span className="room-name">{this.props.roomName}</span>
-                <span className="user-name">{this.props.userInfo.userName}</span>
-            </div>
-            <div>
-                <div id="local-video">
-                    <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
-                </div>
-                <VideoBoard remotes={this.state.remotes} />
-            </div>
-            <div>
-                <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
-                <ChatSender sendChatMessage={this.sendChatMessage} />                
-            </div>
-        </div>
+        return (
+	    <Grid container justify="center" >
+		<Box component="div" display="flex" alignItems="center" height="100vh">
+		    <div className="header">
+			<span className="room-name">{this.props.roomName}</span>
+			<span className="user-name">{this.props.userInfo.userName}</span>
+		    </div>
+		    <div>
+			<ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
+			<ChatSender sendChatMessage={this.sendChatMessage} />                
+		    </div>
+		    <div>
+			<div id="local-video">
+			    <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
+			</div>
+			<VideoBoard remotes={this.state.remotes} />
+		    </div>
+		</Box>
+	    </Grid>
+	);
     }
 }
 

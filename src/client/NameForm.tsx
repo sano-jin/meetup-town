@@ -3,43 +3,39 @@ import { UserInfo } from "../userInfo.ts";
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
+import IconButton from '@material-ui/core/IconButton';
+import SendIcon from '@material-ui/icons/Send';
+import Box from '@material-ui/core/Box';
+import Grid from '@material-ui/core/Grid';
+
+
 interface NameFormProps {
     setUserInfo: (userInfo: UserInfo) => void;
 }
 
-class NameForm extends React.Component<NameFormProps, { value: string }> {
-    constructor(props: NameFormProps) {
-	super(props);
-	this.state = {value: ''};
+const NameForm: React.FC<NameFormProps> = (props: NameFormProps) => {
+    const [userName, setUserName] = React.useState<string>("");
 
-	this.handleChange = this.handleChange.bind(this);
-	this.handleSubmit = this.handleSubmit.bind(this);
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+	setUserName(event.target.value);
     }
 
-    handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-	this.setState({value: event.target.value});
-    }
-
-    handleSubmit(event: React.MouseEvent<HTMLInputElement, MouseEvent>) {
+    const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 	event.preventDefault();
-	const value = this.state?.value;
-	if(!value) return;
-	console.log("userName set", value)
-	this.props.setUserInfo({ userName: value });
+	if(!userName) return;
+	console.log("userName set", userName)
+	props.setUserInfo({ userName: userName });
     }
-
-    render() {
-	return (
-            <form id="name-form" action="#">
-                <input type="text" value={this.state.value} onChange={this.handleChange} placeholder="Your name" name="username"/>
-                
-                <label className="send-button-container">
-                <input type="submit" value="Join" className="send-buttun" onClick={this.handleSubmit}
-	    name="join" />
-                    <i className="fas fa-door-open"></i>
-                </label>
-            </form>
-	);
-    }
+    
+    return (
+	<Grid container justify="center" >
+	    <Box display="flex" alignItems="center" height="100vh">
+		<form onSubmit={handleFormSubmit}>
+		    <TextField id="standard-basic" label="Username" onChange={handleChange} autoFocus={true} />
+		</form>
+	    </Box>
+	</Grid>
+    );
 }
-
