@@ -15,8 +15,9 @@ initServer()
 
 def test():
     driver1 = initDriverWithGUI()
-    testHome(driver1)
     time.sleep(2)
+    testHome(driver1)
+    time.sleep(1)
     testRoomEntry(driver1, "真夏のサンタクロース")
     time.sleep(1)
     sendChat(driver1, "私は貝になりたい")
@@ -28,11 +29,11 @@ def test():
     
     time.sleep(2)
     testRoomEntry(driver2, "フロントダブルバイセップス")
-    time.sleep(2)
+    time.sleep(10)
     sendChat(driver2, "筋肉いえ〜い")
-    time.sleep(3)
+    time.sleep(5)
     sendChat(driver1, "ホゲホゲウェエボボエええ！#$%&？？?")
-    time.sleep(1)
+    time.sleep(6)
     driver1.quit()
 
     # みやすさのためにちょっと待ってから終了する

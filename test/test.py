@@ -7,7 +7,7 @@ import os
 import subprocess
 from subprocess import PIPE
 
-proc = subprocess.run("npm run build", cwd=r"./", shell=True)
+# proc = subprocess.run("npm run build", cwd=r"./", shell=True)
 proc = subprocess.Popen("npm run start", cwd=r"./", shell=True)
 
 

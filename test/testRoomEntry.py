@@ -3,6 +3,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.alert import Alert
+from selenium.webdriver.common.keys import Keys
 import time
 
 def testRoomEntry(driver, userName):
@@ -10,14 +11,15 @@ def testRoomEntry(driver, userName):
     部屋にちゃんと入れるかのテスト
     """
     # テキストフォームを探して，userName を書き込む
-    element = driver.find_element_by_name("username")
+    element = driver.find_element_by_id("userName-form")
     element.send_keys(userName)
 
     time.sleep(2)
     
-    # 「Create a new room」リンクをクリックする
-    send_button = driver.find_element_by_class_name("send-button-container")
-    send_button.click()
+    # エンターキーを押す
+    element.send_keys(Keys.ENTER)
+    # send_button = driver.find_element_by_class_name("send-button-container")
+    # send_button.click()
 
 
 def testPrompt(driver):
@@ -41,11 +43,12 @@ def sendChat(driver, chatMessage):
     element = driver.find_element_by_id("input-message")
     element.send_keys(chatMessage)
 
-    time.sleep(2)
+    time.sleep(10)
     
     # 「Send」ボタンをクリックする
     send_button = driver.find_element_by_class_name("send-button-container")
     send_button.click()
+    time.sleep(5)
     
     
 

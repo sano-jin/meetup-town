@@ -33,7 +33,7 @@ const NameForm: React.FC<NameFormProps> = (props: NameFormProps) => {
 	<Grid container justify="center" >
 	    <Box display="flex" alignItems="center" height="100vh">
 		<form onSubmit={handleFormSubmit}>
-		    <TextField id="standard-basic" label="Username" onChange={handleChange} autoFocus={true} />
+		    <TextField id="userName-form" label="Username" onChange={handleChange} autoFocus={true} />
 		</form>
 	    </Box>
 	</Grid>

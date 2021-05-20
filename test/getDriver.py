@@ -10,7 +10,7 @@ from subprocess import PIPE
 
 def initServer():
     # compile and start the server
-    proc = subprocess.run("npm run build", cwd=r"./", shell=True)
+    # proc = subprocess.run("npm run build", cwd=r"./", shell=True)
     proc = subprocess.Popen("npm run start", cwd=r"./", shell=True)
 
     # wait untill started
