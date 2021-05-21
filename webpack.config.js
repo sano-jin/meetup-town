@@ -1,14 +1,17 @@
 const path = require('path')
 const nodeExternals = require('webpack-node-externals')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 
 module.exports = [
     {
         name: 'server',
-        entry: './src/server.ts',
+        entry: './src/server/server.ts',
         target: 'node',
         output: {
-            path: __dirname + '/dist/server',
+            path: __dirname + '/dist',
             filename: 'server.js',
+	    publicPath: '/'
         },
         target: 'node',
         externals: [nodeExternals()],
@@ -25,6 +28,14 @@ module.exports = [
                 }
             ]
         },
+	devServer: {
+	    historyApiFallback: true
+	},
+	plugins: [
+	    new HtmlWebpackPlugin({
+		template: 'views/index.ejs'
+	    })
+	],
         resolve: {
             extensions: [".ts", ".js", ".json", "tsx"],
             alias: {
@@ -34,7 +45,7 @@ module.exports = [
     },
     {
         name: 'client',
-        entry: './public/ts/main.tsx',
+        entry: './src/client/App.tsx',
         output: {
             path: __dirname + '/public/dist',
             filename: 'bundle.js',
@@ -59,7 +70,6 @@ module.exports = [
             alias: {
                 "@": path.join(__dirname, "/src/")
             }
-        }
-        
+        }        
     }
 ];
