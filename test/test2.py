@@ -29,10 +29,16 @@ def test():
     
     time.sleep(2)
     testRoomEntry(driver2, "フロントダブルバイセップス")
-    time.sleep(10)
+    time.sleep(3)
     sendChat(driver2, "筋肉いえ〜い")
     time.sleep(5)
     sendChat(driver1, "ホゲホゲウェエボボエええ！#$%&？？?")
+    time.sleep(1)
+    sendChat(driver1, "ホゲ！#$%&？？?")
+    time.sleep(1)
+    sendChat(driver1, "ホゲ！#$%&？？?")
+    time.sleep(3)
+    sendChat(driver1, "ホゲ！#$%&？？?")
     time.sleep(6)
     driver1.quit()
 

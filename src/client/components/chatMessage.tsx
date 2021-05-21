@@ -102,6 +102,7 @@ class ChatBoard extends React.Component<ChatBoardProps, {}> {
 		direction="column"
 		justify="center"
 		spacing={4}
+		style={{height:'auto', position: 'relative', marginBottom: "40px"}}
 	    >
 		{
                     this.props.chatMessages.map((chatMessage, index) =>

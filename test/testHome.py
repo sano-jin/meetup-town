@@ -9,4 +9,3 @@ def testHome(driver):
     # element = driver.find_element_by_link_text("Create a new room")
     element = driver.find_element_by_xpath("//*[contains(text(), 'Create a new room')]")
     element.click()
-    time.sleep(2)

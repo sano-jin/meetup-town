@@ -43,12 +43,11 @@ def sendChat(driver, chatMessage):
     element = driver.find_element_by_id("input-message")
     element.send_keys(chatMessage)
 
-    time.sleep(10)
+    time.sleep(3)
     
     # 「Send」ボタンをクリックする
     send_button = driver.find_element_by_class_name("send-button-container")
     send_button.click()
-    time.sleep(5)
     
     
 
