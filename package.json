@@ -57,6 +57,10 @@
         "webpack-cli": "^4.7.0",
         "webpack-node-externals": "^2.5.2"
     },
+    "engines": {
+	"node": "15.9.0",
+	"npm": "7.11.2"
+    },
     "eslintIgnore": [
         "/.eslintrc.js"
     ]
