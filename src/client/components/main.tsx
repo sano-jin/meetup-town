@@ -44,12 +44,14 @@ class Main extends React.Component<MainProps, ClientState> {
         this.sendMessageTo =
             (toUserId: UserId | undefined) => (message: Message) => {
                 const send = () => {
-                    const myUserId = this.state.userId;
-                    if (myUserId === null) {
+                    const [myUserId, roomName] = [this.state.userId, this.state.roomName];
+		    if (myUserId === undefined || roomName === undefined) throw Error("myUserId  or roomName is undefined");
+                    if (myUserId === null || roomName === null) {
+			console.log("timeout: myUserId  or roomName is null");
                         setTimeout(send, 500);
                         return;
                     }
-                    socket.emit('message', myUserId, message, this.state.roomName, toUserId);
+                    socket.emit('message', myUserId, message, roomName, toUserId);
                 }
                 send();
             };
@@ -163,6 +165,7 @@ class Main extends React.Component<MainProps, ClientState> {
             console.log('Adding local stream.');
             this.setState((state) => { return {...state, localStream: stream}; });
             for (const [userId, remote] of this.state.remotes.entries()) {
+		console.log(`calling ${userId}`);
                 this.sendMessageTo(userId)({ type: 'call' });
                 if (remote.isInitiator) {
                     maybeStart(remote, stream, props(userId));
