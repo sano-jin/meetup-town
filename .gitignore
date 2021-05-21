@@ -1,6 +1,7 @@
 *~
 *.js.LICENSE.txt
-
+# chromedriver for selenium testing
+/test/chromedriver
 
 # Logs
 logs

@@ -1,6 +1,5 @@
 # Meetup Town
 An online meeting app runs on browser.
-Deployed at https://meetup-online.glitch.me/.
 
 Visit https://sano-jin.github.io/meetup-town/ for more information.
 
@@ -18,7 +17,6 @@ Visit https://sano-jin.github.io/meetup-town/ for more information.
 
 ```
 +- public/
-|   +- App.tsx
 |   +- css/styles.css
 |   +- assets/meetup_icon.svg
 |   +- dist/bundle.js
@@ -27,6 +25,7 @@ Visit https://sano-jin.github.io/meetup-town/ for more information.
 |   +- server/
 |   |   +- server.ts
 |   +- client/
+|   |   +- App.tsx
 |   |   +- ts/
 |   |   |   +- client.ts
 |   |   |   +- config.ts

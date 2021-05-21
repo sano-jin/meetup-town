@@ -1,9 +1,9 @@
 export { ChatSender };
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
-import { ChatMessage } from "./../ts/chatMessage";
-import { Message } from "./../ts/message";
-import { UserId } from './../ts/userInfo';
+import { ChatMessage } from "./../../chatMessage";
+import { Message } from "./../../message";
+import { UserId } from './../../userInfo';
 
 interface ChatMessageProps {
     sendChatMessage: (message: string) => void;
@@ -34,7 +34,11 @@ class ChatSender extends React.Component<ChatMessageProps, { value: string }> {
 
     render() {
         return (
-            <form id="message-from" action="#">
+	    <form
+		id="message-from"
+		action="#"
+		style={{bottom: 0, position: 'relative'}}
+		>
                 <textarea value={this.state.value} onChange={this.handleChange} id="input-message" />
                 
                 <label className="send-button-container">

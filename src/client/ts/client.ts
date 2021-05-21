@@ -1,10 +1,10 @@
 export { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart };
 import { turnConfig } from './config';
-import { Message } from './message';
-import { UserInfo, UserId } from './userInfo'; // 
+import { Message } from './../../message';
+import { UserInfo, UserId } from './../../userInfo'; // 
 import { json2Map, map2Json } from '../../util'
 import { Remote } from './clientState'
-import { ChatMessage } from './chatMessage'
+import { ChatMessage } from './../../chatMessage'
 
 
 type SendMessage = (message: Message) => void;

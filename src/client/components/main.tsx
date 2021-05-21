@@ -2,20 +2,26 @@ export { Main };
 import { getStringFromUser, getTimeString } from '../../util'
 import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./../ts/client";
 import { ClientState, Remote } from "./../ts/clientState";
-import { Message } from './../ts/message';
-import { ChatMessage } from './../ts/chatMessage';
+import { Message } from './../../message';
+import { ChatMessage } from './../../chatMessage';
 import { ChatBoard } from "./../components/chatMessage";
 import { ChatSender } from "./../components/chatSender";
-import { UserInfo, UserId } from './../ts/userInfo';
+import { UserInfo, UserId } from './../../userInfo';
 import { VideoElement, VideoBoard } from "./../components/videoElement";
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 import io from "socket.io-client";
+import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
+// import Container from '@material-ui/core/Container';
+import Box from '@material-ui/core/Box';
+import { LabelBottomNavigation } from "./../components/Navigation"
+
 
 const socket = io();
 
 interface MainProps {
-    userName: string;
+    userInfo: UserInfo;
     roomName: string;
 }
 
@@ -26,7 +32,7 @@ class Main extends React.Component<MainProps, ClientState> {
         this.state = {
             userId: null,
             roomName: props.roomName,
-            userInfo: { userName: props.userName },
+            userInfo: props.userInfo,
             localStream: null,
             remotes: new Map<UserId, Remote>(),
             localStreamConstraints: {
@@ -47,7 +53,7 @@ class Main extends React.Component<MainProps, ClientState> {
                 }
                 send();
             };
-      this.sendChatMessage = this.sendChatMessage.bind(this);
+	this.sendChatMessage = this.sendChatMessage.bind(this);
     }
 
     componentDidMount(){
@@ -152,7 +158,7 @@ class Main extends React.Component<MainProps, ClientState> {
         console.log("Going to find Local media");
         // console.log('Getting user media with constraints', clientState.localStreamConstraints);
 
-      // If found local stream
+	// If found local stream
         const gotStream = (stream: MediaStream): void => {
             console.log('Adding local stream.');
             this.setState((state) => { return {...state, localStream: stream}; });
@@ -173,36 +179,73 @@ class Main extends React.Component<MainProps, ClientState> {
         socket.emit('join', this.state.roomName, this.state.userInfo);
     }
     
-  sendChatMessage (message: string){
-    this.setState(state => {
-      console.log("this.state", state);
-      const chatMessage: ChatMessage = {
-        userId: state.userId ?? "undefined",
-        time: getTimeString(),
-        message: message,
-      };
-      this.sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage });
-      return { ...state, chats: [...state.chats, chatMessage]};
-    });
-  };
+    sendChatMessage (message: string){
+	this.setState(state => {
+	    console.log("this.state", state);
+	    const chatMessage: ChatMessage = {
+		userId: state.userId ?? "undefined",
+		time: getTimeString(),
+		message: message,
+	    };
+	    this.sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage });
+	    return { ...state, chats: [...state.chats, chatMessage]};
+	});
+    };
 
     render() {
-        return <div>
-            <div className="header">
-                <span className="room-name">{this.props.roomName}</span>
-                <span className="user-name">{this.props.userName}</span>
-            </div>
-            <div>
-                <div id="local-video">
-                    <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
-                </div>
-                <VideoBoard remotes={this.state.remotes} />
-            </div>
-            <div>
-                <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
-                <ChatSender sendChatMessage={this.sendChatMessage} />                
-            </div>
-        </div>
+        return (
+	    //	    <Grid container justify="center" >
+	    <Box
+		component="div"
+		height="100vh"
+		display="block"
+		position="relative"
+		overflow="hidden"
+	    >
+		<Box className="header" top="0" position="fixed" width="100%">
+		    <span className="room-name">{this.props.roomName}</span>
+		    <span className="user-name">{this.props.userInfo.userName}</span>
+		</Box>
+		<Box
+		    component="div"
+		    // height="100%"
+		    display="block"
+ 		    width="100%"
+		    position="relative"
+ 		    margin="0"
+		    overflow="hidden"
+		    top="30px"
+		    style={{height:'calc(100% - 120px)'}}
+		>
+		    <Box
+			component="div"
+			height="100%"
+			left="0"
+			position="absolute"
+			zIndex="tooltip"
+			maxWidth="100%"
+			style={{overflowY: 'scroll', overflowX: 'hidden'}}
+			padding="5"
+		    >
+			<ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
+			<ChatSender sendChatMessage={this.sendChatMessage} />                
+		    </Box>
+		    <Box
+		    	height="100%"
+			overflow="auto"
+		    >
+			<div id="local-video">
+			    <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
+			</div>
+			<VideoBoard remotes={this.state.remotes} />
+		    </Box>
+		</Box>
+		<Box bottom="0" position="fixed" width="100%">
+		    <LabelBottomNavigation />
+		</Box>
+	    </Box>
+	    //	    </Grid>
+	);
     }
 }
 

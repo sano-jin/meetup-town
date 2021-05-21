@@ -1,6 +1,6 @@
 export { ClientState, Remote };
-import { UserInfo, UserId } from './userInfo';
-import { ChatMessage } from './chatMessage';
+import { UserInfo, UserId } from './../../userInfo';
+import { ChatMessage } from './../../chatMessage';
 
 // Defining some global utility variables
 interface ClientState {
