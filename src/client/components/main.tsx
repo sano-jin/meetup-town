@@ -240,8 +240,12 @@ class Main extends React.Component<MainProps, ClientState> {
 			position="absolute"
 			zIndex="tooltip"
 			maxWidth="100%"
-			style={{overflowY: 'scroll', overflowX: 'hidden'}}
-			padding="5"
+			style={{
+			    overflowY: 'scroll',
+			    overflowX: 'hidden',
+			    backgroundColor:"rgba(20, 20, 20, 0.4)",
+			}}
+			padding={5}
 		    >
 			<ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
 			<ChatSender sendChatMessage={this.sendChatMessage} />                

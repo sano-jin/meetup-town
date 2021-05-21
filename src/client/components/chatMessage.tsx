@@ -16,7 +16,7 @@ import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles({
     root: {
-	minWidth: 275,
+	minWidth: 350,
     },
     userName: {
 	float: 'left',
@@ -31,14 +31,17 @@ const  ChatMessageContainer: React.FC<ChatMessageProps> = (props: ChatMessagePro
     const classes = useStyles();
     
     return (
-	<Card className={classes.root}>
+	<Card
+	    className={classes.root}
+	    style={{backgroundColor: "rgba(30, 30, 30, 0.8)"}}
+	>
 	    <CardHeader
 	    title={props.fromUser}
 	    subheader={props.chatMessage.time}
 	    />
 	    <CardContent>
 		<Typography variant="body2" component="p">
-		    {props.chatMessage.message}
+	    {props.chatMessage.message.split("\n").map((line) => <p>{line}</p>)}
 		</Typography>
 	    </CardContent>
 	</Card>
@@ -49,23 +52,6 @@ interface ChatMessageProps {
     chatMessage: ChatMessage;
     fromUser: string;
 };
-
-/*
-class ChatMessageContainer extends React.Component<ChatMessageProps, {}> {
-    render() {
-        return <div className="chat-item">
-            <div className="chat-userName-date-container">
-                <span className="chat-userName-item">{this.props.fromUser}</span>
-                <span className="chat-date-item">{this.props.chatMessage.time}</span> 
-            </div>
-            <div className="chat-message-item">
-                {this.props.chatMessage.message}
-            </div>
-        </div>;
-    }
-}
-
-*/
 
 interface ChatBoardProps {
     myInfo: UserInfo;
