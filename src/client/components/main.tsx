@@ -44,7 +44,7 @@ class Main extends React.Component<MainProps, ClientState> {
         this.sendMessageTo =
             (toUserId: UserId | undefined) => (message: Message) => {
                 const send = () => {
-                    const [myUserId, roomName] = [this.state.userId, this.state.roomName];
+		    const [myUserId, roomName] = [this.state.userId, this.state.roomName];
 		    if (myUserId === undefined || roomName === undefined) throw Error("myUserId  or roomName is undefined");
                     if (myUserId === null || roomName === null) {
 			console.log("timeout: myUserId  or roomName is null");
@@ -62,10 +62,21 @@ class Main extends React.Component<MainProps, ClientState> {
         socket.on('joined', (myUserId: UserId, jsonStrOtherUsers: string) => {
             console.log(`me ${myUserId} joined with`, jsonStrOtherUsers);
             this.setState((state) => {
+		const remotes =  new Map<UserId, Remote>([...state.remotes, ...getInitRemotes(jsonStrOtherUsers)]);
+		if (state.localStream) {
+		    console.log("found localStream before getting back the answer of the join message");
+		    for (const [userId, remote] of remotes.entries()) {
+			console.log(`calling ${userId}`);
+			this.sendMessageTo(userId)({ type: 'call' });
+			if (remote.isInitiator) {
+			    maybeStart(remote, state.localStream, props(userId));
+			}
+		    }
+		}
                 return {
                     ...state,
                     userId: myUserId,
-                    remotes: new Map([...state.remotes, ...getInitRemotes(jsonStrOtherUsers)])
+                    remotes: remotes
                 };
             });
         });
@@ -164,6 +175,7 @@ class Main extends React.Component<MainProps, ClientState> {
         const gotStream = (stream: MediaStream): void => {
             console.log('Adding local stream.');
             this.setState((state) => { return {...state, localStream: stream}; });
+	    console.log('set state: added my local stream. Calling others (if there)');
             for (const [userId, remote] of this.state.remotes.entries()) {
 		console.log(`calling ${userId}`);
                 this.sendMessageTo(userId)({ type: 'call' });
@@ -171,6 +183,7 @@ class Main extends React.Component<MainProps, ClientState> {
                     maybeStart(remote, stream, props(userId));
                 }
             }
+	    console.log("Called others", this.state.remotes)
         }
 
         navigator.mediaDevices.getUserMedia(this.state.localStreamConstraints)
