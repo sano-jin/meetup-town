@@ -16,6 +16,7 @@ import Grid from '@material-ui/core/Grid';
 // import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
 import { LabelBottomNavigation } from "./../components/Navigation"
+import { PdfHandle } from "./PdfHandler"
 
 
 const socket = io();
@@ -212,53 +213,63 @@ class Main extends React.Component<MainProps, ClientState> {
         return (
 	    //	    <Grid container justify="center" >
 	    <Box
-		component="div"
-		height="100vh"
-		display="block"
-		position="relative"
-		overflow="hidden"
+            component="div"
+            height="100vh"
+            display="block"
+            position="relative"
+            overflow="hidden"
 	    >
-		<Box className="header" top="0" position="fixed" width="100%">
-		    <span className="room-name">{this.props.roomName}</span>
-		    <span className="user-name">{this.props.userInfo.userName}</span>
-		</Box>
-		<Box
-		    component="div"
-		    // height="100%"
-		    display="block"
- 		    width="100%"
-		    position="relative"
- 		    margin="0"
-		    overflow="hidden"
-		    top="30px"
-		    style={{height:'calc(100% - 120px)'}}
-		>
-		    <Box
-			component="div"
-			height="100%"
-			left="0"
-			position="absolute"
-			zIndex="tooltip"
-			maxWidth="100%"
-			style={{overflowY: 'scroll', overflowX: 'hidden'}}
-			padding="5"
-		    >
-			<ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
-			<ChatSender sendChatMessage={this.sendChatMessage} />                
-		    </Box>
-		    <Box
-		    	height="100%"
-			overflow="auto"
-		    >
-			<div id="local-video">
-			    <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
-			</div>
-			<VideoBoard remotes={this.state.remotes} />
-		    </Box>
-		</Box>
-		<Box bottom="0" position="fixed" width="100%">
-		    <LabelBottomNavigation />
-		</Box>
+            <Box className="header" top="0" position="fixed" width="100%">
+                <span className="room-name">{this.props.roomName}</span>
+                <span className="user-name">{this.props.userInfo.userName}</span>
+            </Box>
+            <Box
+                component="div"
+                // height="100%"
+                display="block"
+                width="100%"
+                position="relative"
+                margin="0"
+                overflow="hidden"
+                top="30px"
+                style={{height:'calc(100% - 120px)'}}
+            >
+                <Box
+                    component="div"
+                    height="100%"
+                    left="0"
+                    position="absolute"
+                    zIndex="tooltip"
+                    maxWidth="100%"
+                    style={{overflowY: 'scroll', overflowX: 'hidden'}}
+                    padding="5"
+                >
+                    <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
+                    <ChatSender sendChatMessage={this.sendChatMessage} />                
+                </Box>
+                <Box
+                    height="100%"
+                    overflow="auto"
+                >
+                    <div id="local-video">
+                        <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
+                    </div>
+                    <VideoBoard remotes={this.state.remotes} />
+                </Box>
+            </Box>
+            <Box
+                component="div"
+                height="100%"
+                position="absolute"
+                top="0"
+                right="0"
+                overflow="auto"
+            >
+                <PdfHandle />
+            </Box>
+            <Box bottom="0" position="fixed" width="100%">
+                <LabelBottomNavigation />
+            </Box>
 	    </Box>
 	    //	    </Grid>
 	);
