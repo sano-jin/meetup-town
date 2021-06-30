@@ -1,5 +1,5 @@
 export { NameForm };
-import { UserInfo } from "../userInfo.ts";
+import { UserInfo } from "../userInfo";
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 
