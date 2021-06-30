@@ -1,6 +1,7 @@
 const path = require('path')
 const nodeExternals = require('webpack-node-externals')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 
 module.exports = [
@@ -28,14 +29,23 @@ module.exports = [
                 }
             ]
         },
-	devServer: {
-	    historyApiFallback: true
-	},
-	plugins: [
-	    new HtmlWebpackPlugin({
-		template: 'views/index.ejs'
-	    })
-	],
+        devServer: {
+            historyApiFallback: true
+        },
+        plugins: [
+            new HtmlWebpackPlugin({
+            template: 'views/index.ejs'
+            }),
+            // フォントのmap設定。react-pdfのリポジトリにある書き方は若干古い
+            new CopyWebpackPlugin({
+                patterns: [
+                    {
+                        from: "node_modules/pdfjs-dist/cmaps/",
+                        to: "/cmaps/",
+                    },
+                ],
+            }),
+        ],
         resolve: {
             extensions: [".ts", ".js", ".json", "tsx"],
             alias: {
@@ -65,6 +75,17 @@ module.exports = [
                 }
             ]
         },
+        plugins: [
+            // フォントのmap設定。react-pdfのリポジトリにある書き方は若干古い
+            new CopyWebpackPlugin({
+                patterns: [
+                    {
+                        from: "node_modules/pdfjs-dist/cmaps/",
+                        to: "cmaps/",
+                    },
+                ],
+            }),
+        ],
         resolve: {
             extensions: [".ts", ".js", ".json", ".tsx"],
             alias: {
