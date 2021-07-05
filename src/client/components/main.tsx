@@ -211,7 +211,8 @@ class Main extends React.Component<MainProps, ClientState> {
 
     render() {
         return (
-	    //	    <Grid container justify="center" >
+        //	    <Grid container justify="center" >
+        //画面全体を囲むためのBox
 	    <Box
             component="div"
             height="100vh"
@@ -219,10 +220,12 @@ class Main extends React.Component<MainProps, ClientState> {
             position="relative"
             overflow="hidden"
 	    >
+            {/* ヘッダー情報: 部屋名+ユーザーネーム */}
             <Box className="header" top="0" position="fixed" width="100%">
                 <span className="room-name">{this.props.roomName}</span>
                 <span className="user-name">{this.props.userInfo.userName}</span>
             </Box>
+            {/* チャットとビデオの要素を囲むBox */}
             <Box
                 component="div"
                 // height="100%"
