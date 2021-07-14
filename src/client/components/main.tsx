@@ -16,7 +16,8 @@ import Grid from '@material-ui/core/Grid';
 // import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
 import { LabelBottomNavigation } from "./../components/Navigation"
-import { PdfHandle } from "./PdfHandler"
+import { PdfHandle } from "./PdfHandler";
+import { PDFCommandType } from '../../PDFCommandType';
 
 
 const socket = io();
@@ -45,10 +46,10 @@ class Main extends React.Component<MainProps, ClientState> {
         this.sendMessageTo =
             (toUserId: UserId | undefined) => (message: Message) => {
                 const send = () => {
-		    const [myUserId, roomName] = [this.state.userId, this.state.roomName];
-		    if (myUserId === undefined || roomName === undefined) throw Error("myUserId  or roomName is undefined");
+                    const [myUserId, roomName] = [this.state.userId, this.state.roomName];
+                    if (myUserId === undefined || roomName === undefined) throw Error("myUserId  or roomName is undefined");
                     if (myUserId === null || roomName === null) {
-			console.log("timeout: myUserId  or roomName is null");
+                        console.log("timeout: myUserId  or roomName is null");
                         setTimeout(send, 500);
                         return;
                     }
@@ -56,7 +57,8 @@ class Main extends React.Component<MainProps, ClientState> {
                 }
                 send();
             };
-	this.sendChatMessage = this.sendChatMessage.bind(this);
+        this.sendChatMessage = this.sendChatMessage.bind(this);
+        this.sendPDFCommand = this.sendPDFCommand.bind(this);
     }
 
     componentDidMount(){
@@ -197,24 +199,38 @@ class Main extends React.Component<MainProps, ClientState> {
     }
     
     sendChatMessage (message: string){
-	this.setState(state => {
-	    console.log("this.state", state);
-	    const chatMessage: ChatMessage = {
-		userId: state.userId ?? "undefined",
-		time: getTimeString(),
-		message: message,
-	    };
-	    this.sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage });
-	    return { ...state, chats: [...state.chats, chatMessage]};
-	});
+        this.setState(state => {
+            console.log("this.state", state);
+            const chatMessage: ChatMessage = {
+                userId: state.userId ?? "undefined",
+                time: getTimeString(),
+                message: message,
+            };
+            this.sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage });
+            return { ...state, chats: [...state.chats, chatMessage]};
+        });
     };
 
+    sendPDFCommand (com: PDFCommandType){
+        const message: Message = {type: "pdfcommand", command: com};
+        this.sendMessageTo(undefined)(message);
+        return;
+    }
+
     render() {
+        const wholeBoxStyle = {
+            component: "div",
+            height: "100vh",
+            display: "block",
+            position: "relative",
+            overflow: "hidden",
+        }
+        
         return (
         //	    <Grid container justify="center" >
         //画面全体を囲むためのBox
 	    <Box
-            component="div"
+            component={"div"}
             height="100vh"
             display="block"
             position="relative"
@@ -268,14 +284,14 @@ class Main extends React.Component<MainProps, ClientState> {
                 right="0"
                 overflow="auto"
             >
-                <PdfHandle />
+                <PdfHandle sendPDFCommand={this.sendPDFCommand}/>
             </Box>
             <Box bottom="0" position="fixed" width="100%">
                 <LabelBottomNavigation />
             </Box>
 	    </Box>
 	    //	    </Grid>
-	);
+	    );
     }
 }
 

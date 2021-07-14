@@ -76,7 +76,11 @@ const handleMessage =
                     //                    props.handleRemoteHangup();
                 }
                 break;
-            default:
+            case 'pdfcommand':
+                console.log("receive pdfcommand");
+                console.log(message.command);
+                break;
+            default: //webRTCで通信の確立のためにごちゃごちゃやる
                 switch (message.type) {
                     case 'offer':
                         props.updateRemote(remote => {

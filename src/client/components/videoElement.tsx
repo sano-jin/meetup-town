@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as ReactDOM from "react-dom";
 import { Remote } from './../ts/clientState';
 import { UserInfo, UserId } from './../../userInfo';
+import { Grid, Box } from '@material-ui/core';
 
 type VideoElementProps = {
     userId: UserId;
@@ -18,17 +19,17 @@ class VideoElement extends React.Component<VideoElementProps, {}> {
     }
 
     render() {
-        return <div className="video-container" key={this.props.userId}> {
+        return <Box key={this.props.userId} border={1}> {
             this.props.stream !== null ?
-            <div className="video-item">
-                <video ref={video => {if (video !== null) {video.srcObject = this.props.stream;}}} autoPlay muted playsInline />
-            </div>
+            <Box>
+                <video width="300px" ref={video => {if (video !== null) {video.srcObject = this.props.stream;}}} autoPlay muted playsInline />
+            </Box>
             :
-            <div>
+            <Box>
                 <span className="video-userName-item">{this.props.userInfo.userName}</span>
-            </div>
+            </Box>
         }
-        </div>;
+        </Box>;
     }
 }
 
@@ -40,18 +41,20 @@ type VideoBoardProps = {
 
 class VideoBoard extends React.Component<VideoBoardProps, {}> {
     render() {
-        return <div className="video-board-container">
+        return <Grid container>
             {
                 [...this.props.remotes].map(([userId, remote]) =>
+                    <Grid item>
                     <VideoElement
                         key     ={userId}
                         userId  ={userId}
                         stream  ={remote.remoteStream}
                         userInfo={remote.userInfo}
                     />
+                    </Grid>
                 )
             }
-        </div>
+        </Grid>
     }
 }
 

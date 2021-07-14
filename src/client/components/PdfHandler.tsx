@@ -2,6 +2,7 @@ export { PdfHandle };
     import { debug } from 'console';
 import React, { useState } from 'react';
 import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
+import { PDFCommandType } from '../../PDFCommandType';
 
 const options = {
     cMapUrl: '/dist/cmaps/',
@@ -16,7 +17,11 @@ type FileState = {
     file: null | File;
 }
 
-function PdfHandle() {
+interface PdfHandlerProps{
+    sendPDFCommand: (com: PDFCommandType) => void
+}
+
+function PdfHandle(props: PdfHandlerProps) {
     console.log(options.cMapUrl);
     const [file, setFile] = useState<File | null>(null);
     const [numPages, setNumPages] = useState<number | null>(null);
@@ -32,7 +37,13 @@ function PdfHandle() {
         setNumPages(nextNumPages);
     }
     function onPageProcess(){
-        if (numPages !== null && nowPage + 1 <= numPages) setNowPage(nowPage + 1);
+        const newPage = nowPage + 1;
+        if (numPages !== null && nowPage + 1 <= numPages){
+            console.log("next page is " + newPage);
+            setNowPage(newPage);
+            const com: PDFCommandType = {command: newPage.toString()};
+            props.sendPDFCommand(com);
+        }
     }
 
     return (
