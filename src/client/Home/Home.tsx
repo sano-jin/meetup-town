@@ -1,3 +1,7 @@
+/* 特定の部屋に入っていないホーム画面
+ * `Create a new room` というボタンを表示する
+*/
+
 export { Home };
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
@@ -7,6 +11,8 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 // import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
+
+
 
 class Home extends React.Component<{}, {}> {
     render() {

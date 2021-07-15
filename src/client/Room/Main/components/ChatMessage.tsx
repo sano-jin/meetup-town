@@ -1,9 +1,9 @@
 export { ChatBoard };
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
-import { ChatMessage } from "./../../chatMessage";
+import { ChatMessage } from "./../../../../chatMessage";
 import { Remote } from './../ts/clientState';
-import { UserId, UserInfo } from './../../userInfo';
+import { UserId, UserInfo } from './../../../../userInfo';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
