@@ -1,5 +1,9 @@
+/* Zoom の部屋
+*
+*/
+
 export { RoomEntry };
-import { Main } from "./components/main";
+import { Main } from "./../Main";
 import { NameForm } from "./NameForm";
 import { UserInfo } from "../userInfo";
 import * as React from 'react';
@@ -23,6 +27,7 @@ class RoomEntry extends React.Component<RoomEntryProps, { userInfo: UserInfo | n
 
     render() {
 	return (
+	    // userInfo が null（初期値）ならユーザ情報を入力してもらう画面を表示する
 	    this.state.userInfo === null ?
 	    <NameForm setUserInfo={this.handleJoin} />
 	    :

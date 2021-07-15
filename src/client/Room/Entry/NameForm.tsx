@@ -1,3 +1,7 @@
+/* 部屋に入って名前を入力するためのコンポーネント
+ * ユーザ名を入力してもらって，入力されたユーザ名で setUserInfo を実行する
+*/
+
 export { NameForm };
 import { UserInfo } from "../userInfo";
 import * as React from 'react';

@@ -1,3 +1,7 @@
+/* 特定の部屋に入っていないホーム画面
+ * `Create a new room` というボタンを表示する
+*/
+
 export { Home };
 import * as React from 'react';
 import * as ReactDOM from "react-dom";

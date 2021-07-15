@@ -3,9 +3,9 @@
  * - 部屋の id も込みの URL の場合は `Enter your name` の画面になる
 */
 
-import { Main } from "./components/Main";
-import { Home } from "./Home";
-import { RoomEntry } from "./RoomEntry";
+import { Main } from "./Main/Main";
+import { Home } from "./Home/Home";
+import { RoomEntry } from "./Entry/RoomEntry";
 import { getTimeString } from '../util'
 import * as React from 'react';
 import * as ReactDOM from "react-dom";

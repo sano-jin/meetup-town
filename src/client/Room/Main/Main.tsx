@@ -4,15 +4,15 @@
 
 
 export { Main };
-import { getTimeString } from '../../util'
-import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./../ts/client";
-import { ClientState, Remote } from "./../ts/clientState";
-import { Message } from './../../message';
-import { ChatMessage } from './../../chatMessage';
-import { ChatBoard } from "./../components/chatMessage";
-import { ChatSender } from "./../components/chatSender";
-import { UserInfo, UserId } from './../../userInfo';
-import { VideoElement, VideoBoard } from "./../components/videoElement";
+import { getTimeString } from '../util'
+import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./ts/client";
+import { ClientState, Remote } from "./ts/clientState";
+import { Message } from './../message';
+import { ChatMessage } from './../chatMessage';
+import { ChatBoard } from "./components/ChatMessage";
+import { ChatSender } from "./components/ChatSender";
+import { UserInfo, UserId } from './../userInfo';
+import { VideoElement, VideoBoard } from "./components/VideoElement";
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 import io from "socket.io-client";
@@ -20,9 +20,9 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 // import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
-import { LabelBottomNavigation } from "./../components/Navigation"
-import { PdfHandle } from "./PdfHandler";
-import { PDFCommandType } from '../../PDFCommandType';
+import { LabelBottomNavigation } from "./components/Navigation"
+import { PdfHandle } from "./components/PdfHandler";
+import { PDFCommandType } from './../PDFCommandType';
 
 
 const socket = io();
@@ -32,6 +32,9 @@ interface MainProps {
     roomName: string;
 }
 
+
+// メイン画面のクラス
+// TODO: React.FC を使うようにしたい
 class Main extends React.Component<MainProps, ClientState> {
     sendMessageTo: (toUserId: UserId | undefined) => (message: Message) => void;
     constructor(props: MainProps){
