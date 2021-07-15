@@ -1,3 +1,8 @@
+/** サーバ・クライアント間で送受信し合うもの全てをまとめた定義
+ *
+ */
+
+
 export { Message };
 import { ChatMessage } from './chatMessage';
 import { PDFCommandType } from './PDFCommandType';

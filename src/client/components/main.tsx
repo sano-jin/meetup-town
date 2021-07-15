@@ -1,5 +1,5 @@
 export { Main };
-import { getStringFromUser, getTimeString } from '../../util'
+import { getTimeString } from '../../util'
 import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./../ts/client";
 import { ClientState, Remote } from "./../ts/clientState";
 import { Message } from './../../message';
@@ -295,15 +295,3 @@ class Main extends React.Component<MainProps, ClientState> {
     }
 }
 
-/*
-
-// Prompting for room name:
-const roomName: string = getStringFromUser('Enter room name:');
-const userName: string = getStringFromUser('Enter your name:');
-
-ReactDOM.render(
-    <Main userName={userName} roomName={roomName} />,
-    document.getElementById('root')
-);
-
-*/
