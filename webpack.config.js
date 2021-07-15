@@ -41,7 +41,7 @@ module.exports = [
                 patterns: [
                     {
                         from: "node_modules/pdfjs-dist/cmaps/",
-                        to: "./public/dist/cmaps/",
+                        to: "public/dist/cmaps/",
                     },
                 ],
             }),
