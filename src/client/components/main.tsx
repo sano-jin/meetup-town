@@ -1,3 +1,8 @@
+/* アプリのメイン画面
+ * リファクタリング必須！！！
+*/
+
+
 export { Main };
 import { getTimeString } from '../../util'
 import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./../ts/client";

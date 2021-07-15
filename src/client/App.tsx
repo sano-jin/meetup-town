@@ -3,7 +3,7 @@
  * - 部屋の id も込みの URL の場合は `Enter your name` の画面になる
 */
 
-import { Main } from "./components/main";
+import { Main } from "./components/Main";
 import { Home } from "./Home";
 import { RoomEntry } from "./RoomEntry";
 import { getTimeString } from '../util'
