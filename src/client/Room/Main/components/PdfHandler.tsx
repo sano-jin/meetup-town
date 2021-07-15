@@ -1,8 +1,12 @@
+/* PDF を表示したり，送信したりする？
+ *
+*/
+
 export { PdfHandle };
-    import { debug } from 'console';
+import { debug } from 'console';
 import React, { useState } from 'react';
 import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
-import { PDFCommandType } from '../../PDFCommandType';
+import { PDFCommandType } from '../../../../PDFCommandType';
 
 const options = {
     cMapUrl: '/dist/cmaps/',

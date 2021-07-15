@@ -1,9 +1,13 @@
+/* チャットを送信する送信ボックスのコンポーネント
+ *
+ */
+
 export { ChatSender };
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
-import { ChatMessage } from "./../../chatMessage";
-import { Message } from "./../../message";
-import { UserId } from './../../userInfo';
+import { ChatMessage } from "./../../../../chatMessage";
+import { Message } from "./../../../../message";
+import { UserId } from './../../../../userInfo';
 
 interface ChatMessageProps {
     sendChatMessage: (message: string) => void;

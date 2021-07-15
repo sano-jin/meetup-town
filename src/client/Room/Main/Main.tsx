@@ -4,15 +4,17 @@
 
 
 export { Main };
-import { getTimeString } from '../util'
+import { getTimeString } from '../../../util'
 import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./ts/client";
 import { ClientState, Remote } from "./ts/clientState";
-import { Message } from './../message';
-import { ChatMessage } from './../chatMessage';
+import { Message } from './../../../message';
+import { ChatMessage } from './../../../chatMessage';
 import { ChatBoard } from "./components/ChatMessage";
 import { ChatSender } from "./components/ChatSender";
-import { UserInfo, UserId } from './../userInfo';
+import { UserInfo, UserId } from './../../../userInfo';
 import { VideoElement, VideoBoard } from "./components/VideoElement";
+import { PdfHandle } from "./components/PdfHandler";
+import { PDFCommandType } from './../../../PDFCommandType';
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 import io from "socket.io-client";
@@ -21,8 +23,6 @@ import Grid from '@material-ui/core/Grid';
 // import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
 import { LabelBottomNavigation } from "./components/Navigation"
-import { PdfHandle } from "./components/PdfHandler";
-import { PDFCommandType } from './../PDFCommandType';
 
 
 const socket = io();

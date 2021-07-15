@@ -1,3 +1,7 @@
+/* 画面下部に出てくるナビゲーションバー
+ *　現在何もできないので無意味だが，かっこいいのでつけている
+*/
+
 export { LabelBottomNavigation };
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';

@@ -2,10 +2,10 @@
 *
 */
 
-export { RoomEntry };
-import { Main } from "./../Main";
-import { NameForm } from "./NameForm";
-import { UserInfo } from "../userInfo";
+export { Room };
+import { Main } from "./Main/Main";
+import { NameForm } from "./Entry/NameForm";
+import { UserInfo } from "../../userInfo";
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
 
@@ -13,7 +13,7 @@ interface RoomEntryProps {
     roomId: string;
 }
 
-class RoomEntry extends React.Component<RoomEntryProps, { userInfo: UserInfo | null }> {
+class Room extends React.Component<RoomEntryProps, { userInfo: UserInfo | null }> {
     constructor(props: RoomEntryProps) {
 	super(props);
 	this.state = { userInfo: null };

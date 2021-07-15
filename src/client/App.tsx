@@ -3,9 +3,8 @@
  * - 部屋の id も込みの URL の場合は `Enter your name` の画面になる
 */
 
-import { Main } from "./Main/Main";
 import { Home } from "./Home/Home";
-import { RoomEntry } from "./Entry/RoomEntry";
+import { Room } from "./Room/Room";
 import { getTimeString } from '../util'
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
@@ -53,7 +52,7 @@ class App extends React.Component {
 			    {/* 部屋の id も込みで入力された場合は部屋への入り口の画面になる */}
 			    <Route path='/rooms/:roomId' component={() => {
 				const { roomId } = useParams<{roomId: string}>();
-				return <RoomEntry roomId={roomId} />
+				return <Room roomId={roomId} />
 			    }}/>
 			    {/* それ以外ならホーム画面へ飛ぶ */}
 			    <Route exact path='/' component={Home}/>
