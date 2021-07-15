@@ -2,8 +2,8 @@
  * 
  */
 
-export { VideoElement, VideoBoard, clientState2VideoElementProps };
-import * as React from 'react';
+export { VideoElement, VideoBoard, getVideoElementProps };
+import React, { useEffect, useState, useRef } from 'react';
 import * as ReactDOM from "react-dom";
 import { UserInfo, UserId } from './../../../../userInfo';
 import { ClientState, Remote } from "./../ts/clientState";
@@ -15,7 +15,7 @@ interface VideoElementProps {
     userId: UserId;
     stream: MediaStream | null;
     userInfo: UserInfo;
-    maxWidth: number;
+    width: number;
 };
 
 
@@ -31,7 +31,8 @@ class VideoElement extends React.Component<VideoElementProps, {}> {
         return <Box key={this.props.userId} border={1}> {
 	    this.props.stream !== null ?
             <Box>
-                <video width="300px" ref={video => {if (video !== null) {video.srcObject = this.props.stream;}}}
+                <video width={`${this.props.width}px`}
+		       ref={video => {if (video !== null) {video.srcObject = this.props.stream;}}}
 		       autoPlay muted playsInline />
             </Box>
             :
@@ -49,18 +50,33 @@ interface VideoBoardProps {
 
 // カメラの映像をたくさん表示するコンポーネント
 const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps) => {
-    return (<Grid container> {
-        videoBoardProps.videoElements.map(videoElement =>
-            <Grid item>
+    const video_num = videoBoardProps.videoElements.length; // 表示するビデオの数
+
+    // このコンポーネントの幅を取得している
+    const [width, setWidth] = useState(0);
+    const ref = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+	const handleResize = () => setWidth(ref.current?.offsetWidth ?? 0);
+	handleResize();
+	window.addEventListener('resize', handleResize)
+	return () => window.removeEventListener('resize', handleResize);
+    }, [ref.current]);
+
+
+    const videoWidth = Math.round(width/3); // とりあえずは画面を三等分することにする
+    
+    return (<Grid ref={ref} container> {
+	videoBoardProps.videoElements.map(videoElement =>
+	    <Grid item>
 		<VideoElement
-                    key     ={videoElement.userId}
-                    userId  ={videoElement.userId}
-                    stream  ={videoElement.stream}
-                    userInfo={videoElement.userInfo}
-		    maxWidth={300}
+		    key     ={videoElement.userId}
+		    userId  ={videoElement.userId}
+		    stream  ={videoElement.stream}
+		    userInfo={videoElement.userInfo}
+		    width={videoWidth}
 		/>
-            </Grid>
-        )
+	    </Grid>
+	)
     } </Grid>);
 }
 
@@ -69,22 +85,22 @@ const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps)
 
 // clientState から videoBoard クラスに渡すプロパティに変換する関数
 // videoElement.tsx に移動させるべきかもしれない
-const clientState2VideoElementProps =
-    (clientState: ClientState) => {
+const getVideoElementProps =
+    (myUserId: UserId, localStream: null | MediaStream, userInfo: UserInfo, remotes: Map<UserId, Remote>) => {
 	const getRemoteVideoElement = ([userId, remote]: [UserId, Remote]) => {return ({
 	    userId: userId,
 	    stream: remote.remoteStream,
 	    userInfo: remote.userInfo,
-	    maxWidth: 300
+	    width: 300 // 実はこの値は使っていない
 	});};
 	const localVideoElement = {
-	    userId: clientState.userId ?? "Undefined",
-	    stream: clientState.localStream,
-	    userInfo: clientState.userInfo,
-	    maxWidth: 300
+	    userId: myUserId ?? "Undefined",
+	    stream: localStream,
+	    userInfo: userInfo,
+	    width: 300 // 実はこの値は使っていない
 	};
 	return ([localVideoElement, 
-		 ...([...clientState.remotes].map(getRemoteVideoElement))]);
+		 ...([...remotes].map(getRemoteVideoElement))]);
     }
 
 

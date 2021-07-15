@@ -27,6 +27,8 @@ interface ClientProps {
 };
 
 
+
+// 受信した JSON データから他のユーザの情報を取得する
 const getInitRemotes =
     (jsonStrOtherUsers: string): Map<UserId, Remote> => {
         const otherUsers: Map<UserId, UserInfo> = json2Map(jsonStrOtherUsers);
@@ -50,6 +52,8 @@ const getInitRemotes =
         return remotes;
     };
 
+
+// 他に新しく参加した人がいたときに，その人のデータを取得するための関数
 const getInitRemote = (userInfo: UserInfo) => {
     return {
         userInfo: userInfo,

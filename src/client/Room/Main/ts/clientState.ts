@@ -3,12 +3,13 @@ import { UserInfo, UserId } from './../../../../userInfo';
 import { ChatMessage } from './../../../../chatMessage';
 
 // Defining some global utility variables
+
+
+// React で管理するクライアントサイドが持つ状態
+// 自分の userId などはこれとは別に管理する
 interface ClientState {
-    userId: null | UserId,
-    roomName: string;
-    userInfo: UserInfo,
     localStream: null | MediaStream,  // Local camera
-    remotes: Map<string, Remote>,     // A map from socket.id
+    remotes: Map<UserId, Remote>,     // A map from socket.id
     localStreamConstraints: StreamConstraints,
     chats: ChatMessage[],
 }
