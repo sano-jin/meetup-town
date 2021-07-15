@@ -25,6 +25,12 @@ body {
     font-family: 'Noto Sans JP', sans-serif;
 }
 
+
+.send-button-container>input {
+    display: none;
+}
+
+
 /*
 .row {
     display: -ms-flexbox;

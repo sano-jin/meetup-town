@@ -13,6 +13,9 @@ import CardHeader from '@material-ui/core/CardHeader';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
+
+
 
 const useStyles = makeStyles({
     root: {
@@ -96,19 +99,18 @@ class ChatBoard extends React.Component<ChatBoardProps, {}> {
     }
 
     render() {
-        return <div className="chatBoardContainer">
+        return <Box className="chatBoardContainer" height="80%">
 	    <Grid
 		container
 		direction="column"
+		alignItems="flex-end"
 		justify="center"
 		spacing={4}
-		style={{height:'auto', position: 'relative', marginBottom: "40px"}}
-	    >
+		style={{position: 'relative', marginBottom: "0px" }}
+		>
 		{
                     this.props.chatMessages.map((chatMessage, index) =>
-			<Grid
-			    item xs={8}
-			>
+			<Grid item xs={12}>
 			    <ChatMessageContainer
 				key         ={index.toString()}
 				chatMessage ={chatMessage}
@@ -123,7 +125,7 @@ class ChatBoard extends React.Component<ChatBoardProps, {}> {
 		}
 	    </Grid>
 	    <div className="dummy" ref={(el) => { this.el = el; }} />
-        </div>
+        </Box>
     }
 }
 

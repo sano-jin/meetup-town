@@ -1,6 +1,6 @@
 /* アプリのメイン画面
  * リファクタリング必須！！！
-*/
+ */
 
 
 export { Main };
@@ -12,7 +12,7 @@ import { ChatMessage } from './../../../chatMessage';
 import { ChatBoard } from "./components/ChatMessage";
 import { ChatSender } from "./components/ChatSender";
 import { UserInfo, UserId } from './../../../userInfo';
-import { VideoElement, VideoBoard } from "./components/VideoElement";
+import { VideoElement, VideoBoard, getVideoElementProps } from "./components/VideoElement";
 import { PdfHandle } from "./components/PdfHandler";
 import { PDFCommandType } from './../../../PDFCommandType';
 import * as React from 'react';
@@ -34,14 +34,16 @@ interface MainProps {
 
 
 // メイン画面のクラス
-// TODO: React.FC を使うようにしたい
+// React.FC を使うようにしたいと思ったが，ここに関してだけはそう簡単にもいかなさそう
+// socket.on イベントリスナで状態を更新したいのだが，現状これがうまくできない．．．
+// イベントハンドラ登録時の状態と，最新の状態が異なる（可能性がある）ため
 class Main extends React.Component<MainProps, ClientState> {
     sendMessageTo: (toUserId: UserId | undefined) => (message: Message) => void;
     constructor(props: MainProps){
         super(props)
         this.state = {
             userId: null,
-            roomName: props.roomName,
+            roomName: props.roomName, // わざわざ「状態」として「部屋の名前」を持つ必要はあるだろうか？なさげ？
             userInfo: props.userInfo,
             localStream: null,
             remotes: new Map<UserId, Remote>(),
@@ -54,22 +56,24 @@ class Main extends React.Component<MainProps, ClientState> {
         this.sendMessageTo =
             (toUserId: UserId | undefined) => (message: Message) => {
                 const send = () => {
-                    const [myUserId, roomName] = [this.state.userId, this.state.roomName];
-                    if (myUserId === undefined || roomName === undefined) throw Error("myUserId  or roomName is undefined");
-                    if (myUserId === null || roomName === null) {
+                    const myUserId = this.state.userId;
+                    if (myUserId === null) {
                         console.log("timeout: myUserId  or roomName is null");
                         setTimeout(send, 500);
                         return;
                     }
-                    socket.emit('message', myUserId, message, roomName, toUserId);
+                    socket.emit('message', myUserId, message, this.props.roomName, toUserId);
                 }
                 send();
             };
+	// おまじない（なんで必要なのかはよくわからない）
         this.sendChatMessage = this.sendChatMessage.bind(this);
         this.sendPDFCommand = this.sendPDFCommand.bind(this);
     }
 
+    // このコンポーネントが初めて読み込まれたときに一回実行する関数
     componentDidMount(){
+	// 自分が部屋に入ったとサーバから返事が返ってきた場合
         socket.on('joined', (myUserId: UserId, jsonStrOtherUsers: string) => {
             console.log(`me ${myUserId} joined with`, jsonStrOtherUsers);
             this.setState((state) => {
@@ -167,12 +171,13 @@ class Main extends React.Component<MainProps, ClientState> {
             };
         }
 
+	// サーバからメッセージを受信した
         socket.on('message', (userId: UserId, message: Message) => {
-            if (message.type !== 'candidate') {
+            if (message.type !== 'candidate') { // candidate は回数が多いのでそれ以外ならデバッグ用に表示
                 console.log('Received message:', message, `from user ${userId}`);
             }
             const remote: Remote | undefined = this.state.remotes.get(userId)!;
-            if (remote === undefined) {
+            if (remote === undefined) { // とりあえずは，知らない人からメッセージが来たらエラーを吐くことにした
                 throw Error(`remote is null for ${userId}`);
             }
             handleMessage(remote, message, this.state.localStream, props(userId));
@@ -180,7 +185,6 @@ class Main extends React.Component<MainProps, ClientState> {
         
 
         console.log("Going to find Local media");
-        // console.log('Getting user media with constraints', clientState.localStreamConstraints);
 
 	// If found local stream
         const gotStream = (stream: MediaStream): void => {
@@ -197,32 +201,34 @@ class Main extends React.Component<MainProps, ClientState> {
 	    console.log("Called others", this.state.remotes)
         }
 
+	// もし自分のカメラ映像を見つけられたら gotStream 関数を実行する
         navigator.mediaDevices.getUserMedia(this.state.localStreamConstraints)
                  .then(gotStream)
                  .catch((e) => {
                      alert(`getUserMedia() error: ${e.name}`);
                  });
-        
-        socket.emit('join', this.state.roomName, this.state.userInfo);
+
+        // サーバに部屋に入りたい旨を通知
+        socket.emit('join', this.props.roomName, this.state.userInfo);
     }
-    
+
+    // チャットメッセージを送信する
     sendChatMessage (message: string){
         this.setState(state => {
             console.log("this.state", state);
-            const chatMessage: ChatMessage = {
+            const chatMessage: ChatMessage = { // チャットメッセージ
                 userId: state.userId ?? "undefined",
                 time: getTimeString(),
                 message: message,
             };
-            this.sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage });
-            return { ...state, chats: [...state.chats, chatMessage]};
+            this.sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage }); // チャットを送信
+            return { ...state, chats: [...state.chats, chatMessage]}; // 自分のところにも追加しておく
         });
     };
 
     sendPDFCommand (com: PDFCommandType){
         const message: Message = {type: "pdfcommand", command: com};
         this.sendMessageTo(undefined)(message);
-        return;
     }
 
     render() {
@@ -235,71 +241,58 @@ class Main extends React.Component<MainProps, ClientState> {
         }
         
         return (
-        //	    <Grid container justify="center" >
-        //画面全体を囲むためのBox
 	    <Box
-            component={"div"}
-            height="100vh"
-            display="block"
-            position="relative"
-            overflow="hidden"
+		height="100vh"
+		position="relative"
+		overflow="hidden"
 	    >
-            {/* ヘッダー情報: 部屋名+ユーザーネーム */}
-            <Box className="header" top="0" position="fixed" width="100%">
-                <span className="room-name">{this.props.roomName}</span>
-                <span className="user-name">{this.props.userInfo.userName}</span>
-            </Box>
-            {/* チャットとビデオの要素を囲むBox */}
-            <Box
-                component="div"
-                // height="100%"
-                display="block"
-                width="100%"
-                position="relative"
-                margin="0"
-                overflow="hidden"
-                top="30px"
-                style={{height:'calc(100% - 120px)'}}
-            >
-                <Box
+		{/* チャットとビデオの要素を囲むBox */}
+		<Box
+                    position="relative"
+                    margin="0"
+                    overflow="hidden"
+                    top="0px"
+                    style={{height:'calc(100% - 60px)'}}
+		>
+		    <Grid container alignItems="center" spacing={1} style={{height:'100%'}}>
+			<Grid item xs={3} style={{height:'100%', width: '100%'}}
+			      container
+			      direction="column"
+			      justify="center"
+			      alignItems="flex-end"
+			>
+			    <Box
+				height="100%"
+				style={{overflowY: 'scroll', overflowX: 'hidden'}}
+			    >
+				<ChatBoard chatMessages={this.state.chats}
+					   remotes={this.state.remotes}
+					   myInfo={this.state.userInfo}/>
+				<ChatSender sendChatMessage={this.sendChatMessage} />
+			    </Box>
+			</Grid>
+			<Grid item xs={9} style={{height:'100%'}}>
+			    <Box height="100%" width="100%">
+				<VideoBoard videoElements={getVideoElementProps(this.state)} />
+			    </Box>	
+			</Grid>
+		    </Grid>
+		</Box>
+		<Box
                     component="div"
                     height="100%"
-                    left="0"
                     position="absolute"
-                    zIndex="tooltip"
-                    maxWidth="100%"
-                    style={{overflowY: 'scroll', overflowX: 'hidden'}}
-                    padding="5"
-                >
-                    <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
-                    <ChatSender sendChatMessage={this.sendChatMessage} />                
-                </Box>
-                <Box
-                    height="100%"
+                    top="0"
+                    right="0"
                     overflow="auto"
-                >
-                    <div id="local-video">
-                        <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
-                    </div>
-                    <VideoBoard remotes={this.state.remotes} />
-                </Box>
-            </Box>
-            <Box
-                component="div"
-                height="100%"
-                position="absolute"
-                top="0"
-                right="0"
-                overflow="auto"
-            >
-                <PdfHandle sendPDFCommand={this.sendPDFCommand}/>
-            </Box>
-            <Box bottom="0" position="fixed" width="100%">
-                <LabelBottomNavigation />
-            </Box>
+		>
+                    <PdfHandle sendPDFCommand={this.sendPDFCommand}/>
+		</Box>
+		<Box bottom="0" position="fixed" width="100%" height="60px">
+                    <LabelBottomNavigation />
+		</Box>
 	    </Box>
-	    //	    </Grid>
-	    );
+	);
     }
 }
 

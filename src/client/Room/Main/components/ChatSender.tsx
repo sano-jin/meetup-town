@@ -41,9 +41,11 @@ class ChatSender extends React.Component<ChatMessageProps, { value: string }> {
 	    <form
 		id="message-from"
 		action="#"
-		style={{bottom: 0, position: 'relative'}}
-		>
-                <textarea value={this.state.value} onChange={this.handleChange} id="input-message" />
+		style={{bottom: 0, position: 'relative', height: '20%'}}
+	    >
+                <textarea value={this.state.value} onChange={this.handleChange} id="input-message"
+		style={{height:'100%', width:'100%' }}
+		/>
                 
                 <label className="send-button-container">
                     <input type="submit" value="Send" className="send-button" onClick={this.handleSubmit} />
