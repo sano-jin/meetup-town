@@ -1,3 +1,8 @@
+/* チャットメッセージを表示するコンポーネント
+ *
+*/
+
+
 export { ChatBoard };
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
@@ -15,16 +20,9 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles({
-    root: {
-	minWidth: 275,
-    },
-    userName: {
-	float: 'left',
-    },
-    time: {
-	fontSize: 14,
-	float: 'right',
-    }
+    root: { minWidth: 275 },
+    userName: { float: 'left' },
+    time: { fontSize: 14, float: 'right' }
 });
 
 const  ChatMessageContainer: React.FC<ChatMessageProps> = (props: ChatMessageProps) => {

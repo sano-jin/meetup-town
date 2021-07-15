@@ -12,7 +12,7 @@ import { ChatMessage } from './../../../chatMessage';
 import { ChatBoard } from "./components/ChatMessage";
 import { ChatSender } from "./components/ChatSender";
 import { UserInfo, UserId } from './../../../userInfo';
-import { VideoElement, VideoBoard } from "./components/VideoElement";
+import { VideoElement, VideoBoard, clientState2VideoElementProps } from "./components/VideoElement";
 import { PdfHandle } from "./components/PdfHandler";
 import { PDFCommandType } from './../../../PDFCommandType';
 import * as React from 'react';
@@ -31,6 +31,8 @@ interface MainProps {
     userInfo: UserInfo;
     roomName: string;
 }
+
+
 
 
 // メイン画面のクラス
@@ -54,14 +56,13 @@ class Main extends React.Component<MainProps, ClientState> {
         this.sendMessageTo =
             (toUserId: UserId | undefined) => (message: Message) => {
                 const send = () => {
-                    const [myUserId, roomName] = [this.state.userId, this.state.roomName];
-                    if (myUserId === undefined || roomName === undefined) throw Error("myUserId  or roomName is undefined");
-                    if (myUserId === null || roomName === null) {
-                        console.log("timeout: myUserId  or roomName is null");
+                    const myUserId = this.state.userId;
+                    if (myUserId === null) {
+                        console.log("timeout: myUserId is null");
                         setTimeout(send, 500);
                         return;
                     }
-                    socket.emit('message', myUserId, message, roomName, toUserId);
+                    socket.emit('message', myUserId, message, this.state.roomName, toUserId);
                 }
                 send();
             };
@@ -235,71 +236,68 @@ class Main extends React.Component<MainProps, ClientState> {
         }
         
         return (
-        //	    <Grid container justify="center" >
-        //画面全体を囲むためのBox
+            //	    <Grid container justify="center" >
+            //画面全体を囲むためのBox
 	    <Box
-            component={"div"}
-            height="100vh"
-            display="block"
-            position="relative"
-            overflow="hidden"
+		component={"div"}
+		height="100vh"
+		display="block"
+		position="relative"
+		overflow="hidden"
 	    >
-            {/* ヘッダー情報: 部屋名+ユーザーネーム */}
-            <Box className="header" top="0" position="fixed" width="100%">
-                <span className="room-name">{this.props.roomName}</span>
-                <span className="user-name">{this.props.userInfo.userName}</span>
-            </Box>
-            {/* チャットとビデオの要素を囲むBox */}
-            <Box
-                component="div"
-                // height="100%"
-                display="block"
-                width="100%"
-                position="relative"
-                margin="0"
-                overflow="hidden"
-                top="30px"
-                style={{height:'calc(100% - 120px)'}}
-            >
-                <Box
+		{/* ヘッダー情報: 部屋名+ユーザーネーム */}
+		<Box className="header" top="0" position="fixed" width="100%">
+                    <span className="room-name">{this.props.roomName}</span>
+                    <span className="user-name">{this.props.userInfo.userName}</span>
+		</Box>
+		{/* チャットとビデオの要素を囲むBox */}
+		<Box
+                    component="div"
+                    // height="100%"
+                    display="block"
+                    width="100%"
+                    position="relative"
+                    margin="0"
+                    overflow="hidden"
+                    top="30px"
+                    style={{height:'calc(100% - 120px)'}}
+		>
+                    <Box
+			component="div"
+			height="100%"
+			left="0"
+			position="absolute"
+			zIndex="tooltip"
+			maxWidth="100%"
+			style={{overflowY: 'scroll', overflowX: 'hidden'}}
+			padding="5"
+                    >
+			<ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
+			<ChatSender sendChatMessage={this.sendChatMessage} />                
+                    </Box>
+                    <Box
+			height="100%"
+			overflow="auto"
+                    >
+			<VideoBoard videoElements={clientState2VideoElementProps(this.state)} />
+                    </Box>
+		</Box>
+		<Box
                     component="div"
                     height="100%"
-                    left="0"
                     position="absolute"
-                    zIndex="tooltip"
-                    maxWidth="100%"
-                    style={{overflowY: 'scroll', overflowX: 'hidden'}}
-                    padding="5"
-                >
-                    <ChatBoard chatMessages={this.state.chats} remotes={this.state.remotes} myInfo={this.state.userInfo}/>
-                    <ChatSender sendChatMessage={this.sendChatMessage} />                
-                </Box>
-                <Box
-                    height="100%"
+                    top="0"
+                    right="0"
                     overflow="auto"
-                >
-                    <div id="local-video">
-                        <VideoElement userId={this.state.userId ?? ""} stream={this.state.localStream} userInfo={this.state.userInfo} />
-                    </div>
-                    <VideoBoard remotes={this.state.remotes} />
-                </Box>
-            </Box>
-            <Box
-                component="div"
-                height="100%"
-                position="absolute"
-                top="0"
-                right="0"
-                overflow="auto"
-            >
-                <PdfHandle sendPDFCommand={this.sendPDFCommand}/>
-            </Box>
-            <Box bottom="0" position="fixed" width="100%">
-                <LabelBottomNavigation />
-            </Box>
+		>
+                    <PdfHandle sendPDFCommand={this.sendPDFCommand}/>
+		</Box>
+		<Box bottom="0" position="fixed" width="100%">
+                    <LabelBottomNavigation />
+		</Box>
 	    </Box>
 	    //	    </Grid>
-	    );
+	);
     }
 }
 
