@@ -41,7 +41,7 @@ module.exports = [
                 patterns: [
                     {
                         from: "node_modules/pdfjs-dist/cmaps/",
-                        to: "/cmaps/",
+                        to: "./public/dist/cmaps/",
                     },
                 ],
             }),
@@ -61,7 +61,7 @@ module.exports = [
             filename: 'bundle.js',
         },
         target: ['web', 'es5'],
-        externals: ['bufferutil', 'utf-8-validate'], 
+        externals: ['bufferutil', 'utf-8-validate'],
         mode: 'development',
         module: {
             rules: [
@@ -91,6 +91,6 @@ module.exports = [
             alias: {
                 "@": path.join(__dirname, "/src/")
             }
-        }        
+        }
     }
 ];
