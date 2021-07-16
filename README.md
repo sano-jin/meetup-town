@@ -17,8 +17,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <a href="./docs/meetup_icon.svg">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+  <a href="https://sano-jin.github.io/meetup-town/">
+    <img src="./docs/meetup_icon.svg" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">Meetup online</h3>
@@ -26,6 +26,8 @@
   <p align="center">
 	A simple online meeting app runs on browser.
 	Implemented in TypeScript with WebRTC, Nodejs and React.
+    <br />
+	<i>Experimental</i>
     <br />
     <a href="https://sano-jin.github.io/meetup-town/"><strong>View Demo »</strong></a>
   </p>
