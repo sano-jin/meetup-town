@@ -37,18 +37,16 @@ const VideoElement: React.FC<VideoElementProps> = (props: VideoElementProps) => 
 
 
     return <Box key={props.userId} border={1}>
-	<div ref={ref}>
-	    {
-		props.stream !== null ?
-		<Box>
-		    <video width={`${width}px`}
-			   ref={video => {if (video !== null) {video.srcObject = props.stream;}}}
-			   autoPlay muted={props.muted} playsInline />
-		</Box>
-		:
-		<Box>{props.userInfo.userName}</Box>
-	    }
-	</div>
+	<div ref={ref}> {
+	    props.stream !== null ?
+	    <Box>
+		<video width={`${width}px`}
+		       ref={video => {if (video !== null) {video.srcObject = props.stream;}}}
+		       autoPlay muted={props.muted} playsInline />
+	    </Box>
+	    :
+	    <Box>{props.userInfo.userName}</Box>
+	} </div>
     </Box>;
 }
 

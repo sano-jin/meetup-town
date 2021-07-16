@@ -1,5 +1,7 @@
-/* アプリのメイン画面
+/* クライアントサイドの状態を管理するだけのクラス
+ * アプリのメイン画面は UI.tsx に移植した
  * リファクタリング必須！！！
+ * 余計なインポートとかがあったら消してくれ
  */
 
 
@@ -9,20 +11,16 @@ import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart }
 import { ClientState, Remote } from "./ts/clientState";
 import { Message } from './../../../message';
 import { ChatMessage } from './../../../chatMessage';
-import { ChatBoard } from "./components/ChatMessage";
-import { ChatSender } from "./components/ChatSender";
 import { UserInfo, UserId } from './../../../userInfo';
-import { VideoElement, VideoBoard, getVideoElementProps } from "./components/VideoElement";
-import { PdfHandle } from "./components/PdfHandler";
 import { PDFCommandType } from './../../../PDFCommandType';
+
 import * as React from 'react';
 import * as ReactDOM from "react-dom";
+
 import io from "socket.io-client";
-import Button from '@material-ui/core/Button';
-import Grid from '@material-ui/core/Grid';
-// import Container from '@material-ui/core/Container';
-import Box from '@material-ui/core/Box';
-import { LabelBottomNavigation } from "./components/Navigation"
+
+import { UI } from "./UI"
+
 
 
 const socket = io();
@@ -33,7 +31,7 @@ interface MainProps {
 }
 
 
-// メイン画面のクラス
+// メインの状態を管理するだけのクラス
 // React.FC を使うようにしたいと思ったが，ここに関してだけはそう簡単にもいかなさそう
 // socket.on イベントリスナで状態を更新したいのだが，現状これがうまくできない．．．
 // イベントハンドラ登録時の状態と，最新の状態が異なる（可能性がある）ため
@@ -53,6 +51,9 @@ class Main extends React.Component<MainProps, ClientState> {
             },
             chats: []
         }
+
+	// toUserId にサーバを介してメッセージを送信する
+	// toUserId が undefined だった場合は，ブロードキャストする
         this.sendMessageTo =
             (toUserId: UserId | undefined) => (message: Message) => {
                 const send = () => {
@@ -96,6 +97,7 @@ class Main extends React.Component<MainProps, ClientState> {
             });
         });
 
+	// 他の人が入ってきた場合
         socket.on('anotherJoin', (userId: UserId, userInfo: UserInfo) => {
             console.log(`Another user ${userId} has joined to our room`, userInfo);
             this.setState((state) => {
@@ -106,6 +108,7 @@ class Main extends React.Component<MainProps, ClientState> {
             });
         });
 
+	// サーバとのやりとりに必要な関数を渡すための下準備
         const props = (userId: UserId): ClientProps => {
             const sendMessage = this.sendMessageTo(userId);
 
@@ -232,51 +235,10 @@ class Main extends React.Component<MainProps, ClientState> {
     }
 
     render() {
-        const wholeBoxStyle = {
-            component: "div",
-            height: "100vh",
-            display: "block",
-            position: "relative",
-            overflow: "hidden",
-        }
-        
-        return (
-	    <Box height="100vh" >
-		{/* チャットとビデオの要素を囲むBox */}
-		<Box
-		    display="flex"
-                    margin="0"
-                    style={{height:'calc(100% - 60px)'}}
-		>
-		    <Box
-			height="100%"
-			width="20%"
-		    >
-			<ChatBoard chatMessages={this.state.chats}
-				   remotes={this.state.remotes}
-				   myInfo={this.state.userInfo}/>
-			<ChatSender sendChatMessage={this.sendChatMessage} />
-		    </Box>
-		    <Box height="100%" width="80%">
-			<VideoBoard videoElements={getVideoElementProps(this.state)} />
-			<Box
-			    component="div"
-			    height="100%"
-			    width="80vw"
-			    position="absolute"
-			    top="0"
-			    right="0"
-			    overflow="auto"
-			>
-			    <PdfHandle sendPDFCommand={this.sendPDFCommand}/>
-			</Box>
-		    </Box>	
-		</Box>
-		<Box bottom="0" position="fixed" width="100%" height="60px">
-                    <LabelBottomNavigation />
-		</Box>
-	    </Box>
-	);
+	return (<UI clientState={this.state}
+		    sendChatMessage={this.sendChatMessage}
+		    sendPDFCommand={this.sendPDFCommand}
+	/>);
     }
 }
 

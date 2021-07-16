@@ -1,4 +1,4 @@
-# Meetup Town
+# Meetup Online
 An online meeting app runs on browser.
 
 Visit https://sano-jin.github.io/meetup-town/ for more information.
