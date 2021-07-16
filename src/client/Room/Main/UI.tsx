@@ -1,7 +1,12 @@
-/* アプリのメイン画面
- * リファクタリング必須！！！
- * 余計なインポートとかがあったら消してくれ
- */
+////////////////////////////////////////////////////////////////////////////////
+//
+// アプリのメイン画面
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
+// リファクタリング必須！！！
+// 余計なインポートとかがあったら消してくれ
 
 
 export { UI };
@@ -39,6 +44,7 @@ interface UIProps {
 }
     
 
+// アプリのメイン画面
 const UI: React.FC<UIProps> = (uiProps: UIProps) => {
     const wholeBoxStyle = {
         component: "div",
@@ -48,44 +54,53 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
         overflow: "hidden",
     }
     
-    return (
-	<Box height="100vh" >
-	    {/* チャットとビデオの要素を囲むBox */}
+    return (<Box height="100vh" >
+	{/* チャットとビデオの要素を囲むBox */}
+	<Box
+	    display="flex"
+            margin="0"
+            style={{height:'calc(100% - 60px)'}}
+	>
+	    {/* チャット用のモジュール */}
 	    <Box
-		display="flex"
-                margin="0"
-                style={{height:'calc(100% - 60px)'}}
+		height="100%"
+		width="30%"
+		style={{backgroundColor: '#212121'}}
 	    >
+		{/* チャットメッセージの表示 */}
+		<ChatMessageBoard
+		chatMessages={uiProps.clientState.chats}
+		remotes={uiProps.clientState.remotes}
+		myInfo={uiProps.clientState.userInfo}/>
+
+		{/* チャットメッセージの送信 */}
+		<ChatSender sendChatMessage={uiProps.sendChatMessage} />
+	    </Box>
+	    
+	    {/* ビデオ・共有スライドの表示パネル */}
+	    <Box height="100%" width="70%">
+		{/* ビデオの表示パネル */}
+		<VideoBoard videoElements={getVideoElementProps(uiProps.clientState)} />
+
+		{/* 共有スライドの表示パネル */}
 		<Box
+		    component="div"
 		    height="100%"
-		    width="30%"
-		    style={{backgroundColor: '#212121'}}
+		    width="70vw"
+		    position="absolute"
+		    top="0"
+		    right="0"
+		    overflow="auto"
 		>
-		    <ChatMessageBoard
-			chatMessages={uiProps.clientState.chats}
-			remotes={uiProps.clientState.remotes}
-			myInfo={uiProps.clientState.userInfo}/>
-		    <ChatSender sendChatMessage={uiProps.sendChatMessage} />
+		    <PdfHandle sendPDFCommand={uiProps.sendPDFCommand}/>
 		</Box>
-		<Box height="100%" width="70%">
-		    <VideoBoard videoElements={getVideoElementProps(uiProps.clientState)} />
-		    <Box
-			component="div"
-			height="100%"
-			width="70vw"
-			position="absolute"
-			top="0"
-			right="0"
-			overflow="auto"
-		    >
-			<PdfHandle sendPDFCommand={uiProps.sendPDFCommand}/>
-		    </Box>
-		</Box>	
-	    </Box>
-	    <Box bottom="0" position="fixed" width="100%" height="60px">
-                <LabelBottomNavigation />
-	    </Box>
+	    </Box>	
 	</Box>
-    );
+	
+	{/* ナビゲーションバー */}
+	<Box bottom="0" position="fixed" width="100%" height="60px">
+            <LabelBottomNavigation />
+	</Box>
+    </Box>);
 }
 

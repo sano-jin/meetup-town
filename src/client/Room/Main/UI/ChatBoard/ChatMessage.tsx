@@ -1,6 +1,9 @@
-/* 受信・送信したチャットメッセージを表示するコンポーネント
- *
-*/
+////////////////////////////////////////////////////////////////////////////////
+//
+// 受信・送信したチャットメッセージを表示するコンポーネント
+//
+////////////////////////////////////////////////////////////////////////////////
+
 
 export { ChatMessageBoard };
 
@@ -30,7 +33,7 @@ interface ChatMessageProps {
     fromUser: string;
 };
 
-
+// チャットメッセージに適用する CSS スタイル
 const useStyles = makeStyles({
     root	: { minWidth: 'calc(30vw - 20px)', marginLeft: "10px", marginRight: "10px",
 		    borderRadius: '20px 20px 20px 0' },

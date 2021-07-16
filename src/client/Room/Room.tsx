@@ -1,17 +1,26 @@
-/* Zoom の部屋
-*
-*/
+////////////////////////////////////////////////////////////////////////////////
+//
+// Zoom の部屋
+//
+////////////////////////////////////////////////////////////////////////////////
+
 
 export { Room };
-import { Main } from "./Main/Main";
-import { NameForm } from "./Entry/NameForm";
-import { UserInfo } from "../../userInfo";
-import * as React from 'react';
-import * as ReactDOM from "react-dom";
+
+// コンポーネント
+import { Main }		from "./Main/Main";
+import { NameForm }	from "./Entry/NameForm";
+import { UserInfo }	from "../../userInfo";
+
+// React
+import * as React	from 'react';
+import * as ReactDOM	from "react-dom";
+
 
 interface RoomEntryProps {
     roomId: string;
 }
+
 
 class Room extends React.Component<RoomEntryProps, { userInfo: UserInfo | null }> {
     constructor(props: RoomEntryProps) {
