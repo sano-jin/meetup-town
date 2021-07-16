@@ -70,17 +70,13 @@ class Main extends React.Component<MainProps, ClientState> {
                 const send = () => {
                     const myUserId = this.state.userId;
                     if (myUserId === null) {
-                        console.log("timeout: myUserId  or roomName is null");
+                        console.log("timeout: myUserId is null");
                         setTimeout(send, 500);
                         return;
-                    }
-                    socket.emit('message', myUserId, message, this.props.roomName, toUserId);
-                }
+                    } else socket.emit('message', myUserId, message, this.props.roomName, toUserId);
+                };
                 send();
             };
-	// おまじない（なんで必要なのかはよくわからない）
-        this.sendChatMessage = this.sendChatMessage.bind(this);
-        this.sendPDFCommand = this.sendPDFCommand.bind(this);
     }
 
     // このコンポーネントが初めて読み込まれたときに一回実行する関数
@@ -120,7 +116,9 @@ class Main extends React.Component<MainProps, ClientState> {
         });
 
 	// サーバとのやりとりに必要な関数を渡すための下準備
+	// userId を受け取り，そのユーザへの対応を定義する関数のレコードを返す
         const props = (userId: UserId): ClientProps => {
+	    
             const sendMessage = this.sendMessageTo(userId);
 
             const updateRemote = (f: (oldRemote: Remote) => Remote | undefined) => {
@@ -227,7 +225,7 @@ class Main extends React.Component<MainProps, ClientState> {
     }
 
     // チャットメッセージを送信する
-    sendChatMessage (message: string){
+    sendChatMessage = (message: string) => {
         this.setState(state => {
             console.log("this.state", state);
             const chatMessage: ChatMessage = { // チャットメッセージ
@@ -240,7 +238,7 @@ class Main extends React.Component<MainProps, ClientState> {
         });
     };
 
-    sendPDFCommand (com: PDFCommandType){
+    sendPDFCommand = (com: PDFCommandType) => {
         const message: Message = {type: "pdfcommand", command: com};
         this.sendMessageTo(undefined)(message);
     }
