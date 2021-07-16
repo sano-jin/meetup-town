@@ -1,3 +1,5 @@
+_Experimental_
+
 <!--
 *** I'm using markdown "reference style" links for readability.
 *** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
@@ -27,7 +29,6 @@
 	A simple online meeting app runs on browser.
 	Implemented in TypeScript with WebRTC, Nodejs and React.
     <br />
-	<i>Experimental</i>
     <br />
     <a href="https://sano-jin.github.io/meetup-town/"><strong>View Demo »</strong></a>
   </p>
