@@ -8,6 +8,9 @@ import * as ReactDOM from "react-dom";
 import { ChatMessage } from "./../../../../chatMessage";
 import { Message } from "./../../../../message";
 import { UserId } from './../../../../userInfo';
+import Button from '@material-ui/core/Button';
+
+
 
 interface ChatMessageProps {
     sendChatMessage: (message: string) => void;
@@ -25,7 +28,7 @@ class ChatSender extends React.Component<ChatMessageProps, { value: string }> {
         this.setState({ value: event.target!.value });
     }
 
-    handleSubmit(event: React.MouseEvent<HTMLInputElement, MouseEvent>) {
+    handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         event.preventDefault();
         this.setState(state => {
             const message = state.value;
@@ -41,16 +44,13 @@ class ChatSender extends React.Component<ChatMessageProps, { value: string }> {
 	    <form
 		id="message-from"
 		action="#"
-		style={{bottom: 0, position: 'relative', height: '20%'}}
+		style={{position: 'absolute', height: '20%', width: '20vw'}}
 	    >
-                <textarea value={this.state.value} onChange={this.handleChange} id="input-message"
-		style={{height:'100%', width:'100%' }}
-		/>
-                
-                <label className="send-button-container">
-                    <input type="submit" value="Send" className="send-button" onClick={this.handleSubmit} />
-                    <i className="fas fa-paper-plane"></i>
-                </label>
+            <textarea value={this.state.value} onChange={this.handleChange} id="input-message"
+		style={{height:'calc(100% - 60pt)', width:'20vw' }}
+	    />
+	    
+	    <Button onClick={this.handleSubmit} fullWidth>Send</Button>
             </form>
         );
     }

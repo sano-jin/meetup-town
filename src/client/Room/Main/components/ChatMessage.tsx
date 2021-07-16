@@ -18,27 +18,17 @@ import Box from '@material-ui/core/Box';
 
 
 const useStyles = makeStyles({
-    root: {
-	minWidth: 275,
-    },
-    userName: {
-	float: 'left',
-    },
-    time: {
-	fontSize: 14,
-	float: 'right',
-    }
+    root: { minWidth: '20vw' }, // 画面の 20% をチャットメッセージの幅ということにしている．でも可変にできるとかっこいいなぁ
+    userName: { float: 'left' },
+    time: { fontSize: 14, float: 'right' }
 });
 
 const  ChatMessageContainer: React.FC<ChatMessageProps> = (props: ChatMessageProps) => {
     const classes = useStyles();
     
     return (
-	<Card className={classes.root}>
-	    <CardHeader
-	    title={props.fromUser}
-	    subheader={props.chatMessage.time}
-	    />
+	<Card className={classes.root} >
+	    <CardHeader title={props.fromUser} subheader={props.chatMessage.time} />
 	    <CardContent>
 		<Typography variant="body2" component="p">
 		    {props.chatMessage.message}
@@ -53,22 +43,8 @@ interface ChatMessageProps {
     fromUser: string;
 };
 
-/*
-class ChatMessageContainer extends React.Component<ChatMessageProps, {}> {
-    render() {
-        return <div className="chat-item">
-            <div className="chat-userName-date-container">
-                <span className="chat-userName-item">{this.props.fromUser}</span>
-                <span className="chat-date-item">{this.props.chatMessage.time}</span> 
-            </div>
-            <div className="chat-message-item">
-                {this.props.chatMessage.message}
-            </div>
-        </div>;
-    }
-}
 
-*/
+
 
 interface ChatBoardProps {
     myInfo: UserInfo;
@@ -99,7 +75,9 @@ class ChatBoard extends React.Component<ChatBoardProps, {}> {
     }
 
     render() {
-        return <Box className="chatBoardContainer" height="80%">
+        return <Box className="chatBoardContainer" height="80%" width="100%"
+	       	    style={{overflowY: 'scroll', overflowX: 'hidden'}}
+	       >
 	    <Grid
 		container
 		direction="column"
@@ -107,18 +85,18 @@ class ChatBoard extends React.Component<ChatBoardProps, {}> {
 		justify="center"
 		spacing={4}
 		style={{position: 'relative', marginBottom: "0px" }}
-		>
+	    >
 		{
                     this.props.chatMessages.map((chatMessage, index) =>
 			<Grid item xs={12}>
 			    <ChatMessageContainer
-				key         ={index.toString()}
-				chatMessage ={chatMessage}
-				fromUser    ={
-				this.props.remotes.get(chatMessage.userId)?.userInfo.userName ??
-				// If not other user then it's me!
-				this.props.myInfo.userName
-				}
+			    key         ={index.toString()}
+			    chatMessage ={chatMessage}
+			    fromUser    ={
+			    this.props.remotes.get(chatMessage.userId)?.userInfo.userName ??
+			    // If not other user then it's me!
+			    this.props.myInfo.userName
+			    }
 			    />
 			</Grid>
                     )

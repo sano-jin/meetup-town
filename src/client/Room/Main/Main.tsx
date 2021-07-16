@@ -241,52 +241,36 @@ class Main extends React.Component<MainProps, ClientState> {
         }
         
         return (
-	    <Box
-		height="100vh"
-		position="relative"
-		overflow="hidden"
-	    >
+	    <Box height="100vh" >
 		{/* チャットとビデオの要素を囲むBox */}
 		<Box
-                    position="relative"
+		    display="flex"
                     margin="0"
-                    overflow="hidden"
-                    top="0px"
                     style={{height:'calc(100% - 60px)'}}
 		>
-		    <Grid container alignItems="center" spacing={1} style={{height:'100%'}}>
-			<Grid item xs={3} style={{height:'100%', width: '100%'}}
-			      container
-			      direction="column"
-			      justify="center"
-			      alignItems="flex-end"
+		    <Box
+			height="100%"
+			width="20%"
+		    >
+			<ChatBoard chatMessages={this.state.chats}
+				   remotes={this.state.remotes}
+				   myInfo={this.state.userInfo}/>
+			<ChatSender sendChatMessage={this.sendChatMessage} />
+		    </Box>
+		    <Box height="100%" width="80%">
+			<VideoBoard videoElements={getVideoElementProps(this.state)} />
+			<Box
+			    component="div"
+			    height="100%"
+			    width="80vw"
+			    position="absolute"
+			    top="0"
+			    right="0"
+			    overflow="auto"
 			>
-			    <Box
-				height="100%"
-				style={{overflowY: 'scroll', overflowX: 'hidden'}}
-			    >
-				<ChatBoard chatMessages={this.state.chats}
-					   remotes={this.state.remotes}
-					   myInfo={this.state.userInfo}/>
-				<ChatSender sendChatMessage={this.sendChatMessage} />
-			    </Box>
-			</Grid>
-			<Grid item xs={9} style={{height:'100%'}}>
-			    <Box height="100%" width="100%">
-				<VideoBoard videoElements={getVideoElementProps(this.state)} />
-			    </Box>	
-			</Grid>
-		    </Grid>
-		</Box>
-		<Box
-                    component="div"
-                    height="100%"
-                    position="absolute"
-                    top="0"
-                    right="0"
-                    overflow="auto"
-		>
-                    <PdfHandle sendPDFCommand={this.sendPDFCommand}/>
+			    <PdfHandle sendPDFCommand={this.sendPDFCommand}/>
+			</Box>
+		    </Box>	
 		</Box>
 		<Box bottom="0" position="fixed" width="100%" height="60px">
                     <LabelBottomNavigation />
