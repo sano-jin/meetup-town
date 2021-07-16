@@ -15,42 +15,13 @@ interface VideoElementProps {
     userId: UserId;
     stream: MediaStream | null;
     userInfo: UserInfo;
-    width: number;
+    muted: boolean;
 };
 
 
 // 1人のカメラの映像
-class VideoElement extends React.Component<VideoElementProps, {}> {
-    video: React.RefObject<HTMLVideoElement>;
-    constructor(props: VideoElementProps) {
-        super(props)
-        this.video = React.createRef();
-    }
-
-    render() {
-        return <Box key={this.props.userId} border={1}> {
-	    this.props.stream !== null ?
-            <Box>
-                <video width={`${this.props.width}px`}
-		       ref={video => {if (video !== null) {video.srcObject = this.props.stream;}}}
-		       autoPlay muted playsInline />
-            </Box>
-            :
-            <Box>{this.props.userInfo.userName}</Box>
-        }
-        </Box>;
-    }
-}
-
-
-interface VideoBoardProps {
-    videoElements: VideoElementProps[];
-}
-
-
-// カメラの映像をたくさん表示するコンポーネント
-const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps) => {
-    const video_num = videoBoardProps.videoElements.length; // 表示するビデオの数
+const VideoElement: React.FC<VideoElementProps> = (props: VideoElementProps) => {
+    const video = React.createRef<HTMLVideoElement>();
 
     // このコンポーネントの幅を取得している
     const [width, setWidth] = useState(0);
@@ -63,6 +34,30 @@ const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps)
     }, [ref.current]);
 
 
+    return <Box key={props.userId} border={1} ref={ref}> {
+	props.stream !== null ?
+        <Box>
+            <video width={`${width}px`}
+		   ref={video => {if (video !== null) {video.srcObject = props.stream;}}}
+		   autoPlay muted={props.muted} playsInline />
+        </Box>
+        :
+        <Box>{props.userInfo.userName}</Box>
+    }
+    </Box>;
+}
+
+
+interface VideoBoardProps {
+    videoElements: VideoElementProps[];
+}
+
+
+// カメラの映像をたくさん表示するコンポーネント
+const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps) => {
+    const video_num = videoBoardProps.videoElements.length; // 表示するビデオの数
+
+
     const videoWidth = Math.floor(width/3) - 10; // とりあえずは画面を三等分することにする
     
     return (<Grid ref={ref} container justify="center" alignItems="center" style={{height:'100%'}}> {
@@ -73,7 +68,7 @@ const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps)
 			    userId  ={videoElement.userId}
 			    stream  ={videoElement.stream}
 			    userInfo={videoElement.userInfo}
-			    width={videoWidth}
+			    muted={videoElement.muted}
 			/>
 		    </Grid>
 		)
@@ -91,13 +86,13 @@ const getVideoElementProps =
 	    userId: userId,
 	    stream: remote.remoteStream,
 	    userInfo: remote.userInfo,
-	    width: 300 // 実はこの値は使っていない
+	    muted: false // 他の人の声は聞きたい
 	});};
 	const localVideoElement = {
 	    userId: clientState.userId ?? "Undefined",
 	    stream: clientState.localStream,
 	    userInfo: clientState.userInfo,
-	    width: 300 // 実はこの値は使っていない
+	    muted: true // 自分は黙る
 	};
 	return ([localVideoElement, 
 		 ...([...clientState.remotes].map(getRemoteVideoElement))]);

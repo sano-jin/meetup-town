@@ -6,6 +6,12 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = [
     {
+        cache: {
+	    type: 'filesystem',
+	    buildDependencies: {
+		config: [__filename]
+	    }
+	},
         name: 'server',
         entry: './src/server/server.ts',
         target: 'node',
@@ -54,6 +60,12 @@ module.exports = [
         }
     },
     {
+        cache: {
+	    type: 'filesystem',
+	    buildDependencies: {
+		config: [__filename]
+	    }
+	},
         name: 'client',
         entry: './src/client/App.tsx',
         output: {
