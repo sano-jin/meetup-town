@@ -6,19 +6,24 @@
 
 
 export { Main };
+
 import { getTimeString } from '../../../util'
+
+// サーバとの通信
 import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./ts/client";
-import { ClientState, Remote } from "./ts/clientState";
-import { Message } from './../../../message';
-import { ChatMessage } from './../../../chatMessage';
-import { UserInfo, UserId } from './../../../userInfo';
-import { PDFCommandType } from './../../../PDFCommandType';
-
-import * as React from 'react';
-import * as ReactDOM from "react-dom";
-
 import io from "socket.io-client";
 
+// クライアントサイドの状態，通信に必要なものなど
+import { ClientState, Remote }	from "./ts/clientState";
+import { Message }		from './../../../message';
+import { ChatMessage }		from './../../../chatMessage';
+import { UserInfo, UserId }	from './../../../userInfo';
+import { PDFCommandType }	from './../../../PDFCommandType';
+
+// React
+import * as React from 'react';
+
+// メイン画面のコンポーネント
 import { UI } from "./UI"
 
 

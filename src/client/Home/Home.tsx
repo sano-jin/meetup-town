@@ -3,14 +3,19 @@
 */
 
 export { Home };
-import * as React from 'react';
-import * as ReactDOM from "react-dom";
+
+// React
+import * as React	from 'react';
+import * as ReactDOM	from "react-dom";
+
+// 一意な部屋の id を生成するためのモジュール
 import { v4 as uuid } from 'uuid';
-import { Link } from "react-router-dom";
-import Button from '@material-ui/core/Button';
-import Grid from '@material-ui/core/Grid';
-// import Container from '@material-ui/core/Container';
-import Box from '@material-ui/core/Box';
+
+// Material.ui
+import { Link }	from "react-router-dom";
+import Button	from '@material-ui/core/Button';
+import Grid	from '@material-ui/core/Grid';
+import Box	from '@material-ui/core/Box';
 
 
 

@@ -10,7 +10,6 @@ html {
 div {
     display: block;
 }
-
 body {
     margin: 0;
     line-height: 1.5;
@@ -45,6 +44,9 @@ body {
     resize: none;
 }
 
+*::-webkit-scrollbar {
+    display: none;
+}
 
 
 /*

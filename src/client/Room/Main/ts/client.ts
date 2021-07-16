@@ -1,29 +1,37 @@
-/* サーバとの通信をおこなうモジュール
- *
-*/
+////////////////////////////////////////////////////////////////////////////////
+//
+// サーバとの通信をおこなうモジュール
+//
+////////////////////////////////////////////////////////////////////////////////
+
 
 export { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart };
-import { turnConfig } from './config';
-import { Message } from './../../../../message';
-import { UserInfo, UserId } from './../../../../userInfo'; // 
-import { json2Map, map2Json } from '../../../../util'
-import { Remote } from './clientState'
-import { ChatMessage } from './../../../../chatMessage'
+
+// 共用モジュール
+import { json2Map, map2Json }	from '../../../../util'
+
+// 他のユーザの状態，サーバとの通信でやりとりするものの型など
+import { turnConfig }		from './config';
+import { Remote }		from './clientState'
+import { Message }		from './../../../../message';
+import { UserInfo, UserId }	from './../../../../userInfo'; // 
+import { ChatMessage }		from './../../../../chatMessage'
 
 
-type SendMessage = (message: Message) => void;
-type AddVideoElement = (remoteStream: MediaStream | null) => void;
-type Hangup = () => void;
-type ReceiveChat = (chat: ChatMessage) => void;
-type UpdateRemote = (f: (oldRemote: Remote) => Remote | undefined) => void;
+// Main.tsx において実装される関数などの型
+type SendMessage	= (message: Message) => void;
+type AddVideoElement	= (remoteStream: MediaStream | null) => void;
+type Hangup		= () => void;
+type ReceiveChat	= (chat: ChatMessage) => void;
+type UpdateRemote	= (f: (oldRemote: Remote) => Remote | undefined) => void;
 interface ClientProps {
-    sendMessage: SendMessage;
-    addVideoElement: AddVideoElement;
-    handleRemoteHangup: Hangup;
-    hangup: Hangup;
-    block: Hangup;
-    receiveChat: ReceiveChat;
-    updateRemote: UpdateRemote;
+    sendMessage		: SendMessage;
+    addVideoElement	: AddVideoElement;
+    handleRemoteHangup	: Hangup;
+    hangup		: Hangup;
+    block		: Hangup;
+    receiveChat		: ReceiveChat;
+    updateRemote	: UpdateRemote;
 };
 
 
@@ -40,12 +48,12 @@ const getInitRemotes =
             remotes.set(
                 userId,
                 {
-                    userInfo: userInfo,
-                    isChannelReady: true,
-                    isInitiator: true,
-                    isStarted: false,
-                    pc: null,
-                    remoteStream: null
+                    userInfo		: userInfo,
+                    isChannelReady	: true,
+                    isInitiator		: true,
+                    isStarted		: false,
+                    pc			: null,
+                    remoteStream	: null
                 }
             );
         }
@@ -59,20 +67,19 @@ const getInitRemotes =
 // 通信するわけではないので，clientState.ts に移した方が良いかも
 const getInitRemote = (userInfo: UserInfo) => {
     return {
-        userInfo: userInfo,
-        isChannelReady: true,
-        isInitiator: false,
-        isStarted: false,
-        pc: null,
-        remoteStream: null
+        userInfo	: userInfo,
+        isChannelReady	: true,
+        isInitiator	: false,
+        isStarted	: false,
+        pc		: null,
+        remoteStream	: null
     }
 };
 
 
 // サーバからメッセージが来たときに，処理を行う
 const handleMessage =
-    (remote: Remote, message: Message, localStream: MediaStream | null,
-        props: ClientProps): void => {
+    (remote: Remote, message: Message, localStream: MediaStream | null, props: ClientProps): void => {
         switch (message.type) {
             case 'call': // ビデオ通話のお誘い
                 if (localStream === null) return;
@@ -109,8 +116,7 @@ const handleMessage =
 
 // webRTC で通信の確立のためにごちゃごちゃやる
 const handleWebRTCMessage =
-    (remote: Remote, message: Message, localStream: MediaStream | null,
-        props: ClientProps): void => {
+    (remote: Remote, message: Message, localStream: MediaStream | null, props: ClientProps): void => {
         switch (message.type) {
             case 'offer':
                 props.updateRemote(remote => {

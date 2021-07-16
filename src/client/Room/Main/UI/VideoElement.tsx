@@ -3,10 +3,15 @@
  */
 
 export { VideoElement, VideoBoard, getVideoElementProps };
+
+// React
 import React, { useEffect, useState, useRef } from 'react';
-import * as ReactDOM from "react-dom";
-import { UserInfo, UserId } from './../../../../userInfo';
-import { ClientState, Remote } from "./../ts/clientState";
+
+// クライアントサイドの状態，通信に必要なものなど
+import { UserInfo, UserId }	from './../../../../userInfo';
+import { ClientState, Remote }	from "./../ts/clientState";
+
+// Material.ui
 import { Grid, Box } from '@material-ui/core';
 
 
@@ -59,7 +64,7 @@ interface VideoBoardProps {
 // カメラの映像をたくさん表示するコンポーネント
 // Grid item xs={4} なので，現在は (12/4 =) 3 等分される
 const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps) => {
-    return (<Grid container justify="center" alignItems="center" style={{height:'100%'}}> {
+    return (<Grid container justify="center" alignItems="center" spacing={2} style={{height:'100%'}}> {
 	videoBoardProps.videoElements.map(videoElement =>
 	    <Grid item xs={4}>
 		<VideoElement

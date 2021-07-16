@@ -3,11 +3,13 @@
  * - 部屋の id も込みの URL の場合は `Enter your name` の画面になる
 */
 
+// コンポーネント
 import { Home } from "./Home/Home";
 import { Room } from "./Room/Room";
-import { getTimeString } from '../util'
-import * as React from 'react';
-import * as ReactDOM from "react-dom";
+
+// React
+import * as React	from 'react';
+import * as ReactDOM	from "react-dom";
 import {
     BrowserRouter as Router,
     Switch,
@@ -15,10 +17,13 @@ import {
     useParams,
     Link
 } from "react-router-dom";
-import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
-import * as colors from "@material-ui/core/colors";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import Box from '@material-ui/core/Box';
+
+// Material.ui
+import { createMuiTheme, ThemeProvider }	from "@material-ui/core/styles";
+import * as colors				from "@material-ui/core/colors";
+import CssBaseline				from "@material-ui/core/CssBaseline";
+import Box					from '@material-ui/core/Box';
+
 
 
 // 何やらよくわからないけど material.ui のテーマを設定している

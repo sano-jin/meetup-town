@@ -13,7 +13,7 @@ import { UserInfo, UserId }    from './../../../userInfo';
 import { PDFCommandType }      from './../../../PDFCommandType';
 
 // UI のコンポーネント
-import { ChatBoard }						from "./UI/ChatBoard/ChatMessage";
+import { ChatMessageBoard }					from "./UI/ChatBoard/ChatMessage";
 import { ChatSender }						from "./UI/ChatBoard/ChatSender";
 import { VideoElement, VideoBoard, getVideoElementProps }	from "./UI/VideoElement";
 import { PdfHandle }						from "./UI/PdfHandler";
@@ -58,19 +58,21 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 	    >
 		<Box
 		    height="100%"
-		    width="20%"
+		    width="30%"
+		    style={{backgroundColor: '#212121'}}
 		>
-		    <ChatBoard chatMessages={uiProps.clientState.chats}
-			       remotes={uiProps.clientState.remotes}
-			       myInfo={uiProps.clientState.userInfo}/>
+		    <ChatMessageBoard
+			chatMessages={uiProps.clientState.chats}
+			remotes={uiProps.clientState.remotes}
+			myInfo={uiProps.clientState.userInfo}/>
 		    <ChatSender sendChatMessage={uiProps.sendChatMessage} />
 		</Box>
-		<Box height="100%" width="80%">
+		<Box height="100%" width="70%">
 		    <VideoBoard videoElements={getVideoElementProps(uiProps.clientState)} />
 		    <Box
 			component="div"
 			height="100%"
-			width="80vw"
+			width="70vw"
 			position="absolute"
 			top="0"
 			right="0"
