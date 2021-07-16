@@ -34,16 +34,19 @@ const VideoElement: React.FC<VideoElementProps> = (props: VideoElementProps) => 
     }, [ref.current]);
 
 
-    return <Box key={props.userId} border={1} ref={ref}> {
-	props.stream !== null ?
-        <Box>
-            <video width={`${width}px`}
-		   ref={video => {if (video !== null) {video.srcObject = props.stream;}}}
-		   autoPlay muted={props.muted} playsInline />
-        </Box>
-        :
-        <Box>{props.userInfo.userName}</Box>
-    }
+    return <Box key={props.userId} border={1}>
+	<div ref={ref}>
+	    {
+		props.stream !== null ?
+		<Box>
+		    <video width={`${width}px`}
+			   ref={video => {if (video !== null) {video.srcObject = props.stream;}}}
+			   autoPlay muted={props.muted} playsInline />
+		</Box>
+		:
+		<Box>{props.userInfo.userName}</Box>
+	    }
+	</div>
     </Box>;
 }
 
@@ -55,24 +58,19 @@ interface VideoBoardProps {
 
 // カメラの映像をたくさん表示するコンポーネント
 const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps) => {
-    const video_num = videoBoardProps.videoElements.length; // 表示するビデオの数
-
-
-    const videoWidth = Math.floor(width/3) - 10; // とりあえずは画面を三等分することにする
-    
     return (<Grid ref={ref} container justify="center" alignItems="center" style={{height:'100%'}}> {
-		videoBoardProps.videoElements.map(videoElement =>
-		    <Grid item>
-			<VideoElement
-			    key     ={videoElement.userId}
-			    userId  ={videoElement.userId}
-			    stream  ={videoElement.stream}
-			    userInfo={videoElement.userInfo}
-			    muted={videoElement.muted}
-			/>
-		    </Grid>
-		)
-	    } </Grid>);
+	videoBoardProps.videoElements.map(videoElement =>
+	    <Grid item xs={4}>
+		<VideoElement
+		    key     ={videoElement.userId}
+		    userId  ={videoElement.userId}
+		    stream  ={videoElement.stream}
+		    userInfo={videoElement.userInfo}
+		    muted={videoElement.muted}
+		/>
+	    </Grid>
+	)
+    } </Grid>);
 }
 
 
