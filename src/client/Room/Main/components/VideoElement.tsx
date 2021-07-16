@@ -24,6 +24,8 @@ const VideoElement: React.FC<VideoElementProps> = (props: VideoElementProps) => 
     const video = React.createRef<HTMLVideoElement>();
 
     // このコンポーネントの幅を取得している
+    // ビデオはサイズを（相対値ではなく）絶対値で指定しなくてはいけないため
+    // 親の要素のサイズに無理やり合わせることで解決した
     const [width, setWidth] = useState(0);
     const ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -57,8 +59,9 @@ interface VideoBoardProps {
 
 
 // カメラの映像をたくさん表示するコンポーネント
+// Grid item xs={4} なので，現在は (12/4 =) 3 等分される
 const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps) => {
-    return (<Grid ref={ref} container justify="center" alignItems="center" style={{height:'100%'}}> {
+    return (<Grid container justify="center" alignItems="center" style={{height:'100%'}}> {
 	videoBoardProps.videoElements.map(videoElement =>
 	    <Grid item xs={4}>
 		<VideoElement
