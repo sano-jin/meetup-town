@@ -87,7 +87,7 @@ To get a local copy up and running follow these simple example steps.
    npm run build
    ```
 
-### Directory structure
+### Directory structure overview
 
 ```
 +- public/                     % code/resources to distributes to clients
