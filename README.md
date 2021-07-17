@@ -1,4 +1,4 @@
-_This product is an experimental project_
+_This is an experimental project_
 
 <!--
 *** I'm using markdown "reference style" links for readability.
