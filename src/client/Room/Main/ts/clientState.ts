@@ -4,34 +4,42 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+// 
 
 
-export { ClientState, Remote };
+export { ClientState, RemoteUser };
 
 // サーバと共有する情報の型
 import { UserInfo, UserId }	from './../../../../userInfo';
 import { ChatMessage }		from './../../../../chatMessage';
 
+// socket.io : サーバとの通信に必要なライブラリ
+import io from "socket.io-client";
+
+
 
 // クライアントサイドの状態
+// 
 interface ClientState {
-    userId			: null | UserId,        // 初期状態で userId は null．部屋に初めて join したときのサーバの返答から取得する                        
-    roomName			: string;               // わざわざ「状態」として「部屋の名前」を持つ必要はあるだろうか？なさげ？
+    socket			: SocketIOClient.Socket,
+    userId			: null | UserId,
+    // 初期状態で userId は null．部屋に初めて join したときのサーバの返答から取得する
+    roomId			: string,
     userInfo			: UserInfo,
     localStream			: null | MediaStream,	// 自分のカメラ映像
-    remotes			: Map<string, Remote>,  // 他のユーザの情報
     localStreamConstraints	: StreamConstraints,    // 自分のカメラ映像の設定
     chats			: ChatMessage[],        // チャットメッセージのリスト                        
+    remoteUsers			: Map<string, RemoteUser>,  // 他のユーザの情報
 }
 
 // 他のユーザの情報
-interface Remote {
-    userInfo		: UserInfo,			// Information of the user
-    isChannelReady	: boolean,			// channel ready 
-    isInitiator		: boolean,			// Am I a initiator
-    isStarted		: boolean,			// Has started or not
-    pc			: null | RTCPeerConnection,     // Peer connection
-    remoteStream	: null | MediaStream,		// Remote camera
+interface RemoteUser {
+    userInfo		: UserInfo,			// ユーザの情報
+    remoteStream	: null | MediaStream,		// WebRTC によって得られた相手のカメラ映像
+    isChannelReady	: boolean,			// WebRTC のチャネルがすでに通信可能な状態になっているか
+    amIInitiator	: boolean,			// WebRTC の通信を行う際に，こちらから offer をするか
+    isStarted		: boolean,			// WebRTC の通信がすでに始まっているか
+    pc			: null | RTCPeerConnection,     // WebRTC Peer connection
 }
 
 // カメラを共有するときのビデオと音声の設定

@@ -22,11 +22,11 @@ export { Main };
 import { getTimeString } from '../../../util'
 
 // サーバとの通信
-import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./ts/client";
+import { getInitRemoteUsers, getInitRemoteUser, handleMessage, ClientProps, maybeStart } from "./ts/client";
 import io from "socket.io-client";
 
 // クライアントサイドの状態，通信に必要なものなど
-import { ClientState, Remote }	from "./ts/clientState";
+import { ClientState, RemoteUser }	from "./ts/clientState";
 import { Message }		from './../../../message';
 import { ChatMessage }		from './../../../chatMessage';
 import { UserInfo, UserId }	from './../../../userInfo';
@@ -45,7 +45,7 @@ const socket = io();
 
 interface MainProps {
     userInfo: UserInfo;
-    roomName: string;
+    roomId: string;
 }
 
 
@@ -58,11 +58,12 @@ class Main extends React.Component<MainProps, ClientState> {
     constructor(props: MainProps){
         super(props)
         this.state = {
-            userId: null,			// 初期状態で userId は null．部屋に初めて join したときのサーバの返答から取得する
-            roomName: props.roomName,		// わざわざ「状態」として「部屋の名前」を持つ必要はあるだろうか？なさげ？
-            userInfo: props.userInfo,
-            localStream: null,			// 自分のカメラ映像
-            remotes: new Map<UserId, Remote>(), // 他のユーザの情報
+	    socket	: socket,
+            userId	: null, // 初期状態で userId は null．部屋に初めて join したときのサーバの返答から取得する
+	    roomId	: props.roomId,
+            userInfo	: props.userInfo,
+            localStream	: null,			// 自分のカメラ映像
+            remoteUsers	: new Map<UserId, RemoteUser>(), // 他のユーザの情報
             localStreamConstraints: {		// 自分のカメラ映像の設定．とりあえず，ビデオ・音声ともにオンにしている
                 audio: true,
                 video: true
@@ -80,7 +81,7 @@ class Main extends React.Component<MainProps, ClientState> {
                         console.log("timeout: myUserId is null");
                         setTimeout(send, 500);
                         return;
-                    } else socket.emit('message', myUserId, message, this.props.roomName, toUserId);
+                    } else socket.emit('message', myUserId, message, this.props.roomId, toUserId);
                 };
                 send();
             };
@@ -93,22 +94,22 @@ class Main extends React.Component<MainProps, ClientState> {
         socket.on('joined', (myUserId: UserId, jsonStrOtherUsers: string) => {
             console.log(`me ${myUserId} joined with`, jsonStrOtherUsers);
             this.setState((state) => {
-		const remotes =  new Map<UserId, Remote>([...state.remotes, ...getInitRemotes(jsonStrOtherUsers)]);
+		const remoteUsers =  new Map<UserId, RemoteUser>([...state.remoteUsers, ...getInitRemoteUsers(jsonStrOtherUsers)]);
 		// 自分の状態に追加する他のユーザの情報
 		if (state.localStream) { // すでに自分のカメラ映像が取れているなら，他の人にビデオ通話のお誘いをする
 		    console.log("Already found localStream before getting back the answer of the join message");
-		    for (const [userId, remote] of remotes.entries()) {
+		    for (const [userId, remoteUser] of remoteUsers.entries()) {
 			console.log(`calling ${userId}`);
 			this.sendMessageTo(userId)({ type: 'call' }); // この call はいるのだろうか？いらなくね？
-			if (remote.isInitiator) { // 自分が initiator なら RTCPeerConnection の設立をこっちが主導して行う？
-			    maybeStart(remote, state.localStream, props(userId));
+			if (remoteUser.amIInitiator) { // 自分が initiator なら RTCPeerConnection の設立をこっちが主導して行う？
+			    maybeStart(remoteUser, state.localStream, props(userId));
 			}
 		    }
 		}
                 return {
                     ...state,
                     userId: myUserId,
-                    remotes: remotes
+                    remoteUsers: remoteUsers
                 };
             });
         });
@@ -119,7 +120,7 @@ class Main extends React.Component<MainProps, ClientState> {
             this.setState((state) => {
                 return {
                     ...state,
-                    remotes: new Map([...state.remotes, [userId, getInitRemote(userInfo)]])
+                    remoteUsers: new Map([...state.remoteUsers, [userId, getInitRemoteUser(userInfo)]])
                 };
             });
         });
@@ -130,27 +131,27 @@ class Main extends React.Component<MainProps, ClientState> {
 	    
             const sendMessage = this.sendMessageTo(userId);
 
-            const updateRemote = (f: (oldRemote: Remote) => Remote | undefined) => {
+            const updateRemoteUser = (f: (oldRemoteUser: RemoteUser) => RemoteUser | undefined) => {
                 this.setState((oldState: ClientState) => {
-                    const oldRemote = oldState.remotes.get(userId);
-                    if (oldRemote === undefined) return oldState;
-                    const newRemote = f(oldRemote);
-                    if (newRemote === undefined) {
+                    const oldRemoteUser = oldState.remoteUsers.get(userId);
+                    if (oldRemoteUser === undefined) return oldState;
+                    const newRemoteUser = f(oldRemoteUser);
+                    if (newRemoteUser === undefined) {
                         return {
                             ...oldState,
-                            remotes: new Map([...oldState.remotes]
+                            remoteUsers: new Map([...oldState.remoteUsers]
                                 .filter(([id, _]) => id !== userId)
                             )
                         };
                     } else { 
-                        return {...oldState, remotes: new Map([...oldState.remotes, [userId, newRemote]])};
+                        return {...oldState, remoteUsers: new Map([...oldState.remoteUsers, [userId, newRemoteUser]])};
                     }
                 });
             };
 
             const addVideoElement =
-                (remoteStream: MediaStream | null) => {
-                    updateRemote(oldRemote => { return {...oldRemote, remoteStream}; });
+                (remoteUserStream: MediaStream | null) => {
+                    updateRemoteUser(oldRemoteUser => { return {...oldRemoteUser, remoteUserStream}; });
                 };
 
 
@@ -160,16 +161,16 @@ class Main extends React.Component<MainProps, ClientState> {
                 sendMessage({ type: 'bye' });
             };
 
-            const handleRemoteHangup = (): void => {
+            const handleRemoteUserHangup = (): void => {
                 stopVideo();
             };
 
             const stopVideo = (): void => {
-                updateRemote(oldRemote => { return {...oldRemote, remoteStream: null, isStarted: false }});
+                updateRemoteUser(oldRemoteUser => { return {...oldRemoteUser, remoteUserStream: null, isStarted: false }});
                 
-                // remote.isStarted = false;
-                // remote.pc!.close();
-                // remote.pc = null;
+                // remoteUser.isStarted = false;
+                // remoteUser.pc!.close();
+                // remoteUser.pc = null;
             };
 
             const receiveChat = (chat: ChatMessage): void => {
@@ -178,17 +179,17 @@ class Main extends React.Component<MainProps, ClientState> {
 
             const block = (): void => {
                 console.log('Session terminated.');
-                this.state.remotes.get(userId)?.pc?.close();
-                updateRemote(_ => undefined);
+                this.state.remoteUsers.get(userId)?.pc?.close();
+                updateRemoteUser(_ => undefined);
             }
             return {
                 sendMessage,
                 addVideoElement,
-                handleRemoteHangup,
+                handleRemoteUserHangup,
                 hangup,
                 block,
                 receiveChat,
-                updateRemote
+                updateRemoteUser
             };
         }
 
@@ -197,11 +198,11 @@ class Main extends React.Component<MainProps, ClientState> {
             if (message.type !== 'candidate') { // candidate は回数が多いのでそれ以外ならデバッグ用に表示
                 console.log('Received message:', message, `from user ${userId}`);
             }
-            const remote: Remote | undefined = this.state.remotes.get(userId)!;
-            if (remote === undefined) { // とりあえずは，知らない人からメッセージが来たらエラーを吐くことにした
-                throw Error(`remote is null for ${userId}`);
+            const remoteUser: RemoteUser | undefined = this.state.remoteUsers.get(userId)!;
+            if (remoteUser === undefined) { // とりあえずは，知らない人からメッセージが来たらエラーを吐くことにした
+                throw Error(`remoteUser is null for ${userId}`);
             }
-            handleMessage(remote, message, this.state.localStream, props(userId));
+            handleMessage(remoteUser, message, this.state.localStream, props(userId));
         });
         
 
@@ -212,14 +213,14 @@ class Main extends React.Component<MainProps, ClientState> {
             console.log('Adding local stream.');
             this.setState((state) => { return {...state, localStream: stream}; });
 	    console.log('set state: added my local stream. Calling others (if there)');
-            for (const [userId, remote] of this.state.remotes.entries()) {
+            for (const [userId, remoteUser] of this.state.remoteUsers.entries()) {
 		console.log(`calling ${userId}`);
                 this.sendMessageTo(userId)({ type: 'call' });
-                if (remote.isInitiator) {
-                    maybeStart(remote, stream, props(userId));
+                if (remoteUser.amIInitiator) {
+                    maybeStart(remoteUser, stream, props(userId));
                 }
             }
-	    console.log("Called others", this.state.remotes)
+	    console.log("Called others", this.state.remoteUsers)
         }
 
 	// もし自分のカメラ映像を見つけられたら gotStream 関数を実行する
@@ -230,7 +231,7 @@ class Main extends React.Component<MainProps, ClientState> {
                  });
 
         // サーバに部屋に入りたい旨を通知
-        socket.emit('join', this.props.roomName, this.state.userInfo);
+        socket.emit('join', this.props.roomId, this.state.userInfo);
     }
 
     // チャットメッセージを送信する

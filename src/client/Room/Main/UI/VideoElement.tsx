@@ -13,7 +13,7 @@ import React, { useEffect, useState, useRef } from 'react';
 
 // クライアントサイドの状態，通信に必要なものなど
 import { UserInfo, UserId }	from './../../../../userInfo';
-import { ClientState, Remote }	from "./../ts/clientState";
+import { ClientState, RemoteUser }	from "./../ts/clientState";
 
 // Material.ui
 import { Grid, Box } from '@material-ui/core';
@@ -90,10 +90,10 @@ const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps)
 // videoElement.tsx に移動させるべきかもしれない
 const getVideoElementProps =
     (clientState: ClientState) => {
-	const getRemoteVideoElement = ([userId, remote]: [UserId, Remote]) => {return ({
+	const getRemoteUserVideoElement = ([userId, remoteUser]: [UserId, RemoteUser]) => {return ({
 	    userId: userId,
-	    stream: remote.remoteStream,
-	    userInfo: remote.userInfo,
+	    stream: remoteUser.remoteStream,
+	    userInfo: remoteUser.userInfo,
 	    muted: false // 他の人の声は聞きたい
 	});};
 	const localVideoElement = {
@@ -103,5 +103,5 @@ const getVideoElementProps =
 	    muted: true // 自分は黙る
 	};
 	return ([localVideoElement, 
-		 ...([...clientState.remotes].map(getRemoteVideoElement))]);
+		 ...([...clientState.remoteUsers].map(getRemoteUserVideoElement))]);
     }

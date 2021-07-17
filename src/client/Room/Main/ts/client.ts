@@ -5,14 +5,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-export { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart };
+export { getInitRemoteUsers, getInitRemoteUser, handleMessage, ClientProps, maybeStart };
 
 // 共用モジュール
 import { json2Map, map2Json }	from '../../../../util'
 
 // 他のユーザの状態，サーバとの通信でやりとりするものの型など
 import { turnConfig }		from './config';
-import { Remote }		from './clientState'
+import { RemoteUser }		from './clientState'
 import { Message }		from './../../../../message';
 import { UserInfo, UserId }	from './../../../../userInfo'; // 
 import { ChatMessage }		from './../../../../chatMessage'
@@ -23,53 +23,53 @@ type SendMessage	= (message: Message) => void;
 type AddVideoElement	= (remoteStream: MediaStream | null) => void;
 type Hangup		= () => void;
 type ReceiveChat	= (chat: ChatMessage) => void;
-type UpdateRemote	= (f: (oldRemote: Remote) => Remote | undefined) => void;
+type UpdateRemoteUser	= (f: (oldRemoteUser: RemoteUser) => RemoteUser | undefined) => void;
 interface ClientProps {
     sendMessage		: SendMessage;
     addVideoElement	: AddVideoElement;
-    handleRemoteHangup	: Hangup;
+    handleRemoteUserHangup	: Hangup;
     hangup		: Hangup;
     block		: Hangup;
     receiveChat		: ReceiveChat;
-    updateRemote	: UpdateRemote;
+    updateRemoteUser	: UpdateRemoteUser;
 };
 
 
 // 自分が部屋に入ったときに，すでにいた他の人の情報（初期状態）をまとめて返す
 // 特に通信をするわけではない，純粋なコンビネータ
 // 通信するわけではないので，clientState.ts に移した方が良いかも
-const getInitRemotes =
-    (jsonStrOtherUsers: string): Map<UserId, Remote> => {
+const getInitRemoteUsers =
+    (jsonStrOtherUsers: string): Map<UserId, RemoteUser> => {
         const otherUsers: Map<UserId, UserInfo> = json2Map(jsonStrOtherUsers);
         console.log(otherUsers);
 
-        const remotes = new Map<UserId, Remote>();
+        const remoteUsers = new Map<UserId, RemoteUser>();
         for (const [userId, userInfo] of otherUsers) {
-            remotes.set(
+            remoteUsers.set(
                 userId,
                 {
                     userInfo		: userInfo,
                     isChannelReady	: true,
-                    isInitiator		: true,
+                    amIInitiator	: true,
                     isStarted		: false,
                     pc			: null,
                     remoteStream	: null
                 }
             );
         }
-        console.log("remotes", map2Json(remotes));
-        return remotes;
+        console.log("remoteUsers", map2Json(remoteUsers));
+        return remoteUsers;
     };
 
 
 // 他の人が部屋に入ってきたときに，その人の初期状態を返す
 // 特に通信をするわけではない，純粋なコンビネータ
 // 通信するわけではないので，clientState.ts に移した方が良いかも
-const getInitRemote = (userInfo: UserInfo) => {
+const getInitRemoteUser = (userInfo: UserInfo) => {
     return {
         userInfo	: userInfo,
         isChannelReady	: true,
-        isInitiator	: false,
+        amIInitiator	: false,
         isStarted	: false,
         pc		: null,
         remoteStream	: null
@@ -79,21 +79,21 @@ const getInitRemote = (userInfo: UserInfo) => {
 
 // サーバからメッセージが来たときに，処理を行う
 const handleMessage =
-    (remote: Remote, message: Message, localStream: MediaStream | null, props: ClientProps): void => {
+    (remoteUser: RemoteUser, message: Message, localStream: MediaStream | null, props: ClientProps): void => {
         switch (message.type) {
             case 'call': // ビデオ通話のお誘い
                 if (localStream === null) return;
 		// 不安要素：自分が Initiator かどうかの確認はしなくて良いのか？
-                props.updateRemote(remote => maybeStart(remote, localStream, props));
+                props.updateRemoteUser(remoteUser => maybeStart(remoteUser, localStream, props));
                 break;
             case 'chat': // チャットメッセージの受信
                 props.receiveChat(message.chatMessage);
                 break;
             case 'bye': // ビデオ通話を切られた
                 console.log("received bye");
-                if (remote.isStarted) {
+                if (remoteUser.isStarted) {
                     props.block();
-                    //                    props.handleRemoteHangup();
+                    //                    props.handleRemoteUserHangup();
                 }
                 break;
             case 'pdfcommand':
@@ -101,7 +101,7 @@ const handleMessage =
                 console.log(message.command);
                 break;
             default: // webRTC で通信の確立のためにごちゃごちゃやる
-		handleWebRTCMessage(remote, message, localStream, props);
+		handleWebRTCMessage(remoteUser, message, localStream, props);
 	}
     };
 
@@ -117,43 +117,43 @@ const handleMessage =
 
 // webRTC で通信の確立のためにごちゃごちゃやる
 const handleWebRTCMessage =
-    (remote: Remote, message: Message, localStream: MediaStream | null, props: ClientProps): void => {
+    (remoteUser: RemoteUser, message: Message, localStream: MediaStream | null, props: ClientProps): void => {
         switch (message.type) {
             case 'offer':
-                props.updateRemote(remote => {
-                    let newRemote = remote;
-                    if (!remote.isInitiator && localStream !== null) {
+                props.updateRemoteUser(remoteUser => {
+                    let newRemoteUser = remoteUser;
+                    if (!remoteUser.amIInitiator && localStream !== null) {
                         console.log(`starting communication with an offer`);
-                        newRemote = maybeStart(remote, localStream, props);
+                        newRemoteUser = maybeStart(remoteUser, localStream, props);
                     }
-                    newRemote.pc!
+                    newRemoteUser.pc!
                         .setRemoteDescription(message)
                         .then(() => {
-                            doAnswer(newRemote.pc!, props.sendMessage);
+                            doAnswer(newRemoteUser.pc!, props.sendMessage);
                         });
-                    return newRemote;
+                    return newRemoteUser;
                 });
                 break;
             case 'answer':
-                if (remote.pc === null) {
-                    console.log(remote);
+                if (remoteUser.pc === null) {
+                    console.log(remoteUser);
                     throw Error(`received an answer but the peer connection is null`);
                 }
-                if (remote.isStarted) {
-                    remote.pc.setRemoteDescription(message)
+                if (remoteUser.isStarted) {
+                    remoteUser.pc.setRemoteDescription(message)
                         .catch(e => console.log(e));
                 }
                 break;
             case 'candidate':
-                if (remote.pc === null) {
+                if (remoteUser.pc === null) {
                     throw Error(`received a candidate but the peer connection is null`);
                 }
-                if (remote.isStarted) {
+                if (remoteUser.isStarted) {
                     const candidate = new RTCIceCandidate({
                         sdpMLineIndex: message.label,
                         candidate: message.candidate
                     });
-                    remote.pc.addIceCandidate(candidate);
+                    remoteUser.pc.addIceCandidate(candidate);
                 }
                 break;
             default:
@@ -165,31 +165,31 @@ const handleWebRTCMessage =
 
 // If initiator, create the peer connection
 const maybeStart =
-    (remote: Remote, localStream: MediaStream, props: ClientProps): Remote => {
+    (remoteUser: RemoteUser, localStream: MediaStream, props: ClientProps): RemoteUser => {
         console.log(
             '>>>>>>> maybeStart() ',
-            remote.isStarted,
+            remoteUser.isStarted,
             localStream,
-            remote.isChannelReady
+            remoteUser.isChannelReady
         );
-        if (!remote.isStarted && remote.isChannelReady) {
+        if (!remoteUser.isStarted && remoteUser.isChannelReady) {
             console.log('>>>>>> creating peer connection');
-            const pc = createPeerConnection(remote, props);
+            const pc = createPeerConnection(remoteUser, props);
             localStream
                 .getTracks()
                 .forEach(track => pc.addTrack(track, localStream));
-            remote.pc = pc;
-            remote.isStarted = true;
+            remoteUser.pc = pc;
+            remoteUser.isStarted = true;
 
-            return { ...remote, pc: pc, isStarted: true };
-        } else return remote;
+            return { ...remoteUser, pc: pc, isStarted: true };
+        } else return remoteUser;
     }
 
 /*
 window.onbeforeunload = (e: Event): void => {
     e.preventDefault();
     e.returnValue = false;
-    for (const [userId, _] of clientState.remotes.entries()) {
+    for (const [userId, _] of clientState.remoteUsers.entries()) {
         sendMessage({ type: 'bye' }, userId);
     }
 };
@@ -197,15 +197,15 @@ window.onbeforeunload = (e: Event): void => {
 
 // Creating peer connection
 const createPeerConnection =
-    (remote: Remote, props: ClientProps): RTCPeerConnection => {
+    (remoteUser: RemoteUser, props: ClientProps): RTCPeerConnection => {
         try {
             const pc = new RTCPeerConnection(turnConfig);
             pc.onicecandidate = handleIceCandidate(props.sendMessage);
-            pc.ontrack = handleRemoteStream(props.addVideoElement);
-            pc.onnegotiationneeded = handleNegotiationNeededEvent(pc, remote, props.sendMessage);
+            pc.ontrack = handleRemoteUserStream(props.addVideoElement);
+            pc.onnegotiationneeded = handleNegotiationNeededEvent(pc, remoteUser, props.sendMessage);
             pc.oniceconnectionstatechange = handleICEConnectionStateChangeEvent(pc, props);
             pc.onsignalingstatechange = handleSignalingStateChangeEvent(pc, props);
-            // pc.onremovestream = handleRemoteStreamRemoved; // deprecated
+            // pc.onremovestream = handleRemoteUserStreamRemoved; // deprecated
             console.log('Created RTCPeerConnnection');
             return pc;
         } catch (e) {
@@ -215,11 +215,11 @@ const createPeerConnection =
     }
 
 const handleNegotiationNeededEvent =
-    (pc: RTCPeerConnection, remote: Remote, sendMessage: SendMessage) => () => {
-        console.log(`handleNegotiationNeededEvent`, remote);
+    (pc: RTCPeerConnection, remoteUser: RemoteUser, sendMessage: SendMessage) => () => {
+        console.log(`handleNegotiationNeededEvent`, remoteUser);
         pc.createOffer()
             .then((sessionDescription) => {
-                if (remote.isInitiator) {
+                if (remoteUser.amIInitiator) {
                     setLocalAndSendMessage(pc, sendMessage)(sessionDescription);
                 }
             })
@@ -260,9 +260,9 @@ const setLocalAndSendMessage =
         };
 
 
-const handleRemoteStream =
+const handleRemoteUserStream =
     (addVideoElement: AddVideoElement) => (event: RTCTrackEvent): void => {
-        console.log("handleRemoteStream", event);
+        console.log("handleRemoteUserStream", event);
         if (event.streams.length >= 1) {
             addVideoElement(event.streams[0]);
         } else {
@@ -276,7 +276,7 @@ const handleICEConnectionStateChangeEvent =
             switch (pc.iceConnectionState) {
                 case "closed":
                 case "failed":
-                    props.handleRemoteHangup();
+                    props.handleRemoteUserHangup();
                     break;
             }
         };
@@ -286,7 +286,7 @@ const handleSignalingStateChangeEvent =
         (_: Event) => {
             switch (pc.signalingState) {
                 case "closed":
-                    props.handleRemoteHangup();
+                    props.handleRemoteUserHangup();
                     break;
             }
         };

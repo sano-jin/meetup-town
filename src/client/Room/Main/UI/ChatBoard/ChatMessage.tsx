@@ -13,7 +13,7 @@ import * as React	from 'react';
 // クライアントサイドの状態，通信に必要なものなど
 import { ChatMessage }		from './../../../../../chatMessage';
 import { UserInfo, UserId }	from './../../../../../userInfo';
-import { Remote }		from "./../../ts/clientState";
+import { RemoteUser }		from "./../../ts/clientState";
 
 // Material.ui
 import { makeStyles }	from '@material-ui/core/styles';
@@ -67,7 +67,7 @@ const  ChatMessageContainer: React.FC<ChatMessageProps> = (props: ChatMessagePro
 interface ChatMessageBoardProps {
     myInfo: UserInfo;
     chatMessages: ChatMessage[];
-    remotes: Map<UserId, Remote>;
+    remoteUsers: Map<UserId, RemoteUser>;
 }
 
 
@@ -114,7 +114,7 @@ class ChatMessageBoard extends React.Component<ChatMessageBoardProps, {}> {
 				key         ={index.toString()}
 				chatMessage ={chatMessage}
 				fromUser    ={
-				this.props.remotes.get(chatMessage.userId)?.userInfo.userName ??
+				this.props.remoteUsers.get(chatMessage.userId)?.userInfo.userName ??
 				// If not other user then it's me!
 				this.props.myInfo.userName
 				}

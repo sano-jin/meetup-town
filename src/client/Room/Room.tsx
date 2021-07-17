@@ -30,7 +30,7 @@ const Room: React.FC<RoomEntryProps> = (props: RoomEntryProps) => {
 	userInfo === null ?
 	<NameForm setUserInfo={setUserInfo} />
 	:
-	<Main userInfo={userInfo} roomName={props.roomId} />
+	<Main userInfo={userInfo} roomId={props.roomId} />
     );
 }
 

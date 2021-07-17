@@ -12,7 +12,7 @@
 export { UI };
 
 // クライアントサイドの状態，通信に必要なものなど
-import { ClientState, Remote } from "./ts/clientState";
+import { ClientState, RemoteUser } from "./ts/clientState";
 import { ChatMessage }         from './../../../chatMessage';
 import { UserInfo, UserId }    from './../../../userInfo';
 import { PDFCommandType }      from './../../../PDFCommandType';
@@ -58,9 +58,9 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 	    現状決め打ちで 30%:70% でチャット画面とビデオ画面を分けているが，可変にできるとかっこいい
 	  */}
 	<Box
-	    display="flex"
-            margin="0"
-            style={{height:'calc(100% - 60px)'}}
+	    display	="flex"
+            margin	="0"
+            style	={{height:'calc(100% - 60px)'}}
 	>
 	    {/* チャット用のモジュール */}
 	    <Box
@@ -70,9 +70,9 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 	    >
 		{/* チャットメッセージの表示 */}
 		<ChatMessageBoard
-		chatMessages={uiProps.clientState.chats}
-		remotes={uiProps.clientState.remotes}
-		myInfo={uiProps.clientState.userInfo}/>
+		chatMessages	={uiProps.clientState.chats}
+		remoteUsers	={uiProps.clientState.remoteUsers}
+		myInfo		={uiProps.clientState.userInfo}/>
 
 		{/* チャットメッセージの送信 */}
 		<ChatSender sendChatMessage={uiProps.sendChatMessage} />
