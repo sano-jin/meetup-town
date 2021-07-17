@@ -47,27 +47,27 @@ const DarkTheme: React.FC = ({ children }) => {
 
 
 // メイン画面
-class App extends React.Component {
-    render() {
-	return (
-	    <Box className="App" height="100vh" width="100vw">
-		<Router>
-		    <div>
-			<Switch>
-			    {/* 部屋の id も込みで入力された場合は部屋への入り口の画面になる */}
-			    <Route path='/rooms/:roomId' component={() => {
-				const { roomId } = useParams<{roomId: string}>();
-				return <Room roomId={roomId} />
-			    }}/>
-			    {/* それ以外ならホーム画面へ飛ぶ */}
-			    <Route exact path='/' component={Home}/>
-			</Switch>
-		    </div>
-		</Router>
-	    </Box>
-	);
-    }
+const App: React.FC<{}> = () => {
+    return (
+	<Box className="App" height="100vh" width="100vw">
+	    <Router>
+		<div>
+		    <Switch>
+			{/* 部屋の id も込みで入力された場合は部屋への入り口の画面になる */}
+			<Route path='/rooms/:roomId' component={() => {
+			    const { roomId } = useParams<{roomId: string}>();
+			    return <Room roomId={roomId} />
+			}}/>
+
+			{/* それ以外ならホーム画面へ飛ぶ */}
+			<Route exact path='/' component={Home}/>
+		    </Switch>
+		</div>
+	    </Router>
+	</Box>
+    );
 }
+
 
 ReactDOM.render(
     <DarkTheme />,

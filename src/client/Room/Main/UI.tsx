@@ -26,7 +26,6 @@ import { LabelBottomNavigation }				from "./UI/Navigation"
 
 // React 
 import * as React	from 'react';
-import * as ReactDOM	from "react-dom";
 
 // Material.ui
 import Button	from '@material-ui/core/Button';
@@ -38,7 +37,7 @@ import Box	from '@material-ui/core/Box';
 
 // UI の状態
 interface UIProps {
-    clientState: ClientState; // クラインとサイドの状態
+    clientState: ClientState; // クライアントサイドの状態
     sendChatMessage: (message: string) => void;
     sendPDFCommand: (com: PDFCommandType) => void;
 }
@@ -55,7 +54,9 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
     }
     
     return (<Box height="100vh" >
-	{/* チャットとビデオの要素を囲むBox */}
+	{/* チャットとビデオの要素を囲むBox 
+	    現状決め打ちで 30%:70% でチャット画面とビデオ画面を分けているが，可変にできるとかっこいい
+	  */}
 	<Box
 	    display="flex"
             margin="0"

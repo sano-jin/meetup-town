@@ -9,7 +9,6 @@ export { ChatMessageBoard };
 
 // React 
 import * as React	from 'react';
-import * as ReactDOM	from "react-dom";
 
 // クライアントサイドの状態，通信に必要なものなど
 import { ChatMessage }		from './../../../../../chatMessage';
@@ -51,7 +50,7 @@ const  ChatMessageContainer: React.FC<ChatMessageProps> = (props: ChatMessagePro
     return (
 	<Card className={classes.root} >
 	    <CardContent>
-		<Typography className={classes.title} variant="h5" component="h2">{props.fromUser}</Typography>
+		<Typography className={classes.title} color="textPrimary" variant="h5" component="h2">{props.fromUser}</Typography>
 		<Typography className={classes.time} color="textSecondary">{props.chatMessage.time}</Typography>
 		<Typography variant="body2" component="p" className={classes.body}>
 		    {props.chatMessage.message}

@@ -149,9 +149,9 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@sano65747676](https://twitter.com/sano65747676)
+sano - [@sano65747676](https://twitter.com/sano65747676)
 
-Project Link: [https://github.com/sano-jin/meetup-online](https://github.com/sano-jin/meetup-town)
+Project Link: [https://github.com/sano-jin](https://github.com/sano-jin)
 
 
 

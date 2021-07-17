@@ -40,7 +40,7 @@ const VideoElement: React.FC<VideoElementProps> = (props: VideoElementProps) => 
     useEffect(() => {
 	const handleResize = () => setWidth(ref.current?.offsetWidth ?? 0);
 	handleResize();
-	window.addEventListener('resize', handleResize)
+	window.addEventListener('resize', handleResize); // ウィンドウサイズが変化したときにも再計算
 	return () => window.removeEventListener('resize', handleResize);
     }, [ref.current]);
 

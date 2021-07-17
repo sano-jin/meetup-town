@@ -83,6 +83,7 @@ const handleMessage =
         switch (message.type) {
             case 'call': // ビデオ通話のお誘い
                 if (localStream === null) return;
+		// 不安要素：自分が Initiator かどうかの確認はしなくて良いのか？
                 props.updateRemote(remote => maybeStart(remote, localStream, props));
                 break;
             case 'chat': // チャットメッセージの受信

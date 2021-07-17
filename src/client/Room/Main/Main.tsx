@@ -5,12 +5,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-// アプリのメイン画面は UI.tsx に移植した
+// これはあくまで **状態** を管理するだけ．アプリのメイン画面は UI.tsx に移植した
+//
+// - これがトップレベル（エントリーポイント）となる
+// - Elm Architecture でいうところの Model
+// - Redux などで置き換えたい気分
+//
 // リファクタリング必須！！！
 // 余計なインポートとかがあったら消してくれ
 
 
 export { Main };
+
 
 // Utility functions
 import { getTimeString } from '../../../util'
@@ -29,12 +35,13 @@ import { PDFCommandType }	from './../../../PDFCommandType';
 // React
 import * as React from 'react';
 
-// メイン画面のコンポーネント
+// メイン画面の UI コンポーネント
 import { UI } from "./UI"
 
 
-
+// サーバとの通信のためのソケットを起動
 const socket = io();
+
 
 interface MainProps {
     userInfo: UserInfo;
@@ -51,16 +58,16 @@ class Main extends React.Component<MainProps, ClientState> {
     constructor(props: MainProps){
         super(props)
         this.state = {
-            userId: null,
-            roomName: props.roomName, // わざわざ「状態」として「部屋の名前」を持つ必要はあるだろうか？なさげ？
+            userId: null,			// 初期状態で userId は null．部屋に初めて join したときのサーバの返答から取得する
+            roomName: props.roomName,		// わざわざ「状態」として「部屋の名前」を持つ必要はあるだろうか？なさげ？
             userInfo: props.userInfo,
-            localStream: null,
-            remotes: new Map<UserId, Remote>(),
-            localStreamConstraints: {
+            localStream: null,			// 自分のカメラ映像
+            remotes: new Map<UserId, Remote>(), // 他のユーザの情報
+            localStreamConstraints: {		// 自分のカメラ映像の設定．とりあえず，ビデオ・音声ともにオンにしている
                 audio: true,
                 video: true
             },
-            chats: []
+            chats: []				// チャットメッセージのリスト
         }
 
 	// toUserId にサーバを介してメッセージを送信する
@@ -69,7 +76,7 @@ class Main extends React.Component<MainProps, ClientState> {
             (toUserId: UserId | undefined) => (message: Message) => {
                 const send = () => {
                     const myUserId = this.state.userId;
-                    if (myUserId === null) {
+                    if (myUserId === null) { // 自分のユーザ id がまだわかっていないときは 0.5 秒スリープしてから再度トライする
                         console.log("timeout: myUserId is null");
                         setTimeout(send, 500);
                         return;
@@ -82,16 +89,18 @@ class Main extends React.Component<MainProps, ClientState> {
     // このコンポーネントが初めて読み込まれたときに一回実行する関数
     componentDidMount(){
 	// 自分が部屋に入ったとサーバから返事が返ってきた場合
+	// 自分の userId と先に部屋にいた人たちの情報をサーバに返してもらう
         socket.on('joined', (myUserId: UserId, jsonStrOtherUsers: string) => {
             console.log(`me ${myUserId} joined with`, jsonStrOtherUsers);
             this.setState((state) => {
 		const remotes =  new Map<UserId, Remote>([...state.remotes, ...getInitRemotes(jsonStrOtherUsers)]);
-		if (state.localStream) {
-		    console.log("found localStream before getting back the answer of the join message");
+		// 自分の状態に追加する他のユーザの情報
+		if (state.localStream) { // すでに自分のカメラ映像が取れているなら，他の人にビデオ通話のお誘いをする
+		    console.log("Already found localStream before getting back the answer of the join message");
 		    for (const [userId, remote] of remotes.entries()) {
 			console.log(`calling ${userId}`);
-			this.sendMessageTo(userId)({ type: 'call' });
-			if (remote.isInitiator) {
+			this.sendMessageTo(userId)({ type: 'call' }); // この call はいるのだろうか？いらなくね？
+			if (remote.isInitiator) { // 自分が initiator なら RTCPeerConnection の設立をこっちが主導して行う？
 			    maybeStart(remote, state.localStream, props(userId));
 			}
 		    }
