@@ -159,7 +159,7 @@ class MainModel extends React.Component<MainModelProps, ClientState> {
 
 	// 他の人が入ってきた場合
         socket.on('anotherJoin', (userId: UserId, userInfo: UserInfo) => {
-	    this.setState(updateWithAnotherJoin(userId, userInfo, this.dispatchSendMessageTo));
+	    this.setState(updateWithAnotherJoin(userId, userInfo));
         });
 
 	// サーバからメッセージを受信した場合
