@@ -1,12 +1,74 @@
-/** サーバ・クライアント間で送受信し合うもの全てをまとめた定義
- *
- */
+////////////////////////////////////////////////////////////////////////////////
+//
+// サーバ・クライアント間で送受信し合うもの全てをまとめた定義
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
+// TODO: （はたくんがそうしてくれたように） `Command` という名前をつけた方が良いかも知れない
+// - Type とかもあっても良いかも
+// - 命名規則を考える
+// リファクタ必須
 
 
 export { Message };
+
 import { ChatMessage } from './chatMessage';
 import { PDFCommandType } from './PDFCommandType';
 
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// サーバを介したアプリケーションメッセージを送受信するためのコマンド
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
+// チャットメッセージを送信するコマンド
+interface Chat {
+    type: 'chat',
+    chatMessage: ChatMessage,
+}
+
+
+// PDF を送信するコマンド ???
+interface PDFCommand{
+    type: 'pdfcommand',
+    command: PDFCommandType,
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// WebRTC やサーバからの接続の解除など，ネットワークに関連するプリミティブなコマンド
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
+// 通話を切った場合
+// 現状カメラ映像のオフと，完全に部屋を離れるのと両方これになってしまっているが，
+// カメラをオン・オフできるようにするのであれば，分離する必要がある
+interface Bye {
+    type: 'bye',
+}
+
+
+// amIInitiator === false の人が相手に向けてビデオ通話のお誘いをするためのコマンド
+// - カメラをオン・オフできるようにするなら必要
+// - ただし，現状全員始めからカメラをオンにする前提で，
+//   あとから部屋に入った人（amIInitiator === true の人）が，部屋にはいった直後に，
+//   前にいた人たち全員に WebRTC の offer を行うようになっており，実はこれを送信する必要はあまりない（はず）
+// でも一応，amIInitiator === false の人を既に知っていたら送信するようにする
+// - 自分が部屋にはいったというレスポンスがサーバから帰ってくるよりも前に，他のユーザの offer が来てしまっていて，
+//   見過ごしてたとかいう状況がもしかしたらあるかも知れないので（まずないと思うけど，まぁ一応せっかくなので残しておく）
+interface Call {
+    type: 'call',
+}
+
+
+// WebRTC のためのコマンド
+// WebRTC の ICE Server の candidate を送受信しあう
 interface Candidate {
     type: 'candidate',
     label: RTCIceCandidate["sdpMLineIndex"],
@@ -14,22 +76,21 @@ interface Candidate {
     candidate: RTCIceCandidate["candidate"],
 }
 
-interface Bye {
-    type: 'bye',
-}
 
-interface Call {
-    type: 'call',
-}
+// RTCSessionDescriptionInit は WebRTC のためのコマンド
+// type に 'offer' と 'answer' を持つ（逆に，これらの type は他のコマンドでは使ってはいけない）
 
-interface Chat {
-    type: 'chat',
-    chatMessage: ChatMessage,
-}
 
-interface PDFCommand{
-    type: 'pdfcommand',
-    command: PDFCommandType,
-}
 
-type Message = Bye | Call | Chat | PDFCommand | RTCSessionDescriptionInit | Candidate;
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// サーバを介して送受信するメッセージ全ての型
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
+type Message =
+    Chat | PDFCommand				// アプリケーション関連
+    | Bye | Call | RTCSessionDescriptionInit | Candidate;	// ネットワーク関連

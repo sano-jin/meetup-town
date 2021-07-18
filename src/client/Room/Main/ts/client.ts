@@ -217,7 +217,7 @@ const createPeerConnection =
 const handleNegotiationNeededEvent =
     (pc: RTCPeerConnection, remoteUser: RemoteUser, sendMessage: SendMessage) => () => {
         console.log(`handleNegotiationNeededEvent`, remoteUser);
-        pc.createOffer()
+        pc.createOffer() // Creates an offer
             .then((sessionDescription) => {
                 if (remoteUser.amIInitiator) {
                     setLocalAndSendMessage(pc, sendMessage)(sessionDescription);

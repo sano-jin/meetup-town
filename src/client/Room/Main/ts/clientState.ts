@@ -41,6 +41,9 @@ interface RemoteUser {
     isStarted		: boolean,			// WebRTC の通信がすでに始まっているか
     pc			: null | RTCPeerConnection,     // WebRTC Peer connection
 }
+// WebRTC 関連のデータは，`remoteStream` のみ，React の状態更新機能を用いて更新し，
+// それ以外のデータは破壊的更新をする（非同期関連のバグを防ぐため）
+// ただし，これが良いデザインパターンかはわからない
 
 // カメラを共有するときのビデオと音声の設定
 interface StreamConstraints {
