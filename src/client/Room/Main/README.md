@@ -14,7 +14,7 @@
     - Redux などで置き換えたい気分
 
 
-- [Model.tsx](Model.tsx)
+- [clientState.tsx](clientState.tsx)
     - クライアントサイドの状態の型
 
 
@@ -28,7 +28,7 @@
     - メイン画面 （View）のコンポーネント
 
 
-- [reduce.ts](reduce.ts)
+- [reduce/](reduce/)
     - クライアントサイドの **状態** の更新に必要な関数を定義するモジュール
     - `updateWith + ...` の実装をしている（下記参照）
 	- Elm Architecture でいうところの update
