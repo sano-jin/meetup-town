@@ -9,7 +9,7 @@
 // 余計なインポートとかがあったら消してくれ
 
 
-export { UI };
+export { View };
 
 // クライアントサイドの状態，通信に必要なものなど
 import { ClientState, RemoteUser } from "./ts/clientState";
@@ -17,12 +17,12 @@ import { ChatMessage }         from './../../../chatMessage';
 import { UserInfo, UserId }    from './../../../userInfo';
 import { PDFCommandType }      from './../../../PDFCommandType';
 
-// UI のコンポーネント
-import { ChatMessageBoard }					from "./UI/ChatBoard/ChatMessage";
-import { ChatSender }						from "./UI/ChatBoard/ChatSender";
-import { VideoElement, VideoBoard, getVideoElementProps }	from "./UI/VideoElement";
-import { PdfHandle }						from "./UI/PdfHandler";
-import { LabelBottomNavigation }				from "./UI/Navigation"
+// View のコンポーネント
+import { ChatMessageBoard }					from "./View/ChatBoard/ChatMessage";
+import { ChatSender }						from "./View/ChatBoard/ChatSender";
+import { VideoElement, VideoBoard, getVideoElementProps }	from "./View/VideoElement";
+import { PdfHandle }						from "./View/PdfHandler";
+import { LabelBottomNavigation }				from "./View/Navigation"
 
 // React 
 import * as React	from 'react';
@@ -35,8 +35,8 @@ import Box	from '@material-ui/core/Box';
 
 
 
-// UI の状態
-interface UIProps {
+// View の状態
+interface ViewProps {
     clientState: ClientState; // クライアントサイドの状態
     sendChatMessage: (message: string) => void;
     sendPDFCommand: (com: PDFCommandType) => void;
@@ -44,7 +44,7 @@ interface UIProps {
     
 
 // アプリのメイン画面
-const UI: React.FC<UIProps> = (uiProps: UIProps) => {
+const View: React.FC<ViewProps> = (viewProps: ViewProps) => {
     const wholeBoxStyle = {
         component: "div",
         height: "100vh",
@@ -70,18 +70,18 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 	    >
 		{/* チャットメッセージの表示 */}
 		<ChatMessageBoard
-		chatMessages	={uiProps.clientState.chats}
-		remoteUsers	={uiProps.clientState.remoteUsers}
-		myInfo		={uiProps.clientState.userInfo}/>
+		chatMessages	={viewProps.clientState.chats}
+		remoteUsers	={viewProps.clientState.remoteUsers}
+		myInfo		={viewProps.clientState.userInfo}/>
 
 		{/* チャットメッセージの送信 */}
-		<ChatSender sendChatMessage={uiProps.sendChatMessage} />
+		<ChatSender sendChatMessage={viewProps.sendChatMessage} />
 	    </Box>
 	    
 	    {/* ビデオ・共有スライドの表示パネル */}
 	    <Box height="100%" width="70%">
 		{/* ビデオの表示パネル */}
-		<VideoBoard videoElements={getVideoElementProps(uiProps.clientState)} />
+		<VideoBoard videoElements={getVideoElementProps(viewProps.clientState)} />
 
 		{/* 共有スライドの表示パネル */}
 		<Box
@@ -93,7 +93,7 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 		    right="0"
 		    overflow="auto"
 		>
-		    <PdfHandle sendPDFCommand={uiProps.sendPDFCommand}/>
+		    <PdfHandle sendPDFCommand={viewProps.sendPDFCommand}/>
 		</Box>
 	    </Box>	
 	</Box>

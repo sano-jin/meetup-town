@@ -34,7 +34,7 @@ import { PDFCommandType }	from './../../../PDFCommandType';
 import * as React from 'react';
 
 // メイン画面の UI コンポーネント
-import { UI } from "./UI"
+import { View } from "./View"
 
 
 // サーバとの通信のためのソケットを起動
@@ -182,9 +182,9 @@ class MainModel extends React.Component<MainModelProps, ClientState> {
     }
 
     render() {
-	return (<UI clientState			={this.state}
-	            dispatchSendChatMessage	={this.dispatchSendChatMessage}
-	            dispatchSendPDFCommand	={this.dispatchSendPDFCommand}
+	return (<View clientState		={this.state}
+		      dispatchSendChatMessage	={this.dispatchSendChatMessage}
+	              dispatchSendPDFCommand	={this.dispatchSendPDFCommand}
 	/>);
     }
 }

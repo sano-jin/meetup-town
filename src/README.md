@@ -33,6 +33,15 @@
 - [util.ts](util.ts)
   - いくつかの共用関数など
 
+
+
+- [config.ts](config.ts)
+    - Ice server の config
+	- こういう API のキーみたいなのはルートディレクトリに持って行った方が良いかも
+
+
+
+
 ## Tree
 
 ```
