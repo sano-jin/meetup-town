@@ -33,3 +33,36 @@
 - [util.ts](util.ts)
   - いくつかの共用関数など
 
+## Tree
+
+```
+├── PDFCommandType.ts
+├── chatMessage.ts
+├── client
+│   ├── App.tsx
+│   ├── Home
+│   │   └── Home.tsx
+│   └── Room
+│       ├── Entry
+│       │   └── NameForm.tsx
+│       ├── Main
+│       │   ├── Main.tsx
+│       │   ├── UI
+│       │   │   ├── ChatBoard
+│       │   │   │   ├── ChatMessage.tsx
+│       │   │   │   └── ChatSender.tsx
+│       │   │   ├── Navigation.tsx
+│       │   │   ├── PdfHandler.tsx
+│       │   │   └── VideoElement.tsx
+│       │   ├── UI.tsx
+│       │   └── ts
+│       │       ├── client.ts
+│       │       ├── clientState.ts
+│       │       └── config.ts
+│       └── Room.tsx
+├── message.ts
+├── server
+│   ├── server.ts
+├── userInfo.ts
+└── util.ts
+```

@@ -1,32 +1,43 @@
-/* サーバとの通信をおこなう
- *
-*/
+////////////////////////////////////////////////////////////////////////////////
+//
+// サーバとの通信をおこなうモジュール
+//
+////////////////////////////////////////////////////////////////////////////////
+
 
 export { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart };
-import { turnConfig } from './config';
-import { Message } from './../../../../message';
-import { UserInfo, UserId } from './../../../../userInfo'; // 
-import { json2Map, map2Json } from '../../../../util'
-import { Remote } from './clientState'
-import { ChatMessage } from './../../../../chatMessage'
+
+// 共用モジュール
+import { json2Map, map2Json }	from '../../../../util'
+
+// 他のユーザの状態，サーバとの通信でやりとりするものの型など
+import { turnConfig }		from './config';
+import { Remote }		from './clientState'
+import { Message }		from './../../../../message';
+import { UserInfo, UserId }	from './../../../../userInfo'; // 
+import { ChatMessage }		from './../../../../chatMessage'
 
 
-type SendMessage = (message: Message) => void;
-type AddVideoElement = (remoteStream: MediaStream | null) => void;
-type Hangup = () => void;
-type ReceiveChat = (chat: ChatMessage) => void;
-type UpdateRemote = (f: (oldRemote: Remote) => Remote | undefined) => void;
+// Main.tsx において実装される関数などの型
+type SendMessage	= (message: Message) => void;
+type AddVideoElement	= (remoteStream: MediaStream | null) => void;
+type Hangup		= () => void;
+type ReceiveChat	= (chat: ChatMessage) => void;
+type UpdateRemote	= (f: (oldRemote: Remote) => Remote | undefined) => void;
 interface ClientProps {
-    sendMessage: SendMessage;
-    addVideoElement: AddVideoElement;
-    handleRemoteHangup: Hangup;
-    hangup: Hangup;
-    block: Hangup;
-    receiveChat: ReceiveChat;
-    updateRemote: UpdateRemote;
+    sendMessage		: SendMessage;
+    addVideoElement	: AddVideoElement;
+    handleRemoteHangup	: Hangup;
+    hangup		: Hangup;
+    block		: Hangup;
+    receiveChat		: ReceiveChat;
+    updateRemote	: UpdateRemote;
 };
 
 
+// 自分が部屋に入ったときに，すでにいた他の人の情報（初期状態）をまとめて返す
+// 特に通信をするわけではない，純粋なコンビネータ
+// 通信するわけではないので，clientState.ts に移した方が良いかも
 const getInitRemotes =
     (jsonStrOtherUsers: string): Map<UserId, Remote> => {
         const otherUsers: Map<UserId, UserInfo> = json2Map(jsonStrOtherUsers);
@@ -37,12 +48,12 @@ const getInitRemotes =
             remotes.set(
                 userId,
                 {
-                    userInfo: userInfo,
-                    isChannelReady: true,
-                    isInitiator: true,
-                    isStarted: false,
-                    pc: null,
-                    remoteStream: null
+                    userInfo		: userInfo,
+                    isChannelReady	: true,
+                    isInitiator		: true,
+                    isStarted		: false,
+                    pc			: null,
+                    remoteStream	: null
                 }
             );
         }
@@ -50,30 +61,35 @@ const getInitRemotes =
         return remotes;
     };
 
+
+// 他の人が部屋に入ってきたときに，その人の初期状態を返す
+// 特に通信をするわけではない，純粋なコンビネータ
+// 通信するわけではないので，clientState.ts に移した方が良いかも
 const getInitRemote = (userInfo: UserInfo) => {
     return {
-        userInfo: userInfo,
-        isChannelReady: true,
-        isInitiator: false,
-        isStarted: false,
-        pc: null,
-        remoteStream: null
+        userInfo	: userInfo,
+        isChannelReady	: true,
+        isInitiator	: false,
+        isStarted	: false,
+        pc		: null,
+        remoteStream	: null
     }
 };
 
 
+// サーバからメッセージが来たときに，処理を行う
 const handleMessage =
-    (remote: Remote, message: Message, localStream: MediaStream | null,
-        props: ClientProps): void => {
+    (remote: Remote, message: Message, localStream: MediaStream | null, props: ClientProps): void => {
         switch (message.type) {
-            case 'call':
+            case 'call': // ビデオ通話のお誘い
                 if (localStream === null) return;
+		// 不安要素：自分が Initiator かどうかの確認はしなくて良いのか？
                 props.updateRemote(remote => maybeStart(remote, localStream, props));
                 break;
-            case 'chat':
+            case 'chat': // チャットメッセージの受信
                 props.receiveChat(message.chatMessage);
                 break;
-            case 'bye':
+            case 'bye': // ビデオ通話を切られた
                 console.log("received bye");
                 if (remote.isStarted) {
                     props.block();
@@ -84,50 +100,68 @@ const handleMessage =
                 console.log("receive pdfcommand");
                 console.log(message.command);
                 break;
-            default: //webRTCで通信の確立のためにごちゃごちゃやる
-                switch (message.type) {
-                    case 'offer':
-                        props.updateRemote(remote => {
-                            let newRemote = remote;
-                            if (!remote.isInitiator && localStream !== null) {
-                                console.log(`starting communication with an offer`);
-                                newRemote = maybeStart(remote, localStream, props);
-                            }
-                            newRemote.pc!
-                                .setRemoteDescription(message)
-                                .then(() => {
-                                    doAnswer(newRemote.pc!, props.sendMessage);
-                                });
-                            return newRemote;
+            default: // webRTC で通信の確立のためにごちゃごちゃやる
+		handleWebRTCMessage(remote, message, localStream, props);
+	}
+    };
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// 以下は WebRTC を用いたリアルタイム通信のための API の処理
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+// webRTC で通信の確立のためにごちゃごちゃやる
+const handleWebRTCMessage =
+    (remote: Remote, message: Message, localStream: MediaStream | null, props: ClientProps): void => {
+        switch (message.type) {
+            case 'offer':
+                props.updateRemote(remote => {
+                    let newRemote = remote;
+                    if (!remote.isInitiator && localStream !== null) {
+                        console.log(`starting communication with an offer`);
+                        newRemote = maybeStart(remote, localStream, props);
+                    }
+                    newRemote.pc!
+                        .setRemoteDescription(message)
+                        .then(() => {
+                            doAnswer(newRemote.pc!, props.sendMessage);
                         });
-                        break;
-                    case 'answer':
-                        if (remote.pc === null) {
-                            console.log(remote);
-                            throw Error(`received an answer but the peer connection is null`);
-                        }
-                        if (remote.isStarted) {
-                            remote.pc.setRemoteDescription(message)
-                                .catch(e => console.log(e));
-                        }
-                        break;
-                    case 'candidate':
-                        if (remote.pc === null) {
-                            throw Error(`received a candidate but the peer connection is null`);
-                        }
-                        if (remote.isStarted) {
-                            const candidate = new RTCIceCandidate({
-                                sdpMLineIndex: message.label,
-                                candidate: message.candidate
-                            });
-                            remote.pc.addIceCandidate(candidate);
-                        }
-                        break;
-                    default:
-                        throw Error(`received message has unknown type ${message.type}`)
+                    return newRemote;
+                });
+                break;
+            case 'answer':
+                if (remote.pc === null) {
+                    console.log(remote);
+                    throw Error(`received an answer but the peer connection is null`);
                 }
+                if (remote.isStarted) {
+                    remote.pc.setRemoteDescription(message)
+                        .catch(e => console.log(e));
+                }
+                break;
+            case 'candidate':
+                if (remote.pc === null) {
+                    throw Error(`received a candidate but the peer connection is null`);
+                }
+                if (remote.isStarted) {
+                    const candidate = new RTCIceCandidate({
+                        sdpMLineIndex: message.label,
+                        candidate: message.candidate
+                    });
+                    remote.pc.addIceCandidate(candidate);
+                }
+                break;
+            default:
+                throw Error(`received message has unknown type ${message.type}`)
         }
     };
+
+
 
 // If initiator, create the peer connection
 const maybeStart =
