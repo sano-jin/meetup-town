@@ -1,5 +1,11 @@
+/** サーバ・クライアント間で送受信し合うもの全てをまとめた定義
+ *
+ */
+
+
 export { Message };
 import { ChatMessage } from './chatMessage';
+import { PDFCommandType } from './PDFCommandType';
 
 interface Candidate {
     type: 'candidate',
@@ -21,4 +27,9 @@ interface Chat {
     chatMessage: ChatMessage,
 }
 
-type Message = Bye | Call | Chat | RTCSessionDescriptionInit | Candidate;
+interface PDFCommand{
+    type: 'pdfcommand',
+    command: PDFCommandType,
+}
+
+type Message = Bye | Call | Chat | PDFCommand | RTCSessionDescriptionInit | Candidate;
