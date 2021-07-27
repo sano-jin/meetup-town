@@ -2,11 +2,12 @@
  *
 */
 
-export { PdfHandle };
+export { PdfHandle, FileState };
 import { debug } from 'console';
 import React, { useState } from 'react';
 import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
 import { PDFCommandType } from '../../../../PDFCommandType';
+import { ClientState } from '../ts/clientState';
 
 const options = {
     cMapUrl: '/dist/cmaps/',
@@ -17,24 +18,23 @@ interface NumPages {
     numPages: number;
 }
 
-type FileState = {
-    file: null | File;
-}
+type FileState = null | File;
 
 interface PdfHandlerProps{
+    file: FileState
     sendPDFCommand: (com: PDFCommandType) => void
+    sendPDFContent: (contetnt: FileState) => void
 }
 
 function PdfHandle(props: PdfHandlerProps) {
-    console.log(options.cMapUrl);
-    const [file, setFile] = useState<File | null>(null);
-    const [numPages, setNumPages] = useState<number | null>(null);
+    const [numPages, setNumPages] = useState<number>(1);
     const [nowPage, setNowPage] = useState<number>(1);
 
     function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
         if (event.target === null) return;
         if (event.target.files === null) return;
-        setFile(event.target.files[0]);
+        props.sendPDFContent(event.target.files[0]);
+        console.log("onFIleChange Called");
     }
     
     function onDocumentLoadSuccess({ numPages: nextNumPages }: NumPages) {
@@ -64,27 +64,27 @@ function PdfHandle(props: PdfHandlerProps) {
                 </div>
                 <div className="Example__container__document">
                 { 
-                    file &&
+                    props.file &&
                     <Document
-                      file={file}
+                      file={props.file}
                       onLoadSuccess={onDocumentLoadSuccess}
                       options={options}
                     >
-                    {/* {
-                        Array.from(
-                            new Array(numPages),
-                            (el, index) => (
-                                <Page
-                                    key={`page_${index + 1}`}
-                                    pageNumber={index + 1}
-                                />
-                            ),
-                        )
-                    } */}
-                    <Page key={`page_1`} pageNumber={nowPage}/>
+                        {/* {
+                            Array.from(
+                                new Array(numPages),
+                                (el, index) => (
+                                    <Page
+                                        key={`page_${index + 1}`}
+                                        pageNumber={index + 1}
+                                    />
+                                ),
+                            )
+                        } */}
+                        <Page key={`page_1`} pageNumber={nowPage}/>
                     </Document>
                 }
-                <button onClick={() => { onPageProcess(); }} >
+                <button onClick={() => { alert("clicked"); }} >
                     {'next'}
                 </button>
                 </div>

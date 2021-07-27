@@ -31,6 +31,7 @@ import { Message }		from './../../../message';
 import { ChatMessage }		from './../../../chatMessage';
 import { UserInfo, UserId }	from './../../../userInfo';
 import { PDFCommandType }	from './../../../PDFCommandType';
+import { FileState }        from './UI/PdfHandler'
 
 // React
 import * as React from 'react';
@@ -67,7 +68,8 @@ class Main extends React.Component<MainProps, ClientState> {
                 audio: true,
                 video: true
             },
-            chats: []				// チャットメッセージのリスト
+            chats: [],				// チャットメッセージのリスト
+            pdfContent: null,
         }
 
 	// toUserId にサーバを介してメッセージを送信する
@@ -173,8 +175,12 @@ class Main extends React.Component<MainProps, ClientState> {
             };
 
             const receiveChat = (chat: ChatMessage): void => {
-                this.setState(state => { return {...state, chats: [...state.chats, chat]}; });
+                this.setState(state => { return {...state, chats: [...state.chats, chat],}; });
             };
+
+            const receivePDFContent = (content: FileState): void => {
+                this.setState(state => { return {...state, pdfContent: content}; })
+            }
 
             const block = (): void => {
                 console.log('Session terminated.');
@@ -188,7 +194,8 @@ class Main extends React.Component<MainProps, ClientState> {
                 hangup,
                 block,
                 receiveChat,
-                updateRemote
+                updateRemote,
+                receivePDFContent,
             };
         }
 
@@ -247,15 +254,26 @@ class Main extends React.Component<MainProps, ClientState> {
         });
     };
 
+    // setMyPDFContent = (file: FileState) => {
+    //     this.setState(state => {return {...state, pdfContent: file}; });
+    // }
+
     sendPDFCommand = (com: PDFCommandType) => {
         const message: Message = {type: "pdfcommand", command: com};
         this.sendMessageTo(undefined)(message);
     }
+    sendPDFContent = (file: FileState) => {
+        console.log("file is " + file);
+        const message: Message = {type: "pdfsend", content: file};
+        this.sendMessageTo(undefined)(message);
+        this.setState(state => {return {...state, pdfContent: file}; });
+    }
 
     render() {
 	return (<UI clientState={this.state}
-		    sendChatMessage={this.sendChatMessage}
-		    sendPDFCommand={this.sendPDFCommand}
+            sendChatMessage={this.sendChatMessage}
+            sendPDFCommand={this.sendPDFCommand}
+            sendPDFContent={this.sendPDFContent}
 	/>);
     }
 }
