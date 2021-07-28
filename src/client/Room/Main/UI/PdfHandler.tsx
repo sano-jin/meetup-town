@@ -2,10 +2,11 @@
  *
 */
 
-export { PdfHandle, FileState };
+export { PdfHandle, FileState, PageNumber };
 import { debug } from 'console';
 import React, { useState } from 'react';
 import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
+import { IgnorePlugin } from 'webpack';
 import { PDFCommandType } from '../../../../PDFCommandType';
 import { ClientState } from '../ts/clientState';
 
@@ -14,37 +15,46 @@ const options = {
     cMapPacked: true,
 };
 
-interface NumPages {
-    numPages: number;
-}
+type PageNumber = undefined | number;
 
 type FileState = null | File;
 
 interface PdfHandlerProps{
     file: FileState
-    sendPDFCommand: (com: PDFCommandType) => void
+    nowPage: PageNumber
+    numPages: PageNumber
+    setNumPages: (numPages: PageNumber) => void //PDFのページ数をセット
+    sendPDFCommand: (com: PDFCommandType) => void // コンテンツの何ページを開いてねとかの指示
     sendPDFContent: (contetnt: FileState) => void
 }
 
 function PdfHandle(props: PdfHandlerProps) {
-    const [numPages, setNumPages] = useState<number>(1);
-    const [nowPage, setNowPage] = useState<number>(1);
+    //const [numPages, setNumPages] = useState<number>(1);
+    //const [nowPage, setNowPage] = useState<number>(1);
 
     function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
         if (event.target === null) return;
         if (event.target.files === null) return;
         props.sendPDFContent(event.target.files[0]);
-        console.log("onFIleChange Called");
-    }
-    
-    function onDocumentLoadSuccess({ numPages: nextNumPages }: NumPages) {
-        setNumPages(nextNumPages);
     }
     function onPageProcess(){
-        const newPage = nowPage + 1;
-        if (numPages !== null && nowPage + 1 <= numPages){
+        console.log(props.nowPage);
+        console.log(props.numPages);
+        if(props.nowPage == null || props.numPages == null) return;
+        const newPage = props.nowPage + 1;
+        console.log(0 <= props.numPages);
+        if (1 <= newPage && newPage <= props.numPages){
             console.log("next page is " + newPage);
-            setNowPage(newPage);
+            const com: PDFCommandType = {command: newPage.toString()};
+            props.sendPDFCommand(com);
+        }
+    }
+    function onPageBack(){
+        if(props.nowPage == null || props.numPages == null) return;
+        const newPage = props.nowPage - 1;
+        if (1 <= newPage && newPage <= props.numPages){
+            console.log("next page is " + newPage);
+            //setNowPage(newPage);
             const com: PDFCommandType = {command: newPage.toString()};
             props.sendPDFCommand(com);
         }
@@ -67,24 +77,16 @@ function PdfHandle(props: PdfHandlerProps) {
                     props.file &&
                     <Document
                       file={props.file}
-                      onLoadSuccess={onDocumentLoadSuccess}
+                      onLoadSuccess={ ({ numPages }) => { props.setNumPages(numPages); } }
                       options={options}
                     >
-                        {/* {
-                            Array.from(
-                                new Array(numPages),
-                                (el, index) => (
-                                    <Page
-                                        key={`page_${index + 1}`}
-                                        pageNumber={index + 1}
-                                    />
-                                ),
-                            )
-                        } */}
-                        <Page key={`page_1`} pageNumber={nowPage}/>
+                        <Page key={`page_1`} pageNumber={props.nowPage}/>
                     </Document>
                 }
-                <button onClick={() => { alert("clicked"); }} >
+                <button onClick={onPageBack} >
+                    {'back'}
+                </button>
+                <button onClick={onPageProcess} >
                     {'next'}
                 </button>
                 </div>

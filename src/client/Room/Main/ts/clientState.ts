@@ -11,7 +11,7 @@ export { ClientState, Remote };
 // サーバと共有する情報の型
 import { UserInfo, UserId }	from './../../../../userInfo';
 import { ChatMessage }		from './../../../../chatMessage';
-import { FileState }        from './../UI/PdfHandler'
+import { FileState, PageNumber }        from './../UI/PdfHandler'
 
 
 // クライアントサイドの状態
@@ -23,7 +23,9 @@ interface ClientState {
     remotes			: Map<string, Remote>,  // 他のユーザの情報
     localStreamConstraints	: StreamConstraints,    // 自分のカメラ映像の設定
     chats			: ChatMessage[],        // チャットメッセージのリスト
-    pdfContent      : FileState, //画面に表示しているPDF                       
+    pdfContent      : FileState, //画面に表示しているPDF
+    nowPage         : PageNumber,
+    numPages        : PageNumber,                       
 }
 
 // 他のユーザの情報

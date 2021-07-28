@@ -21,7 +21,7 @@ import { PDFCommandType }      from './../../../PDFCommandType';
 import { ChatMessageBoard }					from "./UI/ChatBoard/ChatMessage";
 import { ChatSender }						from "./UI/ChatBoard/ChatSender";
 import { VideoElement, VideoBoard, getVideoElementProps }	from "./UI/VideoElement";
-import { FileState, PdfHandle }						from "./UI/PdfHandler";
+import { FileState, PageNumber, PdfHandle }						from "./UI/PdfHandler";
 import { LabelBottomNavigation }				from "./UI/Navigation"
 
 // React 
@@ -39,6 +39,7 @@ import Box	from '@material-ui/core/Box';
 interface UIProps {
     clientState: ClientState; // クライアントサイドの状態
 	sendChatMessage: (message: string) => void;
+	setNumPages: (numPages: PageNumber) => void;
 	sendPDFCommand: (com: PDFCommandType) => void;
 	sendPDFContent: (content: FileState) => void;
 }
@@ -94,7 +95,14 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 		    right="0"
 		    overflow="auto"
 		>
-		    <PdfHandle file={uiProps.clientState.pdfContent} sendPDFCommand={uiProps.sendPDFCommand} sendPDFContent={uiProps.sendPDFContent}/>
+			<PdfHandle 
+				file={uiProps.clientState.pdfContent} 
+				numPages={uiProps.clientState.numPages}
+				nowPage={uiProps.clientState.nowPage}
+				setNumPages={uiProps.setNumPages}
+				sendPDFCommand={uiProps.sendPDFCommand} 
+				sendPDFContent={uiProps.sendPDFContent}
+			/>
 		</Box>
 	    </Box>	
 	</Box>
