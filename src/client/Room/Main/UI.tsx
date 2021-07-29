@@ -87,8 +87,6 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 	  		<Box height="20%" border={1}>
 				<Grid container
 					xs={12}
-					style={{height: "100%", width: "100%", position: "relative", overflowX: "scroll", overflowY: "hidden"}} 
-              		wrap={"nowrap"}
 				>
 					<VideoBoard videoElements={getVideoElementProps(uiProps.clientState)} />
 				</Grid>

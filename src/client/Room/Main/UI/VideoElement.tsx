@@ -34,7 +34,9 @@ const VideoElement: React.FC<VideoElementProps> = (props: VideoElementProps) => 
 
     // このコンポーネントの幅を取得している
     // ビデオはサイズを（相対値ではなく）絶対値で指定しなくてはいけないため
-    // 親の要素のサイズに無理やり合わせることで解決した
+	// 親の要素のサイズに無理やり合わせることで解決した
+	
+	//width基準じゃなく、height基準にすればいい感じに横並びになってくれるはず. はみ出た分は水平スクロールが出来ると思う
     const [width, setWidth] = useState(0);
     const ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -68,9 +70,10 @@ interface VideoBoardProps {
 // カメラの映像をたくさん表示するコンポーネント
 // Grid item xs={4} なので，現在は (12/4 =) 3 等分される
 const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps) => {
-    return (<Grid container justify="center" alignItems="center" spacing={2} style={{height:'100%'}}> {
+    return (<Grid container spacing={2} style={{height:'100%', width: "100%", position: "relative", overflowX: "scroll", overflowY: "hidden"}} wrap="nowrap"> {
 	videoBoardProps.videoElements.map(videoElement =>
-	    <Grid item xs={4}>
+		// minWidthを指定しないと多分ビデオを折り返して表示してしまう
+	    <Grid item xs={4} style={{minWidth: "20%"}}> 
 		<VideoElement
 		    key     ={videoElement.userId}
 		    userId  ={videoElement.userId}
