@@ -53,7 +53,7 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
         display: "block",
         position: "relative",
         overflow: "hidden",
-    }
+	}
     
     return (<Box height="100vh" >
 	{/* チャットとビデオの要素を囲むBox 
@@ -61,49 +61,54 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 	  */}
 	<Box
 	    display="flex"
-            margin="0"
-            style={{height:'calc(100% - 60px)'}}
+        margin="0"
+        style={{height:'calc(100% - 60px)'}}
 	>
 	    {/* チャット用のモジュール */}
 	    <Box
-		height="100%"
-		width="30%"
-		style={{backgroundColor: '#212121'}}
+			height="100%"
+			width="30%"
+			style={{backgroundColor: '#212121'}}
+			border={1}
 	    >
 		{/* チャットメッセージの表示 */}
-		<ChatMessageBoard
-		chatMessages={uiProps.clientState.chats}
-		remotes={uiProps.clientState.remotes}
-		myInfo={uiProps.clientState.userInfo}/>
+			<ChatMessageBoard
+			chatMessages={uiProps.clientState.chats}
+			remotes={uiProps.clientState.remotes}
+			myInfo={uiProps.clientState.userInfo}/>
 
-		{/* チャットメッセージの送信 */}
-		<ChatSender sendChatMessage={uiProps.sendChatMessage} />
+			{/* チャットメッセージの送信 */}
+			<ChatSender sendChatMessage={uiProps.sendChatMessage} />
 	    </Box>
 	    
 	    {/* ビデオ・共有スライドの表示パネル */}
-	    <Box height="100%" width="70%">
+	    <Box height="100%" width="70%" right="0">
 		{/* ビデオの表示パネル */}
-		<VideoBoard videoElements={getVideoElementProps(uiProps.clientState)} />
+	  		<Box height="20%" border={1}>
+				<Grid container
+					xs={12}
+					style={{height: "100%", width: "100%", position: "relative", overflowX: "scroll", overflowY: "hidden"}} 
+              		wrap={"nowrap"}
+				>
+					<VideoBoard videoElements={getVideoElementProps(uiProps.clientState)} />
+				</Grid>
+			</Box>
 
-		{/* 共有スライドの表示パネル */}
-		<Box
-		    component="div"
-		    height="100%"
-		    width="70vw"
-		    position="absolute"
-		    top="0"
-		    right="0"
-		    overflow="auto"
-		>
-			<PdfHandle 
-				file={uiProps.clientState.pdfContent} 
-				numPages={uiProps.clientState.numPages}
-				nowPage={uiProps.clientState.nowPage}
-				setNumPages={uiProps.setNumPages}
-				sendPDFCommand={uiProps.sendPDFCommand} 
-				sendPDFContent={uiProps.sendPDFContent}
-			/>
-		</Box>
+			{/* 共有スライドの表示パネル */}
+			<Box
+				component="div"
+				height="80%"
+				border={1}
+			>
+				<PdfHandle 
+					file={uiProps.clientState.pdfContent} 
+					numPages={uiProps.clientState.numPages}
+					nowPage={uiProps.clientState.nowPage}
+					setNumPages={uiProps.setNumPages}
+					sendPDFCommand={uiProps.sendPDFCommand} 
+					sendPDFContent={uiProps.sendPDFContent}
+				/>
+			</Box>
 	    </Box>	
 	</Box>
 	
