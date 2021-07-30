@@ -29,21 +29,32 @@ interface ClientState {
     localStream			: null | MediaStream,	// 自分のカメラ映像
     localStreamConstraints	: StreamConstraints,    // 自分のカメラ映像の設定
     chats			: ChatMessage[],        // チャットメッセージのリスト                        
-    remoteUsers			: Map<string, RemoteUser>,  // 他のユーザの情報
+    remoteUsers			: Map<UserId, RemoteUser>,  // 他のユーザの情報
 }
 
 // 他のユーザの情報
 interface RemoteUser {
     userInfo		: UserInfo,			// ユーザの情報
     remoteStream	: null | MediaStream,		// WebRTC によって得られた相手のカメラ映像
-    isChannelReady	: boolean,			// WebRTC のチャネルがすでに通信可能な状態になっているか
-    amIInitiator	: boolean,			// WebRTC の通信を行う際に，こちらから offer をするか
-    isStarted		: boolean,			// WebRTC の通信がすでに始まっているか
-    pc			: null | RTCPeerConnection,     // WebRTC Peer connection
 }
-// WebRTC 関連のデータは，`remoteStream` のみ，React の状態更新機能を用いて更新し，
-// それ以外のデータは破壊的更新をする（非同期関連のバグを防ぐため）
-// ただし，これが良いデザインパターンかはわからない
+// WebRTC 関連の情報は別途管理する
+
+
+
+// // 他のユーザの情報
+// interface RemoteUser {
+//     userInfo		: UserInfo,			// ユーザの情報
+//     remoteStream	: null | MediaStream,		// WebRTC によって得られた相手のカメラ映像
+//     isChannelReady	: boolean,			// WebRTC のチャネルがすでに通信可能な状態になっているか
+//     amIInitiator	: boolean,			// WebRTC の通信を行う際に，こちらから offer をするか
+//     isStarted		: boolean,			// WebRTC の通信がすでに始まっているか
+//     pc			: null | RTCPeerConnection,     // WebRTC Peer connection
+// }
+// // WebRTC 関連のデータは，`remoteStream` のみ，React の状態更新機能を用いて更新し，
+// // それ以外のデータは破壊的更新をする（非同期関連のバグを防ぐため）
+// // ただし，これが良いデザインパターンかはわからない
+// 
+
 
 // カメラを共有するときのビデオと音声の設定
 interface StreamConstraints {

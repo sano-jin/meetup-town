@@ -15,7 +15,7 @@
 // 余計なインポートとかがあったら消してくれ
 
 
-export { MainModel };
+export { ReactModel };
 
 
 // サーバとの通信
@@ -59,12 +59,67 @@ type DispatchUpdateWithRTC = (updateWithRTC: (state: ClientState) => ClientState
 
 
 
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// リモートユーザの WebRTC の Peer Connection の状態を管理するためのクラス
+// - React とは紐づいていない（紐付けるとネットワークの状態が変化した際にコンポーネントの再レンダリングが発生する可能性がある）
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
+// 他のユーザの RTC Peer Connection に関連する情報
+// - ただし，stream はここにはない（React で管理する）
+// - 非同期関連のバグを防ぐため，これらのデータは破壊的更新をする
+// - また，React では管理しない
+// - ただし，これが良いデザインパターンかはわからない
+interface RemoteUserRTCState {
+    isChannelReady	: boolean,			// WebRTC のチャネルがすでに通信可能な状態になっているか
+    amIInitiator	: boolean,			// WebRTC の通信を行う際に，こちらから offer をするか
+    isStarted		: boolean,			// WebRTC の通信がすでに始まっているか
+    pc			: null | RTCPeerConnection,     // WebRTC Peer connection
+}
+
+
+// 他のユーザの RTC Peer Connection に関連する情報の一覧
+// - この Map object のキーは React で管理している userInfo の一覧と常に同じであるはずである
+// - TODO: それを検証するための単体テストを書く
+type RemoteUserRTCStates = Map<UserId, RemoteUser>;
+
+// global object として，変数を宣言しているが，クラスにまとめたほうが良いかも
+const remoteUserRTCStates: RemoteUserRTCStates = new Map<UserId, RemoteUser>();
+
+
+// WebRTC 関連のメッセージを受信したりした後に状態を更新するための関数
+// 基本的に WebRTC PeerConnection オブジェクトのイベントリスナーにバインドするためだけに用いる（ので余計な `() =>` がある）
+const getRemoteUserRTCState = (userId: UserId) => {
+    const remoteUser: RemoteUser | undefined = state.remoteUsers.get(userId); // remoteUser を取得
+    if (remoteUser == undefined) { // とりあえずは，知らない人からメッセージが来たらエラーを吐くことにした
+	throw Error(`remoteUser is undefined for ${userId}`);
+	}
+    return remoteUser; 
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// React でメインの状態を管理するためのクラス
+//
+////////////////////////////////////////////////////////////////////////////////
 
 // メインの状態を管理するだけのクラス
 // React.FC を使うようにしたいと思ったが，ここに関してだけはそう簡単にもいかなさそう
 // socket.on イベントリスナで状態を更新したいのだが，現状これがうまくできない．．．
 // イベントハンドラ登録時の状態と，最新の状態が異なる（可能性がある）ため
-class MainModel extends React.Component<MainModelProps, ClientState> {
+class ReactModel extends React.Component<MainModelProps, ClientState> {
     constructor(props: MainModelProps){
         super(props)
 	// 初期状態
@@ -113,7 +168,7 @@ class MainModel extends React.Component<MainModelProps, ClientState> {
     };
 
     // チャットメッセージの送信による状態変化
-    dispatchSendChatMessage = (chatMessage: ChatMessage) => {
+    dispatchSendChatMessage = (chatMessage: ChatMessage): void => {
 	this.dispatchSendMessageTo(undefined)({ type: 'chat', chatMessage }); // チャットをブロードキャスト送信
 	this.setState(state => ({
 	    ...state, chats: [...state.chats, chatMessage] // 自分のチャットメッセージ一覧にも追加しておく
@@ -121,17 +176,43 @@ class MainModel extends React.Component<MainModelProps, ClientState> {
     };
 
     // PDF の送信を行う命令 ???
-    dispatchSendPDFCommand = (command: PDFCommandType) => {
+    dispatchSendPDFCommand = (command: PDFCommandType): void => {
 	this.dispatchSendMessageTo(undefined)({type: 'pdfcommand', command});
     };
 
     // WebRTC 関連のメッセージを受信したりした後に状態を更新するための関数
     // 基本的に WebRTC PeerConnection オブジェクトのイベントリスナーにバインドするためだけに用いる（ので余計な `() =>` がある）
-    dispatchUpdateWithRTC = (updateWithRTC: (state: ClientState) => ClientState) => () => {
+    // どうせ，ローカル・リモートのストリームを追加・削除するだけなので，ここでそれぞれの dispatcher を実装しても良いかも
+    dispatchUpdateWithRTCEvent = (updateWithRTC: (state: ClientState) => ClientState) => () => {
 	this.setState(updateWithRTC); 
     }
     
-
+//    // WebRTC 関連
+//    // リモートのストリームを追加・削除
+//    dispatchUpdateRemoteStream = (userId: UserId, remoteStream: null | MediaStream): void => {
+//	const remoteUser: RemoteUser | undefined = state.remoteUsers.get(userId); // remoteUser を取得
+//	if (remoteUser == undefined) { // とりあえずは，知らない人からメッセージが来たらエラーを吐くことにした
+//	    throw Error(`remoteUser is undefined for ${userId}`);
+//	}
+//	this.setState(state => ({
+//	    ...state, remoteUsers: new Map([...state.remoteUsers, [userId, {...remoteUser, remoteStream}]])
+//	}))
+//    }
+//    
+//
+//    // リモートのストリームを追加・削除
+//    dispatchUpdateRemoteStream = (userId: UserId, remoteStream: null | MediaStream): void => {
+//	const remoteUser: RemoteUser | undefined = state.remoteUsers.get(userId); // remoteUser を取得
+//	if (remoteUser == undefined) { // とりあえずは，知らない人からメッセージが来たらエラーを吐くことにした
+//	    throw Error(`remoteUser is undefined for ${userId}`);
+//	}
+//	this.setState(state => ({
+//	    ...state, remoteUsers: new Map([...state.remoteUsers, [userId, {...remoteUser, remoteStream}]])
+//	}))
+//    }
+//    
+//    
+//
 
     // このコンポーネントが初めて読み込まれたときに一回実行する関数
     componentDidMount(){
