@@ -10,6 +10,7 @@ html {
 div {
     display: block;
 }
+<<<<<<< HEAD
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 body *::-webkit-scrollbar {
@@ -22,6 +23,8 @@ body * {
   scrollbar-width: none;  /* Firefox */
 }
 
+=======
+>>>>>>> 47123426a9e2b37dd54269264b8631d74336bf0f
 body {
     margin: 0;
     line-height: 1.5;
@@ -35,6 +38,31 @@ body {
 */
     font-family: 'Noto Sans JP', sans-serif;
 }
+
+
+.send-button-container>input {
+    display: none;
+}
+
+
+#input-message {
+    color: #fff;
+    border: none;
+    outline: none;
+    margin: 10px 0px 10px;
+    padding: 10px;
+    font-family: 'Noto Sans JP', sans-serif;
+    width: 400px;
+    background-color: #3c3c3c;
+    box-shadow: 0 0px 25px 0 rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    resize: none;
+}
+
+*::-webkit-scrollbar {
+    display: none;
+}
+
 
 /*
 .row {

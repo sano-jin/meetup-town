@@ -1,3 +1,8 @@
+/* サーバサイドの実装
+ * 基本的にそんなにいじることはないと思われる．
+*/
+
+
 import { networkInterfaces, NetworkInterfaceInfo } from 'os';
 import express from 'express';
 import { createServer, Server as httpServer } from 'http';
@@ -12,10 +17,8 @@ type SocketId = string;
 type RoomName = string
 const users: Map<RoomName, Map<UserId, { socketId: SocketId, userInfo: UserInfo }>>
     = new Map();
-// room -> userid -> { socketId, userInfo }
+// users の型のイメージ：room -> userid -> { socketId, userInfo }
 
-
-// For signalling in WebRTC
 
 // initializing express
 const app: express.Express = express();

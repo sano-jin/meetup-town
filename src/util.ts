@@ -1,5 +1,11 @@
-export { map2Json, json2Map, getStringFromUser, getTimeString };
+/* 色々便利な共用する関数
+ *
+ */
 
+
+export { map2Json, json2Map, getTimeString };
+
+// Map オブジェクトを JSON に変換する
 const map2Json = (mapObject: Map<any, any>): string => {
     return JSON.stringify(mapObject, (_, val) => {
         if (val instanceof Map) {
@@ -12,6 +18,8 @@ const map2Json = (mapObject: Map<any, any>): string => {
     });
 }
 
+
+// JSON を文字列で受け取り，Map オブジェクトへ変換する
 const json2Map = (jsonObject: string): Map<any, any> => {
     return JSON.parse(jsonObject, function (_, val) {
         if (val != null && val.__type__ === 'Map') {
@@ -21,14 +29,8 @@ const json2Map = (jsonObject: string): Map<any, any> => {
     });
 }
 
-const getStringFromUser = (message: string): string => {
-    let roomName = prompt(message);
-    while (roomName === null || roomName === '') {
-        roomName = prompt(message);
-    }
-    return roomName;
-}
 
+// 現在時刻の文字列を取得する
 const getTimeString = (): string => {
     const date = new Date();
     const hours = `0${date.getHours()}`.slice(-2);
