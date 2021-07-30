@@ -81,7 +81,7 @@ function PdfHandle(props: PdfHandlerProps) {
                 </button>
             </Box>
 
-            <Box top="60px" width="100%" height="calc(100%-60px)" border={1} display="flex" justifyContent="center">
+            <Box top="60px" width="100%" height="calc(100%-60px)" border={1} display="flex" justifyContent="center" style={{overflow: 'hidden'}}>
                 <Document
                   file={props.file}
                   onLoadSuccess={ ({ numPages }) => { props.setNumPages(numPages); } }

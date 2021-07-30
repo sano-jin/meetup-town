@@ -85,12 +85,7 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 	    <Box height="100%" width="70%" right="0">
 		{/* ビデオの表示パネル */}
 	  		<Box height="20%" border={1}>
-				<Grid container
-					xs={12}
-					style={{height:'100%'}}
-				>
-					<VideoBoard videoElements={getVideoElementProps(uiProps.clientState)} />
-				</Grid>
+				<VideoBoard videoElements={getVideoElementProps(uiProps.clientState)} />
 			</Box>
 
 			{/* 共有スライドの表示パネル */}
