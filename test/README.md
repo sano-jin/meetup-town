@@ -6,8 +6,8 @@ Selenium によるテストスクリプト
 
 ## How to
 ### GUI を目視で確認しながらテストしたい場合
-1. webdriver をダウンロードして，このディレクトリ`/test`に解凍
-2. `python3 test.py` を実行する
+1. <https://chromedriver.chromium.org/downloads> webdriver をダウンロードして，このディレクトリ`/test`に解凍
+2. `python3 test2.py` を実行する
    1. webpack を用いたコンパイル
    2. サーバが，<http://localhost:8000> で Listen する
    3. selenium が上記アドレスにアクセスしに行き，`Create a new room` ボタンをクリックする
