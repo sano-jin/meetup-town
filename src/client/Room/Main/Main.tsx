@@ -31,6 +31,7 @@ import { Message }		from './../../../message';
 import { ChatMessage }		from './../../../chatMessage';
 import { UserInfo, UserId }	from './../../../userInfo';
 import { PDFCommandType }	from './../../../PDFCommandType';
+import { FileState, PageNumber }        from './UI/PdfHandler'
 
 // React
 import * as React from 'react';
@@ -67,7 +68,10 @@ class Main extends React.Component<MainProps, ClientState> {
                 audio: true,
                 video: true
             },
-            chats: []				// チャットメッセージのリスト
+            chats: [],				// チャットメッセージのリスト
+            pdfContent: null,       // PDF本体
+            nowPage: undefined,
+            numPages: undefined,
         }
 
 	// toUserId にサーバを介してメッセージを送信する
@@ -173,8 +177,17 @@ class Main extends React.Component<MainProps, ClientState> {
             };
 
             const receiveChat = (chat: ChatMessage): void => {
-                this.setState(state => { return {...state, chats: [...state.chats, chat]}; });
+                this.setState(state => { return {...state, chats: [...state.chats, chat],}; });
             };
+
+            const receivePDFCommand = (command: PDFCommandType): void => {
+                const newPage = parseInt(command.command);
+                this.setState(state => { return {...state, nowPage: newPage}; })
+            }
+
+            const receivePDFContent = (content: FileState): void => {
+                this.setState(state => { return {...state, pdfContent: content}; })
+            }
 
             const block = (): void => {
                 console.log('Session terminated.');
@@ -188,7 +201,9 @@ class Main extends React.Component<MainProps, ClientState> {
                 hangup,
                 block,
                 receiveChat,
-                updateRemote
+                updateRemote,
+                receivePDFCommand,
+                receivePDFContent,
             };
         }
 
@@ -247,15 +262,34 @@ class Main extends React.Component<MainProps, ClientState> {
         });
     };
 
+    // setMyPDFContent = (file: FileState) => {
+    //     this.setState(state => {return {...state, pdfContent: file}; });
+    // }
+
+    setNumPages = (nP: PageNumber) => {
+        console.log(nP);
+        this.setState(state => {return {...state, numPages: nP}; });
+    }
+
     sendPDFCommand = (com: PDFCommandType) => {
         const message: Message = {type: "pdfcommand", command: com};
         this.sendMessageTo(undefined)(message);
+        this.setState(state => {return {...state, nowPage:parseInt(com.command)}; });
+    }
+    sendPDFContent = (file: FileState) => {
+        console.log("file is " + file);
+        const message: Message = {type: "pdfsend", content: file};
+        this.sendMessageTo(undefined)(message); //PDF本体の送信
+        this.sendPDFCommand({command: "1"}); //1ページ目をセットしてほしい
+        this.setState(state => {return {...state, pdfContent: file}; });
     }
 
     render() {
-	return (<UI clientState={this.state}
-		    sendChatMessage={this.sendChatMessage}
-		    sendPDFCommand={this.sendPDFCommand}
+    return (<UI clientState={this.state}
+            sendChatMessage={this.sendChatMessage}
+            setNumPages={this.setNumPages}
+            sendPDFCommand={this.sendPDFCommand}
+            sendPDFContent={this.sendPDFContent}
 	/>);
     }
 }

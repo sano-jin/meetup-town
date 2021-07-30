@@ -16,6 +16,8 @@ import { Remote }		from './clientState'
 import { Message }		from './../../../../message';
 import { UserInfo, UserId }	from './../../../../userInfo'; // 
 import { ChatMessage }		from './../../../../chatMessage'
+import { FileState } from '../UI/PdfHandler';
+import { PDFCommandType } from '../../../../PDFCommandType';
 
 
 // Main.tsx において実装される関数などの型
@@ -24,6 +26,9 @@ type AddVideoElement	= (remoteStream: MediaStream | null) => void;
 type Hangup		= () => void;
 type ReceiveChat	= (chat: ChatMessage) => void;
 type UpdateRemote	= (f: (oldRemote: Remote) => Remote | undefined) => void;
+type ReceivePDFCommand = (com: PDFCommandType) => void;
+type ReceivePDFContent = (file: FileState) => void;
+
 interface ClientProps {
     sendMessage		: SendMessage;
     addVideoElement	: AddVideoElement;
@@ -32,6 +37,8 @@ interface ClientProps {
     block		: Hangup;
     receiveChat		: ReceiveChat;
     updateRemote	: UpdateRemote;
+    receivePDFCommand: ReceivePDFCommand;
+    receivePDFContent : ReceivePDFContent;
 };
 
 
@@ -98,7 +105,11 @@ const handleMessage =
                 break;
             case 'pdfcommand':
                 console.log("receive pdfcommand");
-                console.log(message.command);
+                props.receivePDFCommand(message.command);
+                break;
+            case 'pdfsend':
+                console.log("receive pdf content");
+                props.receivePDFContent(message.content);
                 break;
             default: // webRTC で通信の確立のためにごちゃごちゃやる
 		handleWebRTCMessage(remote, message, localStream, props);

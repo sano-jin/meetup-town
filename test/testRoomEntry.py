@@ -15,7 +15,7 @@ def testRoomEntry(driver, userName):
     element.send_keys(userName)
 
     time.sleep(2)
-    
+
     # エンターキーを押す
     element.send_keys(Keys.ENTER)
     # send_button = driver.find_element_by_class_name("send-button-container")
@@ -44,13 +44,14 @@ def sendChat(driver, chatMessage):
     element.send_keys(chatMessage)
 
     time.sleep(3)
-    
+
     # 「Send」ボタンをクリックする
-    send_button = driver.find_element_by_class_name("send-button-container")
+#    send_button = driver.find_element_by_class_name("send-button-container")
+    send_button = driver.find_elements_by_xpath("//*[contains(text(), 'Send')]")[0]
     send_button.click()
-    
-    
 
 
-    
-    
+
+
+
+

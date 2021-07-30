@@ -5,6 +5,7 @@
 
 export { Message };
 import { ChatMessage } from './chatMessage';
+import { FileState } from './client/Room/Main/UI/PdfHandler';
 import { PDFCommandType } from './PDFCommandType';
 
 interface Candidate {
@@ -32,4 +33,9 @@ interface PDFCommand{
     command: PDFCommandType,
 }
 
-type Message = Bye | Call | Chat | PDFCommand | RTCSessionDescriptionInit | Candidate;
+interface PDFSend{
+    type: 'pdfsend'
+    content: FileState,
+}
+
+type Message = Bye | Call | Chat | PDFCommand | PDFSend | RTCSessionDescriptionInit | Candidate;
