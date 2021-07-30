@@ -37,28 +37,28 @@ const VideoElement: React.FC<VideoElementProps> = (props: VideoElementProps) => 
 	// 親の要素のサイズに無理やり合わせることで解決した
 	
 	//width基準じゃなく、height基準にすればいい感じに横並びになってくれるはず. はみ出た分は水平スクロールが出来ると思う
-    const [width, setWidth] = useState(0);
+    const [height, setHeight] = useState(0);
     const ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
-	const handleResize = () => setWidth(ref.current?.offsetWidth ?? 0);
+	const handleResize = () => {
+        setHeight(ref.current?.offsetHeight ?? 0);
+    } 
 	handleResize();
 	window.addEventListener('resize', handleResize); // ウィンドウサイズが変化したときにも再計算
 	return () => window.removeEventListener('resize', handleResize);
     }, [ref.current]);
 
 
-    return <Box key={props.userId} border={1}>
-	<div ref={ref}> {
+    return <Grid item style={{height: '100%'}} key={props.userId}>
+	<div ref={ref} style={{height: '100%'}}> {
 	    props.stream !== null ?
-	    <Box>
-		<video width={`${width}px`}
+		<video height={`${height}px`}
 		       ref={video => {if (video !== null) {video.srcObject = props.stream;}}}
 		       autoPlay muted={props.muted} playsInline />
-	    </Box>
 	    :
 	    <Box>{props.userInfo.userName}</Box>
 	} </div>
-    </Box>;
+    </Grid>;
 }
 
 
@@ -70,18 +70,16 @@ interface VideoBoardProps {
 // カメラの映像をたくさん表示するコンポーネント
 // Grid item xs={4} なので，現在は (12/4 =) 3 等分される
 const VideoBoard: React.FC<VideoBoardProps> = (videoBoardProps: VideoBoardProps) => {
-    return (<Grid container spacing={2} style={{height:'100%', width: "100%", position: "relative", overflowX: "scroll", overflowY: "hidden"}} wrap="nowrap"> {
+    return (<Grid container style={{height:'100%', width: "100%", position: "relative", overflowX: "scroll", overflowY: "hidden"}} wrap="nowrap"> {
 	videoBoardProps.videoElements.map(videoElement =>
 		// minWidthを指定しないと多分ビデオを折り返して表示してしまう
-	    <Grid item xs={4} style={{minWidth: "20%"}}> 
-		<VideoElement
+	    <VideoElement
 		    key     ={videoElement.userId}
 		    userId  ={videoElement.userId}
 		    stream  ={videoElement.stream}
 		    userInfo={videoElement.userInfo}
-		    muted={videoElement.muted}
+		    muted   ={videoElement.muted}
 		/>
-	    </Grid>
 	)
     } </Grid>);
 }
