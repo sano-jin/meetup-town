@@ -10,6 +10,8 @@ import { IgnorePlugin } from 'webpack';
 import { PDFCommandType } from '../../../../PDFCommandType';
 import { ClientState } from '../ts/clientState';
 
+import { Box } from '@material-ui/core'
+
 const options = {
     cMapUrl: '/dist/cmaps/',
     cMapPacked: true,
@@ -61,36 +63,34 @@ function PdfHandle(props: PdfHandlerProps) {
     }
 
     return (
-        <div className="Example">
-
-            <div className="Example__container">
-                <div className="Example__container__load">
-                    <label htmlFor="file">Load from file:</label>
-                    {' '}
-                    <input
-                        onChange={onFileChange}
-                        type="file"
-                    />
-                </div>
-                <div className="Example__container__document">
-                { 
-                    props.file &&
-                    <Document
-                      file={props.file}
-                      onLoadSuccess={ ({ numPages }) => { props.setNumPages(numPages); } }
-                      options={options}
-                    >
-                        <Page key={`page_1`} pageNumber={props.nowPage}/>
-                    </Document>
-                }
+        <Box height="100%" width="100%">
+            <Box height="30px">
+                <label htmlFor="file">Load from file:</label>
+                {' '}
+                <input
+                    onChange={onFileChange}
+                    type="file"
+                />
+            </Box>
+            <Box height="30px">
                 <button onClick={onPageBack} >
-                    {'back'}
+                {'back'}
                 </button>
                 <button onClick={onPageProcess} >
                     {'next'}
                 </button>
-                </div>
-            </div>
-        </div>
+            </Box>
+
+            <Box top="60px" width="100%" height="calc(100%-60px)" border={1} display="flex" justifyContent="center" style={{overflow: 'hidden'}}>
+                <Document
+                  file={props.file}
+                  onLoadSuccess={ ({ numPages }) => { props.setNumPages(numPages); } }
+                  options={options}
+                >
+                    {/* TODO: Pageのheightはピクセル数のみが指定できるが、これをBoxのheightの100%にしたいので、ウインドウサイズから適切なピクセル数を計算する必要あり */}
+                    <Page key={`page_1`} pageNumber={props.nowPage} height={(window.innerHeight-60)*0.8-60}/>
+                </Document>
+            </Box>
+        </Box>
     );
 }
