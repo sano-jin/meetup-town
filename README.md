@@ -40,7 +40,7 @@ _This is an experimental project_
 ## About The Project
 
 Due to the influence of COVID-19, the social value of online communication tools is increasing more than ever.
-Therefore, we will contribute to society by creating online conferencing tools that are
+Therefore, we will contribute to society by creating an online communication tool that is
 (1) open source, and
 (2) simple and highly extensible.
 
