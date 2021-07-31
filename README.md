@@ -66,9 +66,22 @@ To get a local copy up and running follow these simple example steps.
   npm install npm@latest -g
   ```
 
+## Obtaining TURN/STUN credentials using Xiysys
+
+Follow the steps as in [webtutsplus](https://github.com/webtutsplus/videoChat-WebFrontend).
+
+1. Do not use the credentials provided
+2. Go to https://xirsys.com/
+3. Sign Up 
+4. Log in to your account
+5. Click on `+` beside `MyFirstApp`
+6. Click on `static TURN Credentials` Button located below `Account Type`.
+7. Accept the warning by click on `+` that appears just after you clicked on `static TURN Credentials`.
+7. Copy the text(begins with `iceservers`) that appears below `static TURN Credentials`  and paste in `config.js` as shown in `config.js`.
+
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
+1. Get a free API Key at [https://xirsys.com/](https://xirsys.com/) as above.
 2. Clone the repo
    ```sh
    git clone https://github.com/sano-jin/meetup-town.git
@@ -77,16 +90,18 @@ To get a local copy up and running follow these simple example steps.
    ```sh
    npm install
    ```
-4. Enter your API in `config.js`
-   ```JS
-   const API_KEY = 'ENTER YOUR API';
+4. Enter your API in [config.ts](src/client/Room/Main/ts/config.ts)
+   ```TS
+   export const turnConfig = 'ENTER YOUR API';
    ```
 5. Build
    ```sh
    npm run build
    ```
 
-### Directory structure overview
+
+
+### Directory structure overview after build
 
 ```
 +- public/                     % code/resources to distributes to clients
@@ -104,7 +119,6 @@ To get a local copy up and running follow these simple example steps.
 
 
 
-
 <!-- USAGE EXAMPLES -->
 ## Usage
 
@@ -115,7 +129,7 @@ To get a local copy up and running follow these simple example steps.
 2. Open [localhost:8000](http://localhost:8000) on your browser
 
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+_For more examples, please refer to the [Documentation](https://github.com/sano-jin/meetup-town/wiki)_
 
 
 
@@ -167,7 +181,7 @@ Project Link: [https://github.com/sano-jin](https://github.com/sano-jin)
 [contributors-shield]: https://img.shields.io/github/contributors/sano-jin/meetup-town.svg?style=for-the-badge
 [contributors-url]: https://github.com/sano-jin/meetup-town/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/sano-jin/meetup-town.svg?style=for-the-badge
-[forks-url]: https://github.com/sano-jin/meetup-town/network/members
+pp[forks-url]: https://github.com/sano-jin/meetup-town/network/members
 [stars-shield]: https://img.shields.io/github/stars/sano-jin/meetup-town.svg?style=for-the-badge
 [stars-url]: https://github.com/sano-jin/meetup-town/stargazers
 [issues-shield]: https://img.shields.io/github/issues/sano-jin/meetup-town.svg?style=for-the-badge
