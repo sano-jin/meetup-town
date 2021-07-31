@@ -181,7 +181,7 @@ Project Link: [https://github.com/sano-jin](https://github.com/sano-jin)
 [contributors-shield]: https://img.shields.io/github/contributors/sano-jin/meetup-town.svg?style=for-the-badge
 [contributors-url]: https://github.com/sano-jin/meetup-town/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/sano-jin/meetup-town.svg?style=for-the-badge
-pp[forks-url]: https://github.com/sano-jin/meetup-town/network/members
+[forks-url]: https://github.com/sano-jin/meetup-town/network/members
 [stars-shield]: https://img.shields.io/github/stars/sano-jin/meetup-town.svg?style=for-the-badge
 [stars-url]: https://github.com/sano-jin/meetup-town/stargazers
 [issues-shield]: https://img.shields.io/github/issues/sano-jin/meetup-town.svg?style=for-the-badge
