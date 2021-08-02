@@ -36,7 +36,8 @@ const VideoElement: React.FC<VideoElementProps> = (props: VideoElementProps) => 
 	// ビデオはサイズを（相対値ではなく）絶対値で指定しなくてはいけないため
 	// 親の要素のサイズに無理やり合わせることで解決した
 
-	//width基準じゃなく、height基準にすればいい感じに横並びになってくれるはず. はみ出た分は水平スクロールが出来ると思う
+	// width基準じゃなく、height基準にすればいい感じに横並びになってくれるはず. はみ出た分は水平スクロールが出来ると思う ---> やった
+	// object-fit propety を使えばもしかしてこんなことをする必要はないのかもしれない
 	const [height, setHeight] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
 	useEffect(() => {

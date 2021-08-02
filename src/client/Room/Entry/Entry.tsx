@@ -32,7 +32,7 @@ const Entry: React.FC<EntryProps> = (props: EntryProps) => {
 		event.preventDefault();
 		if (!userName) return;
 		console.log("userName set", userName);
-		props.dispatch({ type: 'increment', payload: { userName } });
+		props.dispatch({ type: 'setUserInfo', payload: { userName } });
 	};
 
 	return (

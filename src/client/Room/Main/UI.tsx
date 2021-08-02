@@ -13,14 +13,12 @@ export { UI };
 
 // クライアントサイドの状態，通信に必要なものなど
 import { ClientState, Remote } from "./ts/clientState";
-import { ChatMessage } from './../../../chatMessage';
-import { UserInfo, UserId } from './../../../userInfo';
 import { PDFCommandType } from './../../../PDFCommandType';
 
 // UI のコンポーネント
 import { ChatMessageBoard } from "./UI/ChatBoard/ChatMessage";
 import { ChatSender } from "./UI/ChatBoard/ChatSender";
-import { VideoElement, VideoBoard, getVideoElementProps } from "./UI/VideoElement";
+import { VideoBoard, getVideoElementProps } from "./UI/VideoElement";
 import { FileState, PageNumber, PdfHandle } from "./UI/PdfHandler";
 import { LabelBottomNavigation } from "./UI/Navigation";
 
@@ -28,8 +26,6 @@ import { LabelBottomNavigation } from "./UI/Navigation";
 import * as React from 'react';
 
 // Material.ui
-import Button from '@material-ui/core/Button';
-import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 
 
@@ -43,6 +39,7 @@ interface UIProps {
 	sendPDFCommand: (com: PDFCommandType) => void;
 	sendPDFContent: (content: FileState) => void;
 }
+
 
 
 // アプリのメイン画面

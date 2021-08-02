@@ -5,7 +5,7 @@
 export { PdfHandle, FileState, PageNumber };
 import * as React from 'react';
 import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
-import { PDFCommandType } from '/client/PDFCommandType';
+import { PDFCommandType } from './../../../../PDFCommandType';
 
 import { Box } from '@material-ui/core';
 

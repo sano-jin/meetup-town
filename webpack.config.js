@@ -38,20 +38,6 @@ module.exports = [
         devServer: {
             historyApiFallback: true
         },
-        plugins: [
-            new HtmlWebpackPlugin({
-            template: 'views/index.ejs'
-            }),
-            // フォントのmap設定。react-pdfのリポジトリにある書き方は若干古い
-            new CopyWebpackPlugin({
-                patterns: [
-                    {
-                        from: "node_modules/pdfjs-dist/cmaps/",
-                        to: "public/dist/cmaps/",
-                    },
-                ],
-            }),
-        ],
         resolve: {
             extensions: [".ts", ".js", ".json", "tsx"],
             alias: {
@@ -73,6 +59,17 @@ module.exports = [
             filename: 'bundle.js',
         },
         target: ['web', 'es5'],
+        /*
+        externals: {
+            "react": "React",
+            "react-dom": "ReactDOM",
+            "react-bootstrap": "ReactBootstrap",
+            "griddle-react": "Griddle",
+            "underscore": "_",
+            'bufferutil': 'bufferutil',
+            'utf-8-validate': 'utf-8-validate'
+        },
+        */
         externals: ['bufferutil', 'utf-8-validate'],
         mode: 'development',
         module: {

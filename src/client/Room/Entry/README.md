@@ -3,5 +3,5 @@
 ディレクトリ構成をなんとかしたい
 
 
-- [NameForm.tsx](NameForm.tsx)
+- [Entry.tsx](Entry.tsx)
   - 部屋に入って名前を入力する画面
