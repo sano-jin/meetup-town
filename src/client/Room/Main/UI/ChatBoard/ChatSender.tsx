@@ -10,11 +10,6 @@ export { ChatSender };
 // React 
 import * as React	from 'react';
 
-// クライアントサイドの状態，通信に必要なものなど
-import { ChatMessage }	from "./../../../../../chatMessage";
-import { Message }	from "./../../../../../message";
-import { UserId }	from './../../../../../userInfo';
-
 // Material.ui
 import Button from '@material-ui/core/Button';
 

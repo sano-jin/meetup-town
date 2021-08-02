@@ -6,7 +6,6 @@ export { Home };
 
 // React
 import * as React	from 'react';
-import * as ReactDOM	from "react-dom";
 
 // 一意な部屋の id を生成するためのモジュール
 import { v4 as uuid } from 'uuid';
@@ -23,7 +22,7 @@ class Home extends React.Component<{}, {}> {
     render() {
 	return (
 	    <Grid container justify="center" >
-		<Box component="div" display="flex" alignItems="center" height="100vh">
+		<Box display="flex" alignItems="center" height="100vh">
 		    <Button
 			className="createNewRoom"
 			component={Link}
