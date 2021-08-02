@@ -39,6 +39,8 @@ _This is an experimental project_
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
+[![Product Screen Shot][product-screenshot]](https://sano-jin.github.io/meetup-town/)
+
 Due to the influence of COVID-19, the social value of online communication tools is increasing more than ever.
 Therefore, we will contribute to society by creating online conferencing tools that are
 (1) open source, and
@@ -188,6 +190,6 @@ Project Link: [https://github.com/sano-jin](https://github.com/sano-jin)
 [issues-url]: https://github.com/sano-jin/meetup-town/issues
 [license-shield]: https://img.shields.io/github/license/sano-jin/meetup-town.svg?style=for-the-badge
 [license-url]: https://github.com/sano-jin/meetup-town/blob/master/LICENSE.txt
-
+[product-screenshot]: images/meeting-app-image.jpg
 
 
