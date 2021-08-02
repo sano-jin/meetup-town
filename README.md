@@ -190,6 +190,6 @@ Project Link: [https://github.com/sano-jin](https://github.com/sano-jin)
 [issues-url]: https://github.com/sano-jin/meetup-town/issues
 [license-shield]: https://img.shields.io/github/license/sano-jin/meetup-town.svg?style=for-the-badge
 [license-url]: https://github.com/sano-jin/meetup-town/blob/master/LICENSE.txt
-[product-screenshot]: docs/meeting-app-image.jpg
+[product-screenshot]: docs/meeting-app-image.png
 
 
