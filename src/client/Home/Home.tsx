@@ -24,7 +24,6 @@ class Home extends React.Component<{}, {}> {
 	    <Grid container justify="center" >
 		<Box display="flex" alignItems="center" height="100vh">
 		    <Button
-			className="createNewRoom"
 			component={Link}
 			to={`/rooms/${uuid()}`}
 			color="primary"
