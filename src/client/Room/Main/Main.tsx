@@ -19,25 +19,26 @@ export { Main };
 
 
 // Utility functions
-import { getTimeString } from '../../../util'
+import { getTimeString } from '../../../util';
 
 // サーバとの通信
 import { getInitRemotes, getInitRemote, handleMessage, ClientProps, maybeStart } from "./ts/client";
 import io from "socket.io-client";
 
 // クライアントサイドの状態，通信に必要なものなど
-import { ClientState, Remote }	from "./ts/clientState";
-import { Message }		from './../../../message';
-import { ChatMessage }		from './../../../chatMessage';
-import { UserInfo, UserId }	from './../../../userInfo';
-import { PDFCommandType }	from './../../../PDFCommandType';
-import { FileState, PageNumber }        from './UI/PdfHandler'
+import { ClientState, Remote } from "./ts/clientState";
+import { Message } from './../../../message';
+import { ChatMessage } from './../../../chatMessage';
+import { UserInfo, UserId } from './../../../userInfo';
+import { PDFCommandType } from './../../../PDFCommandType';
+import { FileState, PageNumber } from './UI/PdfHandler';
 
 // React
 import * as React from 'react';
 
+
 // メイン画面の UI コンポーネント
-import { UI } from "./UI"
+import { UI } from "./UI";
 
 
 // サーバとの通信のためのソケットを起動
@@ -56,8 +57,8 @@ interface MainProps {
 // イベントハンドラ登録時の状態と，最新の状態が異なる（可能性がある）ため
 class Main extends React.Component<MainProps, ClientState> {
     sendMessageTo: (toUserId: UserId | undefined) => (message: Message) => void;
-    constructor(props: MainProps){
-        super(props)
+    constructor(props: MainProps) {
+        super(props);
         this.state = {
             userId: null,			// 初期状態で userId は null．部屋に初めて join したときのサーバの返答から取得する
             roomName: props.roomName,		// わざわざ「状態」として「部屋の名前」を持つ必要はあるだろうか？なさげ？
@@ -72,10 +73,10 @@ class Main extends React.Component<MainProps, ClientState> {
             pdfContent: null,       // PDF本体
             nowPage: undefined,
             numPages: undefined,
-        }
+        };
 
-	// toUserId にサーバを介してメッセージを送信する
-	// toUserId が undefined だった場合は，ブロードキャストする
+        // toUserId にサーバを介してメッセージを送信する
+        // toUserId が undefined だった場合は，ブロードキャストする
         this.sendMessageTo =
             (toUserId: UserId | undefined) => (message: Message) => {
                 const send = () => {
@@ -91,24 +92,24 @@ class Main extends React.Component<MainProps, ClientState> {
     }
 
     // このコンポーネントが初めて読み込まれたときに一回実行する関数
-    componentDidMount(){
-	// 自分が部屋に入ったとサーバから返事が返ってきた場合
-	// 自分の userId と先に部屋にいた人たちの情報をサーバに返してもらう
+    componentDidMount() {
+        // 自分が部屋に入ったとサーバから返事が返ってきた場合
+        // 自分の userId と先に部屋にいた人たちの情報をサーバに返してもらう
         socket.on('joined', (myUserId: UserId, jsonStrOtherUsers: string) => {
             console.log(`me ${myUserId} joined with`, jsonStrOtherUsers);
             this.setState((state) => {
-		const remotes =  new Map<UserId, Remote>([...state.remotes, ...getInitRemotes(jsonStrOtherUsers)]);
-		// 自分の状態に追加する他のユーザの情報
-		if (state.localStream) { // すでに自分のカメラ映像が取れているなら，他の人にビデオ通話のお誘いをする
-		    console.log("Already found localStream before getting back the answer of the join message");
-		    for (const [userId, remote] of remotes.entries()) {
-			console.log(`calling ${userId}`);
-			this.sendMessageTo(userId)({ type: 'call' }); // この call はいるのだろうか？いらなくね？
-			if (remote.isInitiator) { // 自分が initiator なら RTCPeerConnection の設立をこっちが主導して行う？
-			    maybeStart(remote, state.localStream, props(userId));
-			}
-		    }
-		}
+                const remotes = new Map<UserId, Remote>([...state.remotes, ...getInitRemotes(jsonStrOtherUsers)]);
+                // 自分の状態に追加する他のユーザの情報
+                if (state.localStream) { // すでに自分のカメラ映像が取れているなら，他の人にビデオ通話のお誘いをする
+                    console.log("Already found localStream before getting back the answer of the join message");
+                    for (const [userId, remote] of remotes.entries()) {
+                        console.log(`calling ${userId}`);
+                        this.sendMessageTo(userId)({ type: 'call' }); // この call はいるのだろうか？いらなくね？
+                        if (remote.isInitiator) { // 自分が initiator なら RTCPeerConnection の設立をこっちが主導して行う？
+                            maybeStart(remote, state.localStream, props(userId));
+                        }
+                    }
+                }
                 return {
                     ...state,
                     userId: myUserId,
@@ -117,7 +118,7 @@ class Main extends React.Component<MainProps, ClientState> {
             });
         });
 
-	// 他の人が入ってきた場合
+        // 他の人が入ってきた場合
         socket.on('anotherJoin', (userId: UserId, userInfo: UserInfo) => {
             console.log(`Another user ${userId} has joined to our room`, userInfo);
             this.setState((state) => {
@@ -128,10 +129,10 @@ class Main extends React.Component<MainProps, ClientState> {
             });
         });
 
-	// サーバとのやりとりに必要な関数を渡すための下準備
-	// userId を受け取り，そのユーザへの対応を定義する関数のレコードを返す
+        // サーバとのやりとりに必要な関数を渡すための下準備
+        // userId を受け取り，そのユーザへの対応を定義する関数のレコードを返す
         const props = (userId: UserId): ClientProps => {
-	    
+
             const sendMessage = this.sendMessageTo(userId);
 
             const updateRemote = (f: (oldRemote: Remote) => Remote | undefined) => {
@@ -146,15 +147,15 @@ class Main extends React.Component<MainProps, ClientState> {
                                 .filter(([id, _]) => id !== userId)
                             )
                         };
-                    } else { 
-                        return {...oldState, remotes: new Map([...oldState.remotes, [userId, newRemote]])};
+                    } else {
+                        return { ...oldState, remotes: new Map([...oldState.remotes, [userId, newRemote]]) };
                     }
                 });
             };
 
             const addVideoElement =
                 (remoteStream: MediaStream | null) => {
-                    updateRemote(oldRemote => { return {...oldRemote, remoteStream}; });
+                    updateRemote(oldRemote => { return { ...oldRemote, remoteStream }; });
                 };
 
 
@@ -169,31 +170,31 @@ class Main extends React.Component<MainProps, ClientState> {
             };
 
             const stopVideo = (): void => {
-                updateRemote(oldRemote => { return {...oldRemote, remoteStream: null, isStarted: false }});
-                
+                updateRemote(oldRemote => { return { ...oldRemote, remoteStream: null, isStarted: false }; });
+
                 // remote.isStarted = false;
                 // remote.pc!.close();
                 // remote.pc = null;
             };
 
             const receiveChat = (chat: ChatMessage): void => {
-                this.setState(state => { return {...state, chats: [...state.chats, chat],}; });
+                this.setState(state => { return { ...state, chats: [...state.chats, chat], }; });
             };
 
             const receivePDFCommand = (command: PDFCommandType): void => {
                 const newPage = parseInt(command.command);
-                this.setState(state => { return {...state, nowPage: newPage}; })
-            }
+                this.setState(state => { return { ...state, nowPage: newPage }; });
+            };
 
             const receivePDFContent = (content: FileState): void => {
-                this.setState(state => { return {...state, pdfContent: content}; })
-            }
+                this.setState(state => { return { ...state, pdfContent: content }; });
+            };
 
             const block = (): void => {
                 console.log('Session terminated.');
                 this.state.remotes.get(userId)?.pc?.close();
                 updateRemote(_ => undefined);
-            }
+            };
             return {
                 sendMessage,
                 addVideoElement,
@@ -205,9 +206,9 @@ class Main extends React.Component<MainProps, ClientState> {
                 receivePDFCommand,
                 receivePDFContent,
             };
-        }
+        };
 
-	// サーバからメッセージを受信した
+        // サーバからメッセージを受信した
         socket.on('message', (userId: UserId, message: Message) => {
             if (message.type !== 'candidate') { // candidate は回数が多いのでそれ以外ならデバッグ用に表示
                 console.log('Received message:', message, `from user ${userId}`);
@@ -218,31 +219,31 @@ class Main extends React.Component<MainProps, ClientState> {
             }
             handleMessage(remote, message, this.state.localStream, props(userId));
         });
-        
+
 
         console.log("Going to find Local media");
 
-	// If found local stream
+        // If found local stream
         const gotStream = (stream: MediaStream): void => {
             console.log('Adding local stream.');
-            this.setState((state) => { return {...state, localStream: stream}; });
-	    console.log('set state: added my local stream. Calling others (if there)');
+            this.setState((state) => { return { ...state, localStream: stream }; });
+            console.log('set state: added my local stream. Calling others (if there)');
             for (const [userId, remote] of this.state.remotes.entries()) {
-		console.log(`calling ${userId}`);
+                console.log(`calling ${userId}`);
                 this.sendMessageTo(userId)({ type: 'call' });
                 if (remote.isInitiator) {
                     maybeStart(remote, stream, props(userId));
                 }
             }
-	    console.log("Called others", this.state.remotes)
-        }
+            console.log("Called others", this.state.remotes);
+        };
 
-	// もし自分のカメラ映像を見つけられたら gotStream 関数を実行する
+        // もし自分のカメラ映像を見つけられたら gotStream 関数を実行する
         navigator.mediaDevices.getUserMedia(this.state.localStreamConstraints)
-                 .then(gotStream)
-                 .catch((e) => {
-                     alert(`getUserMedia() error: ${e.name}`);
-                 });
+            .then(gotStream)
+            .catch((e) => {
+                alert(`getUserMedia() error: ${e.name}`);
+            });
 
         // サーバに部屋に入りたい旨を通知
         socket.emit('join', this.props.roomName, this.state.userInfo);
@@ -258,7 +259,7 @@ class Main extends React.Component<MainProps, ClientState> {
                 message: message,
             };
             this.sendMessageTo(undefined)({ type: "chat", chatMessage: chatMessage }); // チャットを送信
-            return { ...state, chats: [...state.chats, chatMessage]}; // 自分のところにも追加しておく
+            return { ...state, chats: [...state.chats, chatMessage] }; // 自分のところにも追加しておく
         });
     };
 
@@ -268,29 +269,30 @@ class Main extends React.Component<MainProps, ClientState> {
 
     setNumPages = (nP: PageNumber) => {
         console.log(nP);
-        this.setState(state => {return {...state, numPages: nP}; });
-    }
+        this.setState(state => { return { ...state, numPages: nP }; });
+    };
 
     sendPDFCommand = (com: PDFCommandType) => {
-        const message: Message = {type: "pdfcommand", command: com};
+        const message: Message = { type: "pdfcommand", command: com };
         this.sendMessageTo(undefined)(message);
-        this.setState(state => {return {...state, nowPage:parseInt(com.command)}; });
-    }
+        this.setState(state => { return { ...state, nowPage: parseInt(com.command) }; });
+    };
     sendPDFContent = (file: FileState) => {
         console.log("file is " + file);
-        const message: Message = {type: "pdfsend", content: file};
+        const message: Message = { type: "pdfsend", content: file };
         this.sendMessageTo(undefined)(message); //PDF本体の送信
-        this.sendPDFCommand({command: "1"}); //1ページ目をセットしてほしい
-        this.setState(state => {return {...state, pdfContent: file}; });
-    }
+        this.sendPDFCommand({ command: "1" }); //1ページ目をセットしてほしい
+        this.setState(state => { return { ...state, pdfContent: file }; });
+    };
+
 
     render() {
-    return (<UI clientState={this.state}
+        return (<UI clientState={this.state}
             sendChatMessage={this.sendChatMessage}
             setNumPages={this.setNumPages}
             sendPDFCommand={this.sendPDFCommand}
             sendPDFContent={this.sendPDFContent}
-	/>);
+        />);
     }
 }
 
