@@ -30,7 +30,6 @@ import Box from '@material-ui/core/Box';
 
 
 
-
 // UI の状態
 interface UIProps {
 	clientState: ClientState; // クライアントサイドの状態
@@ -57,8 +56,10 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 			<Box
 				height="100%"
 				width="30%"
-				style={{ backgroundColor: '#212121' }}
+				boxShadow={10}
+				borderColor="grey.800"
 				border={1}
+				style={{ backgroundColor: '#212121' }}
 			>
 				{/* チャットメッセージの表示 */}
 				<ChatMessageBoard
@@ -73,15 +74,15 @@ const UI: React.FC<UIProps> = (uiProps: UIProps) => {
 			{/* ビデオ・共有スライドの表示パネル */}
 			<Box height="100%" width="70%" right="0">
 				{/* ビデオの表示パネル */}
-				<Box height="20%" border={1}>
+				<Box height="20%" >
 					<VideoBoard videoElements={getVideoElementProps(uiProps.clientState)} />
 				</Box>
 
 				{/* 共有スライドの表示パネル */}
 				<Box
-					component="div"
 					height="80%"
-					border={1}
+					borderTop={1}
+					borderColor="grey.800"
 				>
 					<PdfHandle
 						file={uiProps.clientState.pdfContent}
